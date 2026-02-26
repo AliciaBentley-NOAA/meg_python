@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- User Defined Variables ---
-YYYYMMDD="20260223"
+YYYYMMDD="20260213"
 
 # --- Outer Loop: Iterate through the Cycles ---
 for var in pres sfc; do
@@ -22,7 +22,7 @@ echo "Dest:   $DEST_DIR"
 echo "----------------------------------------------------------"
 
 # Loop from 0 to 198 in increments of 6
-for h in $(seq 0 6 198); do
+for h in $(seq 198 6 264); do
     # Format the forecast hour to be 3 digits (e.g., 000, 006, 012)
     HHH=$(printf "%03d" $h)
     
