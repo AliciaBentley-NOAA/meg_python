@@ -22,13 +22,23 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='feb2026'
-export longdate="20260222"
-export cyc="12"
-export fhr="018"
+export initdate="20260217"
+export cyc="00"
+export fhr="150"
 export DOMAIN='conus'
 
-echo $CASE $longdate $cyc $fhr $DOMAIN
+echo $CASE $initdate $cyc $fhr $DOMAIN
 
+# *************************************************************
+# ****Specify which models to plot, forecast hours, domains****
+# *************************************************************
+# Select which models to plot (YES/NO)
+export PLOT_GFS_FCSTS=YES
+export PLOT_AIGFS_FCSTS=YES
+export PLOT_ECMWF_FCSTS=YES
+
+#===============================================================================================================
+#===============================================================================================================
 #===============================================================================================================
 
 # ********************************************
@@ -44,23 +54,25 @@ export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026'
 export MAP_PATH='/lfs/h2/emc/vpppg/noscrub/'${USER}'/'${CASE}'/maps'
 mkdir -p ${MAP_PATH}
 
-# Location to write output from submitted plot_maps jobs
-# export OUTPUT_PATH=${MAP_PATH}'/output'
-# mkdir -p ${OUTPUT_PATH}
-
-# *************************************************************
-# ****Specify which models to plot, forecast hours, domains****
-# *************************************************************
-# Select which models to plot (YES/NO)
-export PLOT_GFS_FCSTS=YES
-
 #===============================================================================================================        
 #===============================================  END CHANGES  =================================================
 #===============================================================================================================
 
 if [ $PLOT_GFS_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot real-time GFS forecasts (Init.: ${longdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $longdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        echo "Kickoff scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+if [ $PLOT_AIGFS_FCSTS = YES ]; then
+        echo "Kickoff scripts to plot AIGFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_aigfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+if [ $PLOT_ECMWF_FCSTS = YES ]; then
+        echo "Kickoff scripts to plot ECMWF forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_ecmwf_hires_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 

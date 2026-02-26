@@ -3,7 +3,7 @@
 # --- User Defined Variables ---
 YYYY="2026"
 MM="02"
-DD="15"
+DD="22"
 
 # Combine them for use in paths
 YYYYMMDD="${YYYY}${MM}${DD}"
@@ -38,7 +38,8 @@ for h in $(seq 0 6 246); do
         VALID_HH=$(date -d "${YYYYMMDD} ${HH} + ${h} hours" +%H)
 
     # Construct the filename
-    FILE="ESE${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"
+    FILE="E2E${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"   # pressure level parameters
+    #FILE="ESE${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"   # surface parameters
 
     if [ -f "$SOURCE_DIR/$FILE" ]; then
         cp "$SOURCE_DIR/$FILE" "$DEST_DIR/"

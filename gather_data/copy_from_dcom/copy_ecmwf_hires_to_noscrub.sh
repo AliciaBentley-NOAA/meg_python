@@ -39,9 +39,11 @@ for h in $(seq 0 6 198); do
 
     # Construct the filename
     if [ "$h" -eq 0 ]; then
-        FILE="HSD${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}011"
+        #FILE="HSD${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}011"
+        FILE="HPD${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}011"
     else
-        FILE="HSD${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"
+        #FILE="HSD${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"  #contains surface variables
+        FILE="HPD${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"   #contains pressure variables like 500-mb geopotential height
     fi
 
     if [ -f "$SOURCE_DIR/$FILE" ]; then

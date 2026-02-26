@@ -4,7 +4,7 @@
 YYYYMMDD="20260223"
 
 # --- Outer Loop: Iterate through the Cycles ---
-for HH in 00 12; do
+for HH in 06; do
 
 # --- Define Paths ---
 # Using ${HH} in both the path and the filename pattern
