@@ -22,9 +22,9 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='feb2026'
-export initdate="20260217"
+export initdate="20260214"
 export cyc="00"
-export fhr="150"
+export fhr="222"
 export DOMAIN='conus'
 
 echo $CASE $initdate $cyc $fhr $DOMAIN
@@ -33,9 +33,13 @@ echo $CASE $initdate $cyc $fhr $DOMAIN
 # ****Specify which models to plot, forecast hours, domains****
 # *************************************************************
 # Select which models to plot (YES/NO)
-export PLOT_GFS_FCSTS=YES
-export PLOT_AIGFS_FCSTS=YES
-export PLOT_ECMWF_FCSTS=YES
+export PLOT_GFS_FCSTS=NO
+export PLOT_AIGFS_FCSTS=NO
+export PLOT_ECMWF_FCSTS=NO
+
+export PLOT_GEFS_FCSTS=YES
+export PLOT_AIGEFS_FCSTS=YES
+export PLOT_HGEFS_FCSTS=YES
 
 #===============================================================================================================
 #===============================================================================================================
@@ -73,6 +77,24 @@ fi
 if [ $PLOT_ECMWF_FCSTS = YES ]; then
         echo "Kickoff scripts to plot ECMWF forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
         python ${SCRIPTS_PATH}/plot_ecmwf_hires_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+if [ $PLOT_GEFS_FCSTS = YES ]; then
+        echo "Kickoff scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+if [ $PLOT_AIGEFS_FCSTS = YES ]; then
+        echo "Kickoff scripts to plot AIGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_aigefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+if [ $PLOT_HGEFS_FCSTS = YES ]; then
+        echo "Kickoff scripts to plot HGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_hgefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 

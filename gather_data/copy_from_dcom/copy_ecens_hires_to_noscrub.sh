@@ -3,7 +3,7 @@
 # --- User Defined Variables ---
 YYYY="2026"
 MM="02"
-DD="22"
+DD="23"
 
 # Combine them for use in paths
 YYYYMMDD="${YYYY}${MM}${DD}"
