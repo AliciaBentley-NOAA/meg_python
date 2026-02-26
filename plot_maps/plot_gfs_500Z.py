@@ -61,31 +61,18 @@ print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open GFSv16 GRIB2 file and extract parameters
-filename_gfsv16 = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
-with grib2io.open(filename_gfsv16) as f_v16:
+# Open GFS GRIB2 file and extract parameters
+filename_gfs = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
+with grib2io.open(filename_gfs) as f_gfs:
 
 	# Select the specific messages we want
-	hgt500_msg_v16 = f_v16.select(shortName='HGT', level='500 mb')[0]
+	hgt500_msg = f_gfs.select(shortName='HGT', level='500 mb')[0]
 
 	# Extract values
-	hgt500_data_v16 = hgt500_msg_v16.data / 10.0  # Convert m to dam
-
-# Open GFSv17 GRIB2 file and extract parameters
-filename_gfsv17 = f"/lfs/h1/ops/prod/com/gfs/v16.3/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
-with grib2io.open(filename_gfsv17) as f_v17:
-
-	# Select the specific messages we want
-	hgt500_msg_v17 = f_v17.select(shortName='HGT', level='500 mb')[0]
-
-	# Extract values
-	hgt500_data_v17 = hgt500_msg_v17.data / 10.0  # Convert m to dam
-
-	# Calculate the difference (e.g., Panel 1 minus Panel 2)
-	diff_data = hgt500_data_v17 - hgt500_data_v16
+	hgt500_data = hgt500_msg.data / 10.0  # Convert m to dam
 
 	# Extract data and coordinates
-	lats, lons = hgt500_msg_v17.latlons()
+	lats, lons = hgt500_msg.latlons()
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -107,7 +94,7 @@ if lons.ndim == 2:
 else:
 	lons = lons[i_sort]
 
-hgt500_data_v16 = hgt500_data_v16[:, i_sort]
+hgt500_data = hgt500_data[:, i_sort]
 
 #########################################################
 
@@ -115,7 +102,10 @@ hgt500_data_v16 = hgt500_data_v16[:, i_sort]
 #########################################################
 
 # Create the Plot
-fig = plt.figure(figsize=(16, 12))
+if grid == 'northeast':
+	fig = plt.figure(figsize=(12, 12))
+elif grid == 'conus':
+	fig = plt.figure(figsize=(15, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -126,7 +116,7 @@ hgt500_levels = np.arange(474, 606, 6)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': hgt500_data_v16, 'cmap': 'gist_rainbow_r', 'norm': hgt500_norm, 'levels': hgt500_levels, 'title': f'GFS 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': hgt500_data, 'cmap': 'gist_rainbow_r', 'norm': hgt500_norm, 'levels': hgt500_levels, 'title': f'GFS 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -142,10 +132,19 @@ for i, loc in enumerate(grid_locs):
 	# Geographic features
 	ax.add_feature(cfeature.COASTLINE, linewidth=1)
 	ax.add_feature(cfeature.BORDERS, linewidth=1)
-	ax.add_feature(cfeature.STATES, edgecolor='gray', linewidth=1.5, alpha=0.5)
+	ax.add_feature(cfeature.STATES, edgecolor='gray', linewidth=2.0, alpha=0.5)
 
 	# Define domain
-	ax.set_extent([-130, -65, 20, 56], crs=ccrs.PlateCarree())
+	if grid == 'northeast':   
+		ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
+		# Add manual aspect ratio here. 
+		# Increase this number (e.g., 1.4) to stretch it more vertically
+		ax.set_aspect(1.25, adjustable='datalim')
+	elif grid == 'conus':                
+		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
+                # Add manual aspect ratio here. 
+                # Increase this number (e.g., 1.4) to stretch it more vertically
+		ax.set_aspect(1.2, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
 	current_cmap = config['cmap']

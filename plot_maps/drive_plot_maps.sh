@@ -22,14 +22,12 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='feb2026'
-
 export longdate="20260222"
 export cyc="12"
 export fhr="018"
+export DOMAIN='conus'
 
-export DOMAIN_ARRAY='conus'
-
-echo $longdate $cyc $fhr $DOMAIN_ARRAY
+echo $CASE $longdate $cyc $fhr $DOMAIN
 
 #===============================================================================================================
 
@@ -61,8 +59,8 @@ export PLOT_GFS_FCSTS=YES
 #===============================================================================================================
 
 if [ $PLOT_GFS_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot real-time GFS forecasts (Init.: ${longdate}${cyc} F${fhr} for ${DOMAIN_ARRAY})"
-        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $longdate $cyc $fhr $DOMAIN_ARRAY $DATA_PATH $MAP_PATH
+        echo "Kickoff scripts to plot real-time GFS forecasts (Init.: ${longdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $longdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
