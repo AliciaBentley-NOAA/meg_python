@@ -32,7 +32,7 @@ counter=0
 export CASE='GFSv17archive'
 
 # Location of your saved /hpss_scripts directory
-export SCRIPTS_PATH='/lfs/h2/emc/vpppg/noscrub/'${USER}'/hpss_scripts'
+export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/gather_data/download_from_hpss'
 
 # Location you want to save your downloaded forecast/analysis files
 export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/'${USER}'/'${CASE}'/data'
@@ -54,7 +54,7 @@ export GET_GDAS_ANL=NO
 
 # Select analyses start, end, and increment to download
 export ANL_START=0 	# Start downloading analysis files for the first initialization date if set to 0
-export ANL_END=48       # Stop downloading analysis files on the first init. date + 6 hours + X hours (set X to 378 if you want to go 16 days beyond last init date)
+export ANL_END=192       # Stop downloading analysis files on the first init. date + 6 hours + X hours (set X to 378 if you want to go 16 days beyond last init date)
 export ANL_INC=6 	# Typically 6 hours timestep between requested analysis files
 
 # ******************************************
@@ -75,11 +75,11 @@ export FHR_INC=6                         # Typically 6-hour timestep between for
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20260201
+for longdate in 20260215
 do
 
 # Specify the init. hours to download on each initalization date (typically 06 18)
-for hour in 06
+for hour in 12
 do
 
 #===============================================================================================================	
