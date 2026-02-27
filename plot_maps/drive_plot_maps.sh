@@ -38,8 +38,8 @@ export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 
 export PLOT_GEFS_FCSTS=YES
-export PLOT_AIGEFS_FCSTS=YES
-export PLOT_HGEFS_FCSTS=YES
+export PLOT_AIGEFS_FCSTS=NO
+export PLOT_HGEFS_FCSTS=NO
 
 #===============================================================================================================
 #===============================================================================================================
@@ -82,7 +82,8 @@ fi
 
 if [ $PLOT_GEFS_FCSTS = YES ]; then
         echo "Kickoff scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
