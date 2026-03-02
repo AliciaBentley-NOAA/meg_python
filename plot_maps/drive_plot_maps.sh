@@ -22,9 +22,9 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='feb2026'
-export initdate="20260223"
-export cyc="06"
-export fhr="000"
+export initdate="20260217"
+export cyc="00"
+export fhr="156"
 export DOMAIN='eastcoast'
 
 echo $CASE $initdate $cyc $fhr $DOMAIN
@@ -34,8 +34,8 @@ echo $CASE $initdate $cyc $fhr $DOMAIN
 # *************************************************************
 # Select which models to plot (YES/NO)
 export PLOT_GFS_FCSTS=YES
-export PLOT_AIGFS_FCSTS=NO
-export PLOT_ECMWF_FCSTS=NO
+export PLOT_AIGFS_FCSTS=YES
+export PLOT_ECMWF_FCSTS=YES
 
 export PLOT_GEFS_FCSTS=NO
 export PLOT_AIGEFS_FCSTS=NO
@@ -71,13 +71,15 @@ fi
 
 if [ $PLOT_AIGFS_FCSTS = YES ]; then
         echo "Kickoff scripts to plot AIGFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_aigfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_aigfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_aigfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
 if [ $PLOT_ECMWF_FCSTS = YES ]; then
         echo "Kickoff scripts to plot ECMWF forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_ecmwf_hires_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_ecmwf_hires_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_ecmwf_hires_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 

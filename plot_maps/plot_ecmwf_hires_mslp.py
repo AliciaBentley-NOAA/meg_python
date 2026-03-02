@@ -19,6 +19,7 @@ import pyproj
 import cartopy
 import cartopy.io.shapereader as shpreader
 from pathlib import Path
+import subprocess
 
 #####################################################
 var = "mslp"
@@ -43,6 +44,10 @@ init_hour = int(cyc)
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
+init_MM = init_dt.strftime("%m")  # Result: '02'
+init_DD = init_dt.strftime("%d")    # Result: '26'
+init_HH = init_dt.strftime("%H")  # Result: '06'
+
 # Create maps directory
 Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 
@@ -51,22 +56,28 @@ Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 # Use f-string to format with leading zeros (e.g., 000, 006)
 fhr_str = f"{fhr}"
 fcst_hour= int(fhr)
-    
+
 # Add the forecast lead time
 forecast_delta = timedelta(hours=fcst_hour)
 valid_dt = init_dt + forecast_delta
+
+valid_MM = valid_dt.strftime("%m")  # Result: '02'
+valid_DD = valid_dt.strftime("%d")  # Result: '26'
+valid_HH = valid_dt.strftime("%H")  # Result: '06'
 
 # Print the results in a readable format
 print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open GFS GRIB2 file and extract parameters
-filename_gfs = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
-with grib2io.open(filename_gfs) as f_gfs:
+# Open ECMWF file and extract parameters
+filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
+grib2_filename = filename_ecmwf + ".grib2"
+subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+with grib2io.open(grib2_filename) as f_ecmwf:
 
 	# Select the specific messages we want
-	mslp_msg = f_gfs.select(shortName='PRMSL', level='mean sea level')[0]
+	mslp_msg = f_ecmwf.select(shortName='PRMSL', level='surface')[0]
 
 	# Extract values
 	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa/mb
@@ -118,7 +129,7 @@ mslp_levels = np.arange(968, 1056, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFS Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'ECMWF Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -185,6 +196,6 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
+#plt.suptitle(f"ECMWF | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfs_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecmwf_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
