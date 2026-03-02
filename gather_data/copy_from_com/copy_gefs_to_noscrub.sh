@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # --- User Defined Variables ---
-YYYYMMDD="20260221"
+YYYYMMDD="20260223"
 
 # --- Outer Loop: Iterate through the Cycles ---
-for product in avg spr; do
-for HH in 00 12; do
+for product in avg spr; do   #avg spr
+for HH in 06; do   # 00 12
 
 # --- Define Paths ---
 # Using ${HH} in both the path and the filename pattern
-SOURCE_DIR="/lfs/h1/ops/prod/com/gefs/v12.3/gefs.${YYYYMMDD}/${HH}/atmos/pgrb2sp25"
-#SOURCE_DIR="/lfs/h1/ops/prod/com/gefs/v12.3/gefs.${YYYYMMDD}/${HH}/atmos/pgrb2ap5"
+#SOURCE_DIR="/lfs/h1/ops/prod/com/gefs/v12.3/gefs.${YYYYMMDD}/${HH}/atmos/pgrb2sp25"
+SOURCE_DIR="/lfs/h1/ops/prod/com/gefs/v12.3/gefs.${YYYYMMDD}/${HH}/atmos/pgrb2ap5"
 DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026/gefs.${YYYYMMDD}/${HH}/atmos"
 
 # Create the destination directory if it doesn't exist
@@ -22,14 +22,14 @@ echo "Source: $SOURCE_DIR"
 echo "Dest:   $DEST_DIR"
 echo "----------------------------------------------------------"
 
-# Loop from 0 to 198 in increments of 6
-for h in $(seq 0 6 264); do
+# Loop from 0 to 264 in increments of 6
+for h in $(seq 0 6 48); do
     # Format the forecast hour to be 3 digits (e.g., 000, 006, 012)
     HHH=$(printf "%03d" $h)
     
     # Construct the filename (e.g., gfs.t00z.pgrb2.0p25.f000)
-    FILE="ge${product}.t${HH}z.pgrb2s.0p25.f${HHH}"
-    #FILE="ge${product}.t${HH}z.pgrb2a.0p50.f${HHH}"
+    #FILE="ge${product}.t${HH}z.pgrb2s.0p25.f${HHH}"
+    FILE="ge${product}.t${HH}z.pgrb2a.0p50.f${HHH}"
     
     if [ -f "$SOURCE_DIR/$FILE" ]; then
         cp "$SOURCE_DIR/$FILE" "$DEST_DIR/"

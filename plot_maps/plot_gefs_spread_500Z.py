@@ -137,7 +137,7 @@ hgt500s_norm = mcolors.Normalize(vmin=0, vmax=14)
 hgt500s_levels = np.arange(0, 14, 1)
 
 # Take 14 colors from the 'cool' colormap
-base_cmap = plt.get_cmap('cool', 14)
+base_cmap = plt.get_cmap('YlOrRd', 14)
 new_colors = base_cmap(np.linspace(0, 1, 14))
 
 # Force the first color (index 0) to be white
@@ -150,7 +150,7 @@ print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': hgt500_data, 'cmap': 'cool', 'norm': hgt500s_norm, 'levels': hgt500s_levels, 'title': f'GEFS mean/spread | 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': hgt500_data, 'cmap': 'YlOrRd', 'norm': hgt500s_norm, 'levels': hgt500s_levels, 'title': f'GEFS mean/spread | 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -192,7 +192,7 @@ for i, loc in enumerate(grid_locs):
 	contours = ax.contour(lons, lats, hgt500_data,
                      	      levels=hgt500_levels,
 			      colors='black', 
-			      linewidths=1.5, 
+			      linewidths=2.0, 
 			      transform=ccrs.PlateCarree())
 
 	# Add labels to the lines (e.g., '1012')

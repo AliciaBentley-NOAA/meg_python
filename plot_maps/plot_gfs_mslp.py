@@ -21,7 +21,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "500Z"
+var = "mslp"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -61,18 +61,18 @@ print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open AIGFS GRIB2 file and extract parameters
-filename_aigfs = f"{DATA_PATH}/aigfs.{pdy}/{cyc}/atmos/aigfs.t{cyc}z.pres.f{fhr_str}.grib2"
-with grib2io.open(filename_aigfs) as f_aigfs:
+# Open GFS GRIB2 file and extract parameters
+filename_gfs = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
+with grib2io.open(filename_gfs) as f_gfs:
 
 	# Select the specific messages we want
-	hgt500_msg = f_aigfs.select(shortName='HGT', level='500 mb')[0]
+	mslp_msg = f_gfs.select(shortName='PRMSL', level='mean sea level')[0]
 
 	# Extract values
-	hgt500_data = hgt500_msg.data / 10.0  # Convert m to dam
+	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa/mb
 
 	# Extract data and coordinates
-	lats, lons = hgt500_msg.latlons()
+	lats, lons = mslp_msg.latlons()
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -94,7 +94,7 @@ if lons.ndim == 2:
 else:
 	lons = lons[i_sort]
 
-hgt500_data = hgt500_data[:, i_sort]
+mslp_data = mslp_data[:, i_sort]
 
 #########################################################
 
@@ -106,17 +106,19 @@ if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
 elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
+elif grid == 'eastcoast':
+        fig = plt.figure(figsize=(13, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-hgt500_norm = mcolors.Normalize(vmin=474, vmax=600)
-hgt500_levels = np.arange(474, 606, 6)
+mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
+mslp_levels = np.arange(968, 1056, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': hgt500_data, 'cmap': 'gist_rainbow_r', 'norm': hgt500_norm, 'levels': hgt500_levels, 'title': f'AIGFS 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFS Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -145,6 +147,11 @@ for i, loc in enumerate(grid_locs):
                 # Add manual aspect ratio here. 
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
+	elif grid == 'eastcoast':
+                ax.set_extent([-82, -57, 26.0, 48.0], crs=ccrs.PlateCarree())
+                # Add manual aspect ratio here. 
+                # Increase this number (e.g., 1.4) to stretch it more vertically
+                ax.set_aspect(1.25, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
 	current_cmap = config['cmap']
@@ -178,6 +185,6 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"AIGFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
+#plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/aigfs_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfs_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

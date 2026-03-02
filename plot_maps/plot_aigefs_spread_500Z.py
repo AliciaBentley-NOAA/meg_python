@@ -61,18 +61,36 @@ print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open AIGFS GRIB2 file and extract parameters
-filename_aigfs = f"{DATA_PATH}/aigfs.{pdy}/{cyc}/atmos/aigfs.t{cyc}z.pres.f{fhr_str}.grib2"
-with grib2io.open(filename_aigfs) as f_aigfs:
+# Open AIGEFS GRIB2 file and extract parameters
+filename_aigefs = f"{DATA_PATH}/aigefs.{pdy}/{cyc}/atmos/aigefs.t{cyc}z.pres.avg.f{fhr_str}.grib2"
+with grib2io.open(filename_aigefs) as f_aigefs:
 
 	# Select the specific messages we want
-	hgt500_msg = f_aigfs.select(shortName='HGT', level='500 mb')[0]
+	hgt500_msg = f_aigefs.select(shortName='HGT', level='500 mb')[0]
 
 	# Extract values
 	hgt500_data = hgt500_msg.data / 10.0  # Convert m to dam
 
 	# Extract data and coordinates
 	lats, lons = hgt500_msg.latlons()
+
+# Open AIGEFS GRIB2 file and extract parameters
+filename_aigefss = f"{DATA_PATH}/aigefs.{pdy}/{cyc}/atmos/aigefs.t{cyc}z.pres.spr.f{fhr_str}.grib2"
+with grib2io.open(filename_aigefss) as f_aigefss:
+
+        # Select the specific messages we want
+        hgt500s_msg = f_aigefss.select(shortName='HGT', level='500 mb')[0]
+
+        # Extract values
+        hgt500s_data = hgt500s_msg.data / 10.0  # Convert m to dam
+
+	# Assuming 'data' is your 2D array
+        data_min = np.min(hgt500s_data)
+        data_max = np.max(hgt500s_data)
+
+        print(f"Minimum Spread Value: {data_min:.2f}")
+        print(f"Maximum Spread Value: {data_max:.2f}")
+
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -95,6 +113,7 @@ else:
 	lons = lons[i_sort]
 
 hgt500_data = hgt500_data[:, i_sort]
+hgt500s_data = hgt500s_data[:, i_sort]
 
 #########################################################
 
@@ -114,9 +133,24 @@ gs = gridspec.GridSpec(1, 1, figure=fig)
 hgt500_norm = mcolors.Normalize(vmin=474, vmax=600)
 hgt500_levels = np.arange(474, 606, 6)
 
+hgt500s_norm = mcolors.Normalize(vmin=0, vmax=14)
+hgt500s_levels = np.arange(0, 14, 1)
+
+# Take 14 colors from the 'cool' colormap
+base_cmap = plt.get_cmap('YlOrRd', 14)
+new_colors = base_cmap(np.linspace(0, 1, 14))
+
+# Force the first color (index 0) to be white
+# Format is [Red, Green, Blue, Alpha]
+new_colors[0] = [1, 1, 1, 1]  # First color is white
+
+# Create the new colormap
+white_first_cmap = mcolors.ListedColormap(new_colors)
+print('Created new colormap!')
+
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': hgt500_data, 'cmap': 'gist_rainbow_r', 'norm': hgt500_norm, 'levels': hgt500_levels, 'title': f'AIGFS 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': hgt500_data, 'cmap': 'YlOrRd', 'norm': hgt500s_norm, 'levels': hgt500s_levels, 'title': f'AIGEFS mean/spread | 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -130,9 +164,9 @@ for i, loc in enumerate(grid_locs):
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-	ax.add_feature(cfeature.COASTLINE, linewidth=1)
-	ax.add_feature(cfeature.BORDERS, linewidth=1)
-	ax.add_feature(cfeature.STATES, edgecolor='gray', linewidth=2.0, alpha=0.5)
+	ax.add_feature(cfeature.COASTLINE, linewidth=2)
+	ax.add_feature(cfeature.BORDERS, linewidth=2)
+	ax.add_feature(cfeature.STATES, edgecolor='gray', linewidth=3.0, alpha=0.5)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -146,27 +180,24 @@ for i, loc in enumerate(grid_locs):
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
 
-	# Check if we are on the third panel and apply special cmap
-	current_cmap = config['cmap']
-
 	# Plot the shading
-	im = ax.contourf(lons, lats, config['data'], 
-		     levels=config['levels'],
+	im = ax.contourf(lons, lats, hgt500s_data,
+                     levels=hgt500s_levels,
 		     norm=config['norm'], 
-		     cmap=current_cmap,
+		     cmap=white_first_cmap,
 		     transform=ccrs.PlateCarree(),
-		     extend='both')
+		     extend='max')
 
 	# Plot the contour lines
-	# Only add lines if it's one of the MSLP panels (0 or 1)
-	contours = ax.contour(lons, lats, config['data'], 
-			      levels=config['levels'], 
+	contours = ax.contour(lons, lats, hgt500_data,
+                     	      levels=hgt500_levels,
 			      colors='black', 
 			      linewidths=2.0, 
 			      transform=ccrs.PlateCarree())
+
 	# Add labels to the lines (e.g., '1012')
 	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=8, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
@@ -178,6 +209,6 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"AIGFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
+#plt.suptitle(f"AIGEFS spread | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/aigfs_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/aigefs_spread_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
