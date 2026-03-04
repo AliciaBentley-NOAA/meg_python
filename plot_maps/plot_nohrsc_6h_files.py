@@ -135,7 +135,7 @@ print(result.stdout)
 
 # Create the Plot
 if grid == 'northeast':
-	fig = plt.figure(figsize=(12, 12))
+	fig = plt.figure(figsize=(12, 10))
 elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
 elif grid == 'eastcoast':
@@ -186,7 +186,7 @@ for i, loc in enumerate(grid_locs):
 
 	# Define domain
 	if grid == 'northeast':   
-		ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
+		ax.set_extent([-82.5, -66.5, 39.25, 45.25], crs=ccrs.PlateCarree())
 		# Add manual aspect ratio here. 
 		# Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.25, adjustable='datalim')
@@ -244,10 +244,10 @@ for i, loc in enumerate(grid_locs):
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
-	ax.set_title(config['title'], fontweight='bold', fontsize=24)
+	ax.set_title(config['title'], fontweight='bold', fontsize=18)
 
 	# Set the label size for the ticks
-	cbar.ax.tick_params(labelsize=24)
+	cbar.ax.tick_params(labelsize=20)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
 	cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
