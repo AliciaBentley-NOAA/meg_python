@@ -138,7 +138,7 @@ gs = gridspec.GridSpec(1, 1, figure=fig)
 #snod_levels = np.arange(0, 25, 1)
 snod_levels = np.array([0.1, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0])
 
-snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#E8EB82', '#EB9B05', '#EB6905', '#E12F0A', '#C92828', '#D986D9', '#D95DD9']
+snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9']
 
 cmap = mcolors.ListedColormap(snod_colors)
 #cmap.set_under('white')
