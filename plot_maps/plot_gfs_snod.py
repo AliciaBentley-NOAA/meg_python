@@ -162,10 +162,10 @@ for i, loc in enumerate(grid_locs):
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-	ax.add_feature(cfeature.STATES, edgecolor='0.2', linewidth=2.0, alpha=0.5)
-	ax.add_feature(cfeature.COASTLINE, linewidth=1.5)
-	ax.add_feature(cfeature.BORDERS, linewidth=1.5)
-	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='black', linewidth=1.0)
+	ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
+	ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
+	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
 	
 	# Add the land feature and shade it gray
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
