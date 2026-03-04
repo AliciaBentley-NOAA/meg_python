@@ -36,7 +36,7 @@ echo $CASE $initdate $cyc $fhr $DOMAIN
 # ****Specify which models to plot, forecast hours, domains****
 # *************************************************************
 # Select which models to plot (YES/NO)
-export PLOT_GFS_FCSTS=YES
+export PLOT_GFS_FCSTS=NO
 export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 
@@ -45,6 +45,8 @@ export PLOT_AIGEFS_FCSTS=NO
 export PLOT_HGEFS_FCSTS=NO
 
 export PLOT_GFSv17_FCSTS=NO
+
+export PLOT_NOHRSC_ANALYSIS=YES
 
 #===============================================================================================================
 #===============================================================================================================
@@ -71,7 +73,8 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
         echo "Kickoff scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfs_snod.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfs_snod.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_gfs_weasd.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
 
@@ -116,5 +119,12 @@ if [ $PLOT_GFSv17_FCSTS = YES ]; then
 #        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
+
+if [ $PLOT_NOHRSC_ANALYSIS = YES ]; then
+        echo "Kickoff scripts to plot NOHRSC analysis (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_nohrsc_6h_files.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        sleep 1
+fi
+
 
 exit
