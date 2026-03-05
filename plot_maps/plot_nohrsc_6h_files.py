@@ -160,7 +160,7 @@ norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': nohrsc_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'NOHRSC {duration}-h Snowfall Analysis (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': nohrsc_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'NOHRSC | {duration}-h Snowfall Analysis (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
