@@ -210,6 +210,7 @@ for i, loc in enumerate(grid_locs):
                                     central_latitude=25.0,
                                     standard_parallels=(25.0, 25.0),
                                     globe=ncep_globe)
+#	gfs_proj = ccrs.PlateCarree(globe=ncep_globe)
 
 	# Use linspace to guarantee matching dimensions
 	# We calculate the start/end in meters based on the Dx/Dy and origin
@@ -243,7 +244,7 @@ for i, loc in enumerate(grid_locs):
 	#ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
+	cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
 	ax.set_title(config['title'], fontweight='bold', fontsize=18)
 
 	# Set the label size for the ticks
