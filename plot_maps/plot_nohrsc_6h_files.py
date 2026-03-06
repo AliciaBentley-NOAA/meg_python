@@ -26,25 +26,23 @@ var = "nohrsc"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
-fhr = str(sys.argv[3])             # 024 (3 digits) 
-grid = str(sys.argv[4])            # conus
-DATA_PATH = str(sys.argv[5])       # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026
-MAP_PATH = str(sys.argv[6])        # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026/maps
-duration = str(sys.argv[7])        # 36 (hours)
+grid = str(sys.argv[3])            # conus
+DATA_PATH = str(sys.argv[4])       # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026
+MAP_PATH = str(sys.argv[5])        # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026/maps
+duration = str(sys.argv[6])        # 36 (hours)
 
 show_colorbar="yes"
 
 print("pdy:", pdy)
 print("cyc:", cyc)
-print("fhr:", fhr)
 print("grid:", grid)
 
-init_str = str(pdy)
-init_hour = int(cyc)
+valid_str = str(pdy)
+valid_hour = int(cyc)
 
 #Create the datetime object
 # strptime converts the string to a datetime object
-init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
+valid_dt = datetime.strptime(valid_str, "%Y%m%d").replace(hour=valid_hour)
 
 # Create maps directory
 Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
@@ -52,23 +50,16 @@ Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 ####################################################
 
 # Use f-string to format with leading zeros (e.g., 000, 006)
-fhr_str = f"{fhr}"
-fcst_hour= int(fhr)
 duration_hour = int(duration)
-start_fhr = fcst_hour - duration_hour
-start_fhr_str = f"{start_fhr:03}"
+#start_fhr_str = f"{start_fhr:03}"
     
 # Add the forecast lead time
-forecast_delta = timedelta(hours=fcst_hour)
 duration_delta = timedelta(hours=duration_hour)
 nohrsc_delta = timedelta(hours=6)
-valid_dt = init_dt + forecast_delta
 start_dt = valid_dt - duration_delta
 current_dt = start_dt
 
 # Print the results in a readable format
-print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
-print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Start Time:          {start_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
@@ -76,14 +67,16 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 #---------------------------------------------------------
 #---------------------------------------------------------
 
-segments = int(duration) / int(6)
-print(segments)
+# Determine how many 6-hour periods are in the full duration (e.g., 24h/6h)
+segments = int(duration) / int(6) 
+print(f"Number of NOHRSC files needed: {segments}")
 
 nohrsc_array = np.zeros((int(segments), 1377, 2145), dtype=np.float32)
 
 for j in range(int(segments)):
 
-	current_dt = current_dt + nohrsc_delta # Remember: Valid time in NOHRSC filenames is at the *end* of the 6-h period
+	# Remember: Valid time in NOHRSC filenames is at the *end* of the 6-h period (add nohrsc_delta)
+	current_dt = current_dt + nohrsc_delta
 	print(f"Current NOHRSC File Time: {current_dt.strftime('%Y-%m-%d %HZ')}")
 	date_string = current_dt.strftime('%Y%m%d%H')
 
@@ -160,7 +153,7 @@ norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': nohrsc_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'NOHRSC | {duration}-h Snowfall Analysis (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': nohrsc_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'NOHRSC | {duration}-h Snowfall Analysis (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -258,4 +251,4 @@ for i, loc in enumerate(grid_locs):
 # Add a title and adjust layout to prevent overlapping
 #plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/{var}_valid{pdy}_{cyc}Z_{duration}h_accum.png", bbox_inches='tight', pad_inches=0.1)

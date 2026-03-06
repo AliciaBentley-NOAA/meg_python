@@ -22,21 +22,23 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='feb2026'
-export initdate="20260218"
+export initdate="20260222"
 export cyc="00"
-export fhr="150"
+export fhr="042"
 export DOMAIN='northeast'
 
 #If plotting precip or snowfall, choose a duration
 export duration='36'
 
-echo $CASE $initdate $cyc $fhr $DOMAIN
+#If plotting NOHRSC, select a valid time
+export vdate="20260224"
+export vhour="06"
 
 # *************************************************************
 # ****Specify which models to plot, forecast hours, domains****
 # *************************************************************
 # Select which models to plot (YES/NO)
-export PLOT_GFS_FCSTS=YES
+export PLOT_GFS_FCSTS=NO
 export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 
@@ -46,7 +48,7 @@ export PLOT_HGEFS_FCSTS=NO
 
 export PLOT_GFSv17_FCSTS=NO
 
-export PLOT_NOHRSC_ANALYSIS=NO
+export PLOT_NOHRSC_ANALYSIS=YES
 
 #===============================================================================================================
 #===============================================================================================================
@@ -70,7 +72,7 @@ mkdir -p ${MAP_PATH}
 #===============================================================================================================
 
 if [ $PLOT_GFS_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        echo "Kickoff ${CASE} scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_gfs_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
@@ -79,50 +81,51 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
 fi
 
 if [ $PLOT_AIGFS_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot AIGFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        echo "Kickoff ${CASE} scripts to plot AIGFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_aigfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_aigfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
 if [ $PLOT_ECMWF_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot ECMWF forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        echo "Kickoff ${CASE} scripts to plot ECMWF forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_ecmwf_hires_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_ecmwf_hires_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_ecmwf_hires_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+	python ${SCRIPTS_PATH}/plot_ecmwf_hires_snow.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
 
 if [ $PLOT_GEFS_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        echo "Kickoff ${CASE} scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
 if [ $PLOT_AIGEFS_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot AIGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        echo "Kickoff ${CASE} scripts to plot AIGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_aigefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
 if [ $PLOT_HGEFS_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot HGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        echo "Kickoff ${CASE} scripts to plot HGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_hgefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_hgefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
 if [ $PLOT_GFSv17_FCSTS = YES ]; then
-        echo "Kickoff scripts to plot GFSv17 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        echo "Kickoff ${CASE} scripts to plot GFSv17 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
         python ${SCRIPTS_PATH}/plot_gfsv17_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
 if [ $PLOT_NOHRSC_ANALYSIS = YES ]; then
-        echo "Kickoff scripts to plot NOHRSC analysis (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_nohrsc_6h_files.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        echo "Kickoff ${CASE} scripts to plot NOHRSC analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_nohrsc_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
 

@@ -22,7 +22,7 @@ from pathlib import Path
 import subprocess
 
 #####################################################
-var = "sd"
+var = "snowfall"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -46,6 +46,10 @@ init_hour = int(cyc)
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
+init_MM = init_dt.strftime("%m")  # Result: '02'
+init_DD = init_dt.strftime("%d")    # Result: '26'
+init_HH = init_dt.strftime("%H")  # Result: '06'
+
 # Create maps directory
 Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 
@@ -65,36 +69,51 @@ nohrsc_delta = timedelta(hours=6)
 valid_dt = init_dt + forecast_delta
 start_dt = valid_dt - duration_delta    # Remember: Valid time in NOHRSC filenames is at the *end* of the 6-h period
 
+start_MM = start_dt.strftime("%m")  # Result: '02'
+start_DD = start_dt.strftime("%d")  # Result: '26'
+start_HH = start_dt.strftime("%H")  # Result: '06'
+
+valid_MM = valid_dt.strftime("%m")  # Result: '02'
+valid_DD = valid_dt.strftime("%d")  # Result: '26'
+valid_HH = valid_dt.strftime("%H")  # Result: '06'
+
 # Print the results in a readable format
 print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Start Time:          {start_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open GFS GRIB2 file at the start of the snowfall period and extract parameters
-filename_gfss = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{start_fhr_str}"
-with grib2io.open(filename_gfss) as f_gfss:
+# Open ECMWF file at the end of the snowfall period and extract parameters
+filename_ecmwf_start = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{start_MM}{start_DD}{start_HH}001"
+print(f"filename_ecmwf_start: {filename_ecmwf_start}")
+grib2_filename_start = filename_ecmwf_start + ".grib2"
+subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
+with grib2io.open(grib2_filename_start) as f_ecmwfs:
 
-        # Select the specific messages we want
-        weasd_start_msg = f_gfss.select(shortName='WEASD', level='surface')[0]
+    # Select the specific messages we want
+    snow_start_msg = f_ecmwfs[3]
 
-        # Extract values
-        weasd_start_data = weasd_start_msg.data * .03937 * 10  # Convert mm to inches and 10:1 ratio
+    # Extract values
+    snow_start_data = snow_start_msg.data * 39.3701 * 10  # Convert mm to inches and 10:1 ratio
 
-# Open GFS GRIB2 file at the end of the snowfall period and extract parameters
-filename_gfs = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
-with grib2io.open(filename_gfs) as f_gfs:
+# Open ECMWF file at the end of the snowfall period and extract parameters
+filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
+print(f"filename_ecmwf: {filename_ecmwf}")
+grib2_filename = filename_ecmwf + ".grib2"
+subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+with grib2io.open(grib2_filename) as f_ecmwf:
 
-	# Select the specific messages we want
-	weasd_msg = f_gfs.select(shortName='WEASD', level='surface')[0]
+    # Select the specific messages we want
+    snow_msg = f_ecmwf[8]
 
-	# Extract values
-	weasd_data = weasd_msg.data * .03937 * 10  # Convert mm to inches and 10:1 ratio
+    # Extract values
+    snow_data = snow_msg.data * 39.3701 * 10  # Convert mm to inches and 10:1 ratio
 
-	# Calculate the difference (e.g., SNOD at end - SNOD at start)
-	diff_data = weasd_data - weasd_start_data
+    # Calculate the difference (e.g., SNOD at end - SNOD at start)
+    diff_data = snow_data - snow_start_data
 
-	lats, lons = weasd_msg.latlons()
+    # Extract data and coordinates
+    lats, lons = snow_msg.latlons()
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -117,6 +136,18 @@ else:
 	lons = lons[i_sort]
 
 diff_data = diff_data[:, i_sort]
+
+# Print the Min and Max
+print(f"Minimum Value (snow_start_data): {np.min(snow_start_data)}")
+print(f"Maximum Value (snow_start_data): {np.max(snow_start_data)}")
+
+# Print the Min and Max
+print(f"Minimum Value (snow_data): {np.min(snow_data)}")
+print(f"Maximum Value (snow_data): {np.max(snow_data)}")
+
+# Print the Min and Max
+print(f"Minimum Value (diff_data): {np.min(diff_data)}")
+print(f"Maximum Value (diff_data): {np.max(diff_data)}")
 
 #########################################################
 
@@ -146,7 +177,7 @@ norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'GFS | {duration}-h Snowfall (WEASD with 10:1 SLR) (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'ECMWF | {duration}-h Snowfall (SF with 10:1 SLR) (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -161,14 +192,13 @@ for i, loc in enumerate(grid_locs):
 
 	# Geographic features
 	ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
-	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
 	ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
 	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
-	
+	ax.add_feature(cfeature.OCEAN, facecolor='white', edgecolor='none', zorder=3)	# Masks out ECMWF snowfall over the ocean	
+
 	# Add the land feature and shade it gray
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
-	# Add oceans for contrast (optional)
-	#ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
 
 	# Define domain
 	if grid == 'northeast':   
@@ -188,7 +218,7 @@ for i, loc in enumerate(grid_locs):
                 ax.set_aspect(1.25, adjustable='datalim')
 
 	# Plot the shading
-	im = ax.contourf(lons, lats, config['data'], 
+	im = ax.contourf(lons, lats, diff_data, 
 		     levels=config['levels'],
 		     norm=config['norm'], 
 		     cmap= config['cmap'],
@@ -221,4 +251,4 @@ for i, loc in enumerate(grid_locs):
 # Add a title and adjust layout to prevent overlapping
 #plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfs_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecmwf_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
