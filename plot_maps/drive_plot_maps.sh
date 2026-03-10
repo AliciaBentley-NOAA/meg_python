@@ -22,10 +22,10 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='feb2026'
-export initdate="20260222"
+export initdate="20260215"
 export cyc="00"
-export fhr="054"
-export DOMAIN='northeast'
+export fhr="204"
+export DOMAIN='eastcoast'
 
 #If plotting precip or snowfall, choose a duration
 export duration='36'
@@ -38,11 +38,11 @@ export vhour="06"
 # ****Specify which models to plot, forecast hours, domains****
 # *************************************************************
 # Select which models to plot (YES/NO)
-export PLOT_GFS_FCSTS=YES
+export PLOT_GFS_FCSTS=NO
 export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 
-export PLOT_GEFS_FCSTS=NO
+export PLOT_GEFS_FCSTS=YES
 export PLOT_AIGEFS_FCSTS=NO
 export PLOT_HGEFS_FCSTS=NO
 
@@ -75,9 +75,9 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#        python ${SCRIPTS_PATH}/plot_gfs_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_gfs_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-        python ${SCRIPTS_PATH}/plot_gfs_weasd_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfs_weasd_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
 
@@ -99,7 +99,8 @@ fi
 if [ $PLOT_GEFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
