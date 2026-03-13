@@ -62,9 +62,10 @@ export ANL_INC=6 	# Typically 6 hours timestep between requested analysis files
 # ******************************************
 # Select which model forecasts to download (YES/NO)
 export GET_GEFS_FCSTS=NO
-export GET_GFSv17_FCSTS_ATMOS=YES
 export GET_GFS_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_WAVE=NO
+
+export GET_GFSv17_FCSTS_ATMOS=YES
 
 # Select forecast start, end, and increment to download (applies to GFS_FCSTS and GEFS_FCSTS)
 export FHR_START=0			 # Typically 0 hours (beginning of forecast)
@@ -75,11 +76,11 @@ export FHR_INC=6                         # Typically 6-hour timestep between for
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20260218
+for longdate in 20260311
 do
 
 # Specify the init. hours to download on each initalization date (typically 06 18)
-for hour in 12
+for hour in 18
 do
 
 #===============================================================================================================	
