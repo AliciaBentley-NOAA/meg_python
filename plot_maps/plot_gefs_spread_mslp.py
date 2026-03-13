@@ -135,8 +135,8 @@ gs = gridspec.GridSpec(1, 1, figure=fig)
 mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
 mslp_levels = np.arange(968, 1056, 4)
 
-mslps_norm = mcolors.Normalize(vmin=0, vmax=28)
-mslps_levels = np.arange(0, 28, 2)
+mslps_norm = mcolors.Normalize(vmin=0, vmax=18)
+mslps_levels = np.arange(0, 18, 2)
 
 # Take 14 colors from the 'cool' colormap
 base_cmap = plt.get_cmap('YlOrRd', 14)

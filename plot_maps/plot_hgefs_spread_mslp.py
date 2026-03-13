@@ -21,7 +21,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "500Z"
+var = "mslp"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -61,32 +61,32 @@ print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open GEFS GRIB2 file and extract parameters
-filename_gefs = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/geavg.t{cyc}z.pgrb2a.0p50.f{fhr_str}"
-with grib2io.open(filename_gefs) as f_gefs:
+# Open HGEFS GRIB2 file and extract parameters
+filename_hgefs = f"{DATA_PATH}/hgefs.{pdy}/{cyc}/atmos/hgefs.t{cyc}z.sfc.avg.f{fhr_str}.grib2"
+with grib2io.open(filename_hgefs) as f_hgefs:
 
 	# Select the specific messages we want
-	hgt500_msg = f_gefs.select(shortName='HGT', level='500 mb')[0]
+	mslp_msg = f_hgefs.select(shortName='PRMSL', level='mean sea level')[0]
 
 	# Extract values
-	hgt500_data = hgt500_msg.data / 10.0  # Convert m to dam
+	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa/mb
 
 	# Extract data and coordinates
-	lats, lons = hgt500_msg.latlons()
+	lats, lons = mslp_msg.latlons()
 
-# Open GEFS GRIB2 file and extract parameters
-filename_gefss = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/gespr.t{cyc}z.pgrb2a.0p50.f{fhr_str}"
-with grib2io.open(filename_gefss) as f_gefss:
+# Open HGEFS GRIB2 file and extract parameters
+filename_hgefss = f"{DATA_PATH}/hgefs.{pdy}/{cyc}/atmos/hgefs.t{cyc}z.sfc.spr.f{fhr_str}.grib2"
+with grib2io.open(filename_hgefss) as f_hgefss:
 
         # Select the specific messages we want
-        hgt500s_msg = f_gefss.select(shortName='HGT', level='500 mb')[0]
+        mslps_msg = f_hgefss.select(shortName='PRMSL', level='mean sea level')[0]
 
         # Extract values
-        hgt500s_data = hgt500s_msg.data / 10.0  # Convert m to dam
+        mslps_data = mslps_msg.data / 100.0  # Convert Pa to hPa/mb
 
 	# Assuming 'data' is your 2D array
-        data_min = np.min(hgt500s_data)
-        data_max = np.max(hgt500s_data)
+        data_min = np.min(mslps_data)
+        data_max = np.max(mslps_data)
 
         print(f"Minimum Spread Value: {data_min:.2f}")
         print(f"Maximum Spread Value: {data_max:.2f}")
@@ -112,8 +112,8 @@ if lons.ndim == 2:
 else:
 	lons = lons[i_sort]
 
-hgt500_data = hgt500_data[:, i_sort]
-hgt500s_data = hgt500s_data[:, i_sort]
+mslp_data = mslp_data[:, i_sort]
+mslps_data = mslps_data[:, i_sort]
 
 #########################################################
 
@@ -125,16 +125,18 @@ if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
 elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
+elif grid == 'eastcoast':
+        fig = plt.figure(figsize=(13, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-hgt500_norm = mcolors.Normalize(vmin=474, vmax=600)
-hgt500_levels = np.arange(474, 606, 6)
+mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
+mslp_levels = np.arange(968, 1056, 4)
 
-hgt500s_norm = mcolors.Normalize(vmin=0, vmax=14)
-hgt500s_levels = np.arange(0, 14, 1)
+mslps_norm = mcolors.Normalize(vmin=0, vmax=18)
+mslps_levels = np.arange(0, 18, 2)
 
 # Take 14 colors from the 'cool' colormap
 base_cmap = plt.get_cmap('YlOrRd', 14)
@@ -150,7 +152,7 @@ print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': hgt500_data, 'cmap': 'YlOrRd', 'norm': hgt500s_norm, 'levels': hgt500s_levels, 'title': f'GEFS mean/spread | 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': mslp_data, 'cmap': 'YlOrRd', 'norm': mslps_norm, 'levels': mslps_levels, 'title': f'HGEFS mean/spread | Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -183,10 +185,15 @@ for i, loc in enumerate(grid_locs):
                 # Add manual aspect ratio here. 
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
+	elif grid == 'eastcoast':
+		ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
+		# Add manual aspect ratio here. 
+		# Increase this number (e.g., 1.4) to stretch it more vertically
+		ax.set_aspect(1.25, adjustable='datalim')
 
 	# Plot the shading
-	im = ax.contourf(lons, lats, hgt500s_data,
-                     levels=hgt500s_levels,
+	im = ax.contourf(lons, lats, mslps_data,
+                     levels=mslps_levels,
 		     norm=config['norm'], 
 		     cmap=white_first_cmap,
 		     transform=ccrs.PlateCarree(),
@@ -194,8 +201,8 @@ for i, loc in enumerate(grid_locs):
 		     zorder=3)
 
 	# Plot the contour lines
-	contours = ax.contour(lons, lats, hgt500_data,
-                     	      levels=hgt500_levels,
+	contours = ax.contour(lons, lats, mslp_data,
+                     	      levels=mslp_levels,
 			      colors='black', 
 			      linewidths=3.0, 
 			      transform=ccrs.PlateCarree(),
@@ -203,7 +210,7 @@ for i, loc in enumerate(grid_locs):
 
 	# Add labels to the lines (e.g., '1012')
 	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	ax.clabel(contours, inline=True, fontsize=8, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
@@ -215,6 +222,6 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GEFS spread | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
+#plt.suptitle(f"HGEFS spread | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gefs_spread_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/hgefs_spread_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

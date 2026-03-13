@@ -138,11 +138,11 @@ hgt500s_levels = np.arange(0, 14, 1)
 
 # Take 14 colors from the 'cool' colormap
 base_cmap = plt.get_cmap('YlOrRd', 14)
-new_colors = base_cmap(np.linspace(0, 1, 14))
+new_colors = base_cmap(np.arange(base_cmap.N))
 
-# Force the first color (index 0) to be white
+# Force the first color (index 0) to be transparent
 # Format is [Red, Green, Blue, Alpha]
-new_colors[0] = [1, 1, 1, 1]  # First color is white
+new_colors[0,3] = 0.0  # First color is transparent
 
 # Create the new colormap
 white_first_cmap = mcolors.ListedColormap(new_colors)
@@ -163,10 +163,14 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
-	# Geographic features
-	ax.add_feature(cfeature.COASTLINE, linewidth=2)
-	ax.add_feature(cfeature.BORDERS, linewidth=2)
-	ax.add_feature(cfeature.STATES, edgecolor='gray', linewidth=3.0, alpha=0.5)
+        # Geographic features
+	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+	ax.add_feature(cfeature.COASTLINE, linewidth=2, zorder=4)
+	ax.add_feature(cfeature.BORDERS, linewidth=2, zorder=4)
+	ax.add_feature(cfeature.STATES, edgecolor='0.2', linewidth=2.5, alpha=0.5, zorder=4)
+
+        # Add the land feature and shade it gray
+	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -186,14 +190,16 @@ for i, loc in enumerate(grid_locs):
 		     norm=config['norm'], 
 		     cmap=white_first_cmap,
 		     transform=ccrs.PlateCarree(),
-		     extend='max')
+		     extend='max',
+		     zorder=3)
 
 	# Plot the contour lines
 	contours = ax.contour(lons, lats, hgt500_data,
                      	      levels=hgt500_levels,
 			      colors='black', 
-			      linewidths=2.0, 
-			      transform=ccrs.PlateCarree())
+			      linewidths=3.0, 
+			      transform=ccrs.PlateCarree(),
+			      zorder=3)
 
 	# Add labels to the lines (e.g., '1012')
 	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
