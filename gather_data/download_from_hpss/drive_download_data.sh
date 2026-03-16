@@ -29,7 +29,7 @@ counter=0
 # ****Specify case name, paths, and sections to execute*****
 # **********************************************************
 # Specify case study name (e.g., dorian2019)
-export CASE='GFSv17archive'
+export CASE='CCPAarchive'
 
 # Location of your saved /hpss_scripts directory
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/gather_data/download_from_hpss'
@@ -41,20 +41,20 @@ export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/'${USER}'/'${CASE}'/data'
 export OUTPUT_PATH=${DATA_PATH}'/../output'
 
 # Select which sections of code to execute (YES/NO)
-export GET_ANALYSES=NO
-export GET_FORECASTS=YES
+export GET_ANALYSES=YES
+export GET_FORECASTS=NO
 
 # *****************************************
 # ****This is the GET_ANALYSES section*****
 # *****************************************
 # Select which analysis types to download (YES/NO)
 export GET_GFS_ANL=NO
-export GET_CCPA_ANL=NO
+export GET_CCPA_ANL=YES
 export GET_GDAS_ANL=NO
 
 # Select analyses start, end, and increment to download
 export ANL_START=0 	# Start downloading analysis files for the first initialization date if set to 0
-export ANL_END=192       # Stop downloading analysis files on the first init. date + 6 hours + X hours (set X to 378 if you want to go 16 days beyond last init date)
+export ANL_END=12       # Stop downloading analysis files on the first init. date + 6 hours + X hours (set X to 378 if you want to go 16 days beyond last init date)
 export ANL_INC=6 	# Typically 6 hours timestep between requested analysis files
 
 # ******************************************
@@ -65,7 +65,7 @@ export GET_GEFS_FCSTS=NO
 export GET_GFS_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_WAVE=NO
 
-export GET_GFSv17_FCSTS_ATMOS=YES
+export GET_GFSv17_FCSTS_ATMOS=NO
 
 # Select forecast start, end, and increment to download (applies to GFS_FCSTS and GEFS_FCSTS)
 export FHR_START=0			 # Typically 0 hours (beginning of forecast)
@@ -76,11 +76,11 @@ export FHR_INC=6                         # Typically 6-hour timestep between for
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20260311
+for longdate in 20250519
 do
 
 # Specify the init. hours to download on each initalization date (typically 06 18)
-for hour in 18
+for hour in 00
 do
 
 #===============================================================================================================	

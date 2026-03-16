@@ -21,18 +21,18 @@ module load libjpeg/9c
 module load grib_util/1.2.4
 
 #===============================================================================================================
-export CASE='feb2026'
-export initdate="20260222"
-export cyc="00"
-export fhr="000"
+export CASE='jan2026snow'
+export initdate="20260118"
+export cyc="12"
+export fhr="192"
 export DOMAIN='conus'
 
-#If plotting precip or snowfall, choose a duration
-export duration='36'
+#If plotting precip or snowfall, choose a duration (typically 24 or 36)
+export duration='72'
 
 #If plotting NOHRSC, select a valid time
-export vdate="20260224"
-export vhour="06"
+export vdate="20260126" #Note to self, for 24 hour files, this is 1 day before the end of the period 
+export vhour="12"
 
 # *************************************************************
 # ****Specify which models to plot, forecast hours, domains****
@@ -46,7 +46,7 @@ export PLOT_GEFS_FCSTS=NO
 export PLOT_AIGEFS_FCSTS=NO
 export PLOT_HGEFS_FCSTS=NO
 
-export PLOT_GFSv17_FCSTS=NO
+export PLOT_GFSv17_FCSTS=YES
 
 export PLOT_NOHRSC_ANALYSIS=NO
 
@@ -61,7 +61,10 @@ export PLOT_NOHRSC_ANALYSIS=NO
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/plot_maps'
 
 # Location of downloaded forecast/analysis files
-export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026'
+#export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026'
+export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/global/eval/model_data/gfs/prod'
+#export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/global/archive/obs_data/nohrsc_accum24hr'
+
 
 # Location to plot maps
 export MAP_PATH='/lfs/h2/emc/vpppg/noscrub/'${USER}'/'${CASE}'/maps'
@@ -76,10 +79,10 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
 #        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-#        python ${SCRIPTS_PATH}/plot_gfs_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_gfs_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_weasd_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-        python ${SCRIPTS_PATH}/plot_gfs_weasd_f000.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-        python ${SCRIPTS_PATH}/plot_gfs_snod_f000.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfs_weasd_f000.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfs_snod_f000.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
 
@@ -124,15 +127,18 @@ fi
 
 if [ $PLOT_GFSv17_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFSv17 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_gfsv17_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        sleep 1
+        python ${SCRIPTS_PATH}/plot_gfsv17_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+	sleep 1
 fi
 
 if [ $PLOT_NOHRSC_ANALYSIS = YES ]; then
-        echo "Kickoff ${CASE} scripts to plot NOHRSC analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_nohrsc_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
-        sleep 1
+	export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/global/archive/obs_data/nohrsc_accum24hr'
+	echo "Kickoff ${CASE} scripts to plot NOHRSC analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
+#        python ${SCRIPTS_PATH}/plot_nohrsc_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_nohrsc_24h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
+	sleep 1
 fi
 
 
