@@ -22,9 +22,9 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='jan2026snow'
-export initdate="20260118"
-export cyc="12"
-export fhr="192"
+export initdate="20260123"
+export cyc="00"
+export fhr="084"
 export DOMAIN='conus'
 
 #If plotting precip or snowfall, choose a duration (typically 24 or 36)
@@ -78,7 +78,7 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#        python ${SCRIPTS_PATH}/plot_gfs_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_gfs_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         python ${SCRIPTS_PATH}/plot_gfs_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_weasd_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_weasd_f000.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
@@ -129,7 +129,8 @@ if [ $PLOT_GFSv17_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFSv17 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gfsv17_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfsv17_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_gfsv17_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+	python ${SCRIPTS_PATH}/plot_gfsv17_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 	sleep 1
 fi
 
