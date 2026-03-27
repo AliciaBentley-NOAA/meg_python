@@ -108,17 +108,22 @@ elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
 elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
+elif grid == 'southeastUS':
+        fig = plt.figure(figsize=(12, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-mslp_levels = np.arange(968, 1056, 4)
+#mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
+#mslp_levels = np.arange(968, 1056, 4)
+mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
+mslp_levels = np.arange(952, 1056, 4)
+mslp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFS Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFSv16 Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -126,38 +131,44 @@ plot_configs = [
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
-	config = plot_configs[i]
+    config = plot_configs[i]
 
 	# Add subplot with projection
-	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-	ax.add_feature(cfeature.COASTLINE, linewidth=1.5)
-	ax.add_feature(cfeature.BORDERS, linewidth=1.5)
-	ax.add_feature(cfeature.STATES, edgecolor='gray', linewidth=2.0, alpha=0.5)
+    ax.add_feature(cfeature.COASTLINE, linewidth=2.0)
+    ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2.0)
+    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=2.0)
 
 	# Define domain
-	if grid == 'northeast':   
-		ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
-		# Add manual aspect ratio here. 
-		# Increase this number (e.g., 1.4) to stretch it more vertically
-		ax.set_aspect(1.25, adjustable='datalim')
-	elif grid == 'conus':                
-		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
-                # Increase this number (e.g., 1.4) to stretch it more vertically
-		ax.set_aspect(1.2, adjustable='datalim')
-	elif grid == 'eastcoast':
-                ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
-                # Increase this number (e.g., 1.4) to stretch it more vertically
-                ax.set_aspect(1.25, adjustable='datalim')
+    if grid == 'northeast':   
+        ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
+        # Add manual aspect ratio here. 
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'conus':                
+        ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
+        # Add manual aspect ratio here. 
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.2, adjustable='datalim')
+    elif grid == 'eastcoast':
+        ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
+        # Add manual aspect ratio here. 
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'southeastUS':
+        #ax.set_extent([-89, -76, 19.0, 34.0], crs=ccrs.PlateCarree())
+        ax.set_extent([-86, -81, 21.0, 32.0], crs=ccrs.PlateCarree())
+        # Add manual aspect ratio here. 
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
-	current_cmap = config['cmap']
+    current_cmap = config['cmap']
 
 	# Plot the shading
-	im = ax.contourf(lons, lats, config['data'], 
+    im = ax.contourf(lons, lats, config['data'], 
 		     levels=config['levels'],
 		     norm=config['norm'], 
 		     cmap=current_cmap,
@@ -166,25 +177,25 @@ for i, loc in enumerate(grid_locs):
 
 	# Plot the contour lines
 	# Only add lines if it's one of the MSLP panels (0 or 1)
-	contours = ax.contour(lons, lats, config['data'], 
-			      levels=config['levels'], 
+    contours = ax.contour(lons, lats, config['data'], 
+			      levels=mslp_levels_lines, 
 			      colors='black', 
 			      linewidths=2.0, 
 			      transform=ccrs.PlateCarree())
 	# Add labels to the lines (e.g., '1012')
 	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
+    ax.clabel(contours, contours.levels[::2], inline=True, fontsize=18, fmt='%i', inline_spacing=8)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
-	ax.set_title(config['title'], fontweight='bold', fontsize=24)
+    cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
+    ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
-	cbar.ax.tick_params(labelsize=24)
+    cbar.ax.tick_params(labelsize=24)
 
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
+#plt.suptitle(f"GFSv16 | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfs_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv16_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

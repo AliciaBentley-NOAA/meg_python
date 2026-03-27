@@ -29,7 +29,7 @@ counter=0
 # ****Specify case name, paths, and sections to execute*****
 # **********************************************************
 # Specify case study name (e.g., dorian2019)
-export CASE='CCPAarchive'
+export CASE='GFSv16archive'
 
 # Location of your saved /hpss_scripts directory
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/gather_data/download_from_hpss'
@@ -41,8 +41,8 @@ export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/'${USER}'/'${CASE}'/data'
 export OUTPUT_PATH=${DATA_PATH}'/../output'
 
 # Select which sections of code to execute (YES/NO)
-export GET_ANALYSES=YES
-export GET_FORECASTS=NO
+export GET_ANALYSES=NO
+export GET_FORECASTS=YES
 
 # *****************************************
 # ****This is the GET_ANALYSES section*****
@@ -62,25 +62,25 @@ export ANL_INC=6 	# Typically 6 hours timestep between requested analysis files
 # ******************************************
 # Select which model forecasts to download (YES/NO)
 export GET_GEFS_FCSTS=NO
-export GET_GFS_FCSTS_ATMOS=NO
+export GET_GFS_FCSTS_ATMOS=YES
 export GET_GFS_FCSTS_WAVE=NO
 
 export GET_GFSv17_FCSTS_ATMOS=NO
 
 # Select forecast start, end, and increment to download (applies to GFS_FCSTS and GEFS_FCSTS)
 export FHR_START=0			 # Typically 0 hours (beginning of forecast)
-export FHR_END=192                       # Typically 384 or 240 hours (10-day forecast)
+export FHR_END=6   #192                    # Typically 384 or 240 hours (10-day forecast)
 export FHR_INC=6                         # Typically 6-hour timestep between forecast files
 
 # ******************************************
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20250519
+for longdate in 20220928
 do
 
 # Specify the init. hours to download on each initalization date (typically 06 18)
-for hour in 00
+for hour in 18
 do
 
 #===============================================================================================================	
