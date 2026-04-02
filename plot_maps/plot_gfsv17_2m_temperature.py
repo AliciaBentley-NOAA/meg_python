@@ -123,10 +123,12 @@ elif grid == 'southeastUS':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-#temp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-#temp_levels = np.arange(968, 1056, 4)
-temp_norm = mcolors.Normalize(vmin=-40, vmax=120)
-temp_levels = np.arange(-40, 124, 4)
+#temp_norm = mcolors.Normalize(vmin=-40, vmax=120)
+#temp_levels = np.arange(-40, 124, 4)
+#temp_norm = mcolors.Normalize(vmin=-24, vmax=120)
+#temp_levels = np.arange(-24, 122, 2)
+temp_norm = mcolors.Normalize(vmin=-30, vmax=126)
+temp_levels = np.arange(-30, 128, 2)
 #temp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
