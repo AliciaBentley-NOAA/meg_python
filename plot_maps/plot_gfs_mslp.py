@@ -110,6 +110,10 @@ elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
 elif grid == 'southeastUS':
         fig = plt.figure(figsize=(12, 12))
+elif grid == 'westcoast':
+    fig = plt.figure(figsize=(13, 12))
+elif grid == 'alaska':
+        fig = plt.figure(figsize=(12, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -144,25 +148,29 @@ for i, loc in enumerate(grid_locs):
 	# Define domain
     if grid == 'northeast':   
         ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
-        # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
     elif grid == 'conus':                
         ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
-        # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.2, adjustable='datalim')
     elif grid == 'eastcoast':
         ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
-        # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
     elif grid == 'southeastUS':
         #ax.set_extent([-89, -76, 19.0, 34.0], crs=ccrs.PlateCarree())
         ax.set_extent([-86, -81, 21.0, 32.0], crs=ccrs.PlateCarree())
-        # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'westcoast':
+        ax.set_extent([-148, -116, 29.0, 61.0], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'alaska':
+        ax.set_extent([-180, -130, 50.0, 70.0], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.6, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
     current_cmap = config['cmap']
@@ -187,7 +195,12 @@ for i, loc in enumerate(grid_locs):
     ax.clabel(contours, contours.levels[::2], inline=True, fontsize=18, fmt='%i', inline_spacing=8)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-    cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
+    #cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
+    if grid == 'alaska':
+        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.045)
+    else:
+        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
+
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
