@@ -118,6 +118,8 @@ elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
 elif grid == 'southeastUS':
         fig = plt.figure(figsize=(12, 12))
+elif grid == 'easternUS':
+        fig = plt.figure(figsize=(13, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -173,6 +175,11 @@ for i, loc in enumerate(grid_locs):
         # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'easternUS':
+            ax.set_extent([-97, -72, 25.0, 48.0], crs=ccrs.PlateCarree())
+            # Add manual aspect ratio here. 
+            # Increase this number (e.g., 1.4) to stretch it more vertically
+            ax.set_aspect(1.25, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
     #current_cmap = config['cmap']

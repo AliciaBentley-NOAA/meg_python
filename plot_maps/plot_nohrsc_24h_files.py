@@ -134,6 +134,8 @@ elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 10))
 elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
+elif grid == 'colorado':
+        fig = plt.figure(figsize=(14, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -194,6 +196,11 @@ for i, loc in enumerate(grid_locs):
         # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'colorado':
+        ax.set_extent([-112.0, -99.0, 32.5, 42.0], crs=ccrs.PlateCarree())
+        # Add manual aspect ratio here. 
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.2, adjustable='datalim')
 
 	# 1. Define the Globe (The 'NCEP Sphere')
 	# This is the most common reason for shifted high-res grids!
@@ -241,6 +248,8 @@ for i, loc in enumerate(grid_locs):
     if grid == 'northeast':
         cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
     elif grid == 'conus':
+        cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
+    elif grid == 'colorado':
         cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
     ax.set_title(config['title'], fontweight='bold', fontsize=18)
 

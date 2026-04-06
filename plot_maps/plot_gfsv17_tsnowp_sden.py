@@ -22,7 +22,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "frzr_cmap"
+var = "tsnowp"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -76,31 +76,34 @@ filename_gfss = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pd
 with grib2io.open(filename_gfss) as f_gfss:
 
         # Run wgrib2 and grab lines with APCP
-        cmd = f"wgrib2 {filename_gfss} | grep ':FRZR'"
+        cmd = f"wgrib2 {filename_gfss} | grep ':TSNOWP'"
         # We use getoutput to keep it concise; it returns a string of the results
         output = subprocess.getoutput(cmd)
 
         if output:
             print("wgrib2 Output:\n", output)
-    
+
             # Parse out the index (first column), convert to int, and subtract 1
             apcp_indices = [int(line.split(':')[0]) - 1 for line in output.strip().split('\n')]
-    
-            print(f"FRZR 0-based Indices: {apcp_indices}")
 
-            # Grab the first FRZR index (full accumulation)
+            print(f"TSNOWP 0-based Indices: {apcp_indices}")
+
+            # Grab the first TSNOWP index (full accumulation)
             target_idx = apcp_indices[0]
 
-            # Extract the message and data
-            precip_start_msg = f_gfss[target_idx]
-            precip_start_data = precip_start_msg.data * 0.0393701 # Convert mm to inches
+            # Select the specific messages we want
+            #sden_start_msg = f_gfss.select(shortName='SDEN', level='surface')[0]
 
-            print(f"Extracted: {precip_start_msg.shortName} for {precip_start_msg.leadTime} hours")
-            print(f"Max Precip: {precip_start_data.max():.2f} inches")
+            # Extract the message and data
+            tsnowp_start_msg = f_gfss[target_idx]
+            tsnowp_start_data = tsnowp_start_msg.data * .03937 * 10.0  # Convert mm to inches and applies 10:1 SLR
+
+            print(f"Extracted: {tsnowp_start_msg.shortName} for {tsnowp_start_msg.leadTime} hours")
+            print(f"Max TSNOWP with SDEN: {tsnowp_start_data.max():.2f} inches")
 
         else:
-            print("No FRZR found in file. Creating a zero-field for F000.")
-            
+            print("No TSNOWP found in file. Creating a zero-field for F000.")
+
             # 1. Grab PRMSL (or any surface variable) to get the correct grid dimensions
             # We can use your manual index search or the select method if PRMSL is indexed
             try:
@@ -109,45 +112,41 @@ with grib2io.open(filename_gfss) as f_gfss:
             except:
                 # Fallback: just grab the very first message in the file if select fails
                 dummy_msg = f_gfss[0]
-            
+
             # 2. Create a data array of zeros with the same shape as the grid
             # Multiplying the existing data by 0.0 is the safest way to preserve shape
-            precip_start_data = dummy_msg.data * 0.0
-            
+            tsnowp_start_data = dummy_msg.data * 0.0
+
             print(f"Zero-field created using {dummy_msg.shortName} dimensions.")
-            print(f"Max Precip: {precip_start_data.max():.2f} inches")
+            print(f"Max TSNOWP: {tsnowp_start_data.max():.2f} inches")
 
 # Open GFS GRIB2 file at the end of the snowfall period and extract parameters
 filename_gfs = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
 with grib2io.open(filename_gfs) as f_gfs:
 
-        # Run wgrib2 and grab lines with APCP
-        cmd = f"wgrib2 {filename_gfs} | grep ':FRZR'"
-        # We use getoutput to keep it concise; it returns a string of the results
-        output = subprocess.getoutput(cmd)
+    # Select the specific messages we want
+    tsnowp_msg = f_gfs.select(shortName='TSNOWP', level='surface')[0]
 
-        if output:
-            print("wgrib2 Output:\n", output)
+    # Select the specific messages we want
+    #sden_msg = f_gfs.select(shortName='SDEN', level='surface')[0]
 
-            # Parse out the index (first column), convert to int, and subtract 1
-            apcp_indices = [int(line.split(':')[0]) - 1 for line in output.strip().split('\n')]
+    #print(f"Max SDEN: {np.nanmax(sden_msg.data)}")
 
-            print(f"FRZR 0-based Indices: {apcp_indices}")
+    #slr_data = (1.0 / sden_msg.data)
+    #slr_fill = np.ma.filled(slr_data, fill_value=10.0)
 
-            # Grab the first APCP index (full accumulation)
-            target_idx = apcp_indices[0]
+    #print(f"Min SLR: {slr_fill.min()}")
+    #print(f"Max SLR: {slr_fill.max()}")
 
-            # Extract the message and data
-            precip_msg = f_gfs[target_idx]
-            precip_data = precip_msg.data * 0.0393701 # Convert mm to inches
+    # Extract values
+    tsnowp_data = tsnowp_msg.data * .03937 * 10.0  # Convert mm to inches and applies 10:1
 
-            print(f"Extracted: {precip_msg.shortName} for {precip_msg.leadTime} hours")
-            print(f"Max Precip: {precip_data.max():.2f} inches")
+    # Calculate the difference (e.g., SNOD at end - SNOD at start)
+    diff_data = tsnowp_data - tsnowp_start_data
 
-        # Calculate the difference (e.g., SNOD at end - SNOD at start)
-        diff_data = precip_data - precip_start_data
+    print(f"Max snowfall: {diff_data.max():.2f} inches")
 
-        lats, lons = precip_msg.latlons()
+    lats, lons = tsnowp_msg.latlons()
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -171,14 +170,6 @@ else:
 
 diff_data = diff_data[:, i_sort]
 
-# Finding the values
-minimum = np.min(diff_data)
-maximum = np.max(diff_data)
-
-# Printing the results
-print(f"The minimum FRZR is: {minimum}")
-print(f"The maximum FRZR is: {maximum}")
-
 #########################################################
 
 
@@ -196,36 +187,18 @@ elif grid == 'eastcoast':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-snod_norm = mcolors.Normalize(vmin=0, vmax=2.5)
-#snod_levels = np.arange(0, 2.1, 0.1)
-snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1.0, 2.0])
+snod_levels = np.array([0.1, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0])
+snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9']
 
-snod_colors = [
-    '#FDFD7D', # 0.01-0.09
-    '#FFC933', # 0.10-0.24
-    '#ED2A1C', # 0.25-0.49
-    '#AD1616', # 0.50-0.74
-    '#9959FA', # 0.75-0.99
-    '#7801BA', # 1-2
-]
+cmap = mcolors.ListedColormap(snod_colors)
+#cmap.set_under('white')
+cmap.set_over('#CD0ACD')
 
-# Take 14 colors from the 'cool' colormap
-#base_cmap = plt.get_cmap('plasma_r')
-#new_colors = base_cmap(np.arange(base_cmap.N))
-
-# Create the new colormap
-#my_cmap = mcolors.ListedColormap(new_colors)
-#print('Created new colormap!')
-
-my_cmap = mcolors.ListedColormap(snod_colors)
-#my_cmap.set_under('white')
-my_cmap.set_over('indigo')
-
-snod_norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
+norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': diff_data, 'cmap': my_cmap, 'norm': snod_norm, 'levels': snod_levels, 'title': f'GFSv17 | {duration}-h Accumulated Freezing Rain (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+        {'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'GFSv17 | {duration}-h Snowfall (TSNOWP with 10:1 SLR) (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -240,14 +213,14 @@ for i, loc in enumerate(grid_locs):
 
 	# Geographic features
 	ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
-	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
-	ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5, zorder=4)
 	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
 	
 	# Add the land feature and shade it gray
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
 	# Add oceans for contrast (optional)
-	#ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
+	ax.add_feature(cfeature.OCEAN, facecolor='white', zorder=3)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -286,7 +259,7 @@ for i, loc in enumerate(grid_locs):
 	#ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
+	cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
 	ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
