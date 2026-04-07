@@ -1,5 +1,6 @@
 import time, os, sys
 import numpy as np
+import copy
 from datetime import datetime, timedelta
 import grib2io
 import matplotlib
@@ -21,7 +22,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "weasd"
+var = "2mT_diff"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -29,8 +30,6 @@ fhr = str(sys.argv[3])             # 024 (3 digits)
 grid = str(sys.argv[4])            # conus
 DATA_PATH = str(sys.argv[5])       # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026
 MAP_PATH = str(sys.argv[6])        # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026/maps
-duration = str(sys.argv[7])        # 36 (hours)
-
 show_colorbar="yes"
 
 print("pdy:", pdy)
@@ -53,47 +52,40 @@ Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 # Use f-string to format with leading zeros (e.g., 000, 006)
 fhr_str = f"{fhr}"
 fcst_hour= int(fhr)
-duration_hour = int(duration)
-start_fhr = fcst_hour - duration_hour
-start_fhr_str = f"{start_fhr:03}"
     
 # Add the forecast lead time
 forecast_delta = timedelta(hours=fcst_hour)
-duration_delta = timedelta(hours=duration_hour)
-nohrsc_delta = timedelta(hours=6)
 valid_dt = init_dt + forecast_delta
-start_dt = valid_dt - duration_delta    # Remember: Valid time in NOHRSC filenames is at the *end* of the 6-h period
 
 # Print the results in a readable format
 print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
-print(f"Start Time:          {start_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open GFS GRIB2 file at the start of the snowfall period and extract parameters
-filename_gfss = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{start_fhr_str}"
-with grib2io.open(filename_gfss) as f_gfss:
-
-        # Select the specific messages we want
-        weasd_start_msg = f_gfss.select(shortName='WEASD', level='surface')[0]
-
-        # Extract values
-        weasd_start_data = weasd_start_msg.data * .03937 * 10  # Convert mm to inches and 10:1 ratio
-
-# Open GFS GRIB2 file at the end of the snowfall period and extract parameters
+# Open GFS GRIB2 file and extract parameters
 filename_gfs = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
 with grib2io.open(filename_gfs) as f_gfs:
 
-	# Select the specific messages we want
-	weasd_msg = f_gfs.select(shortName='WEASD', level='surface')[0]
+    # Select the specific messages we want
+    temp_gfsv16_msg = f_gfs.select(shortName='TMP', level='2 m above ground')[0]
 
-	# Extract values
-	weasd_data = weasd_msg.data * .03937 * 10  # Convert mm to inches and 10:1 ratio
+    # Extract values
+    temp_gfsv16_data = (temp_gfsv16_msg.data - 273.15)*(9.0/5.0)+32.0  # Convert K to F
 
-	# Calculate the difference (e.g., SNOD at end - SNOD at start)
-	diff_data = weasd_data - weasd_start_data
+filename_gfsv17 = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
+with grib2io.open(filename_gfsv17) as f_gfsv17:
 
-	lats, lons = weasd_msg.latlons()
+    # Select the specific messages we want
+    temp_gfsv17_msg = f_gfsv17.select(shortName='TMP', level='2 m above ground')[0]
+
+    # Extract values
+    temp_gfsv17_data = (temp_gfsv17_msg.data - 273.15)*(9.0/5.0)+32.0  # Convert K to F
+
+    # Extract data and coordinates
+    lats, lons = temp_gfsv17_msg.latlons()
+
+# Subtraction (GFSv17 - GFSv16)
+diff_data = temp_gfsv17_data - temp_gfsv16_data
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -117,6 +109,14 @@ else:
 
 diff_data = diff_data[:, i_sort]
 
+# Finding the values
+minimum = np.min(diff_data)
+maximum = np.max(diff_data)
+
+# Printing the results
+print(f"The minimum 2mT difference is: {minimum}")
+print(f"The maximum 2mT diference is: {maximum}")
+
 #########################################################
 
 
@@ -129,27 +129,34 @@ elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
 elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
-elif grid == 'colorado':
+elif grid == 'southeastUS':
         fig = plt.figure(figsize=(12, 12))
-elif grid == 'westcoast':
-        fig = plt.figure(figsize=(12, 12))
+elif grid == 'easternUS':
+        fig = plt.figure(figsize=(13, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
-# Define the specific normalization (Panel 1)
-snod_levels = np.array([0.1, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0])
-snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9']
+# New normalization for the difference plot so that near 0 is white
+diff_norm = mcolors.TwoSlopeNorm(vcenter=0, vmin=-40, vmax=40)
+diff_levels = np.arange(-40, 41, 2)
 
-cmap = mcolors.ListedColormap(snod_colors)
-#cmap.set_under('white')
-cmap.set_over('#CD0ACD')
+# Take 42 colors from the 'seismic' colormap
+base_cmap = plt.get_cmap('seismic', 42)
+new_colors = base_cmap(np.linspace(0, 1, 42))
 
-norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
+# Force the middle two colors (index 21 and 22) to be white
+# Format is [Red, Green, Blue, Alpha]
+new_colors[20] = [1, 1, 1, 1]  # Middle-left
+new_colors[21] = [1, 1, 1, 1]  # Middle-right
+
+# Create the new colormap
+white_center_cmap = mcolors.ListedColormap(new_colors)
+print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'GFSv16 | {duration}-h Snowfall (WEASD with 10:1 SLR) (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+        {'data': diff_data,       'cmap': 'seismic',      'norm': diff_norm, 'levels': diff_levels, 'title': f'GFSv17 minus GFSv16 2-m Temperature (F)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'}
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -163,21 +170,15 @@ for i, loc in enumerate(grid_locs):
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
-    ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
-    ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
-    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
-	
-	# Add the land feature and shade it gray
-    ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
-	# Add oceans for contrast (optional)
-	#ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
+    ax.add_feature(cfeature.COASTLINE, linewidth=2.0)
+    ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2.0)
+    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=2.0)
 
 	# Define domain
     if grid == 'northeast':   
         ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
-		# Add manual aspect ratio here. 
-		# Increase this number (e.g., 1.4) to stretch it more vertically
+        # Add manual aspect ratio here. 
+        # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
     elif grid == 'conus':                
         ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
@@ -189,49 +190,56 @@ for i, loc in enumerate(grid_locs):
         # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
-    elif grid == 'colorado':
-        ax.set_extent([-112.0, -99.0, 32.25, 42.5], crs=ccrs.PlateCarree())
+    elif grid == 'southeastUS':
+        #ax.set_extent([-89, -76, 19.0, 34.0], crs=ccrs.PlateCarree())
+        ax.set_extent([-86, -81, 21.0, 32.0], crs=ccrs.PlateCarree())
         # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
-    elif grid == 'westcoast':
-        ax.set_extent([-124.0, -108.0, 31.0, 50.0], crs=ccrs.PlateCarree())
-        # Add manual aspect ratio here. 
-        # Increase this number (e.g., 1.4) to stretch it more vertically
-        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'easternUS':
+            ax.set_extent([-97, -72, 25.0, 48.0], crs=ccrs.PlateCarree())
+            # Add manual aspect ratio here. 
+            # Increase this number (e.g., 1.4) to stretch it more vertically
+            ax.set_aspect(1.25, adjustable='datalim')
+
+	# Check if we are on the third panel and apply special cmap
+    #current_cmap = config['cmap']
+    current_cmap = copy.copy(plt.get_cmap(config['cmap']))
+
+    # Set the "over" and "under" colors
+    # You can use named colors, hex codes, or RGB tuples
+    #current_cmap.set_over('crimson')   # Color for values > max
+    #current_cmap.set_under('deeppink')  # Color for values < min
 
 	# Plot the shading
     im = ax.contourf(lons, lats, config['data'], 
 		     levels=config['levels'],
 		     norm=config['norm'], 
-		     cmap= config['cmap'],
+		     cmap=current_cmap,
 		     transform=ccrs.PlateCarree(),
-		     extend='max')
+		     extend='both')
 
-	## Plot the contour lines
-	## Only add lines if it's one of the MSLP panels (0 or 1)
-	#contours = ax.contour(lons, lats, config['data'], 
-	#		      levels=config['levels'], 
-	#		      colors='black', 
-	#		      linewidths=2.0, 
+	# Plot the contour lines
+	# Only add lines if it's one of the MSLP panels (0 or 1)
+    #contours = ax.contour(lons, lats, config['data'], 
+	#		      levels=[32], 
+	#		      colors='white', 
+	#		      linewidths=3.0, 
 	#		      transform=ccrs.PlateCarree())
-	## Add labels to the lines (e.g., '1012')
-	## Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	#ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
+	# Add labels to the lines (e.g., '1012')
+	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
+    #ax.clabel(contours, contours.levels, inline=True, fontsize=18, fmt='%i', inline_spacing=8)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-    cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
+    cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
     cbar.ax.tick_params(labelsize=24)
 
-	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
-    cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
-
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
+#plt.suptitle(f"GFSv16 | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv16_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv17_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
