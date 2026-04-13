@@ -29,7 +29,7 @@ counter=0
 # ****Specify case name, paths, and sections to execute*****
 # **********************************************************
 # Specify case study name (e.g., dorian2019)
-export CASE='GFSv16archive'
+export CASE='GFSv17archive'
 
 # Location of your saved /hpss_scripts directory
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/gather_data/download_from_hpss'
@@ -49,7 +49,7 @@ export GET_FORECASTS=YES
 # *****************************************
 # Select which analysis types to download (YES/NO)
 export GET_GFS_ANL=NO
-export GET_CCPA_ANL=YES
+export GET_CCPA_ANL=NO
 export GET_GDAS_ANL=NO
 
 # Select analyses start, end, and increment to download
@@ -62,21 +62,21 @@ export ANL_INC=6 	# Typically 6 hours timestep between requested analysis files
 # ******************************************
 # Select which model forecasts to download (YES/NO)
 export GET_GEFS_FCSTS=NO
-export GET_GFS_FCSTS_ATMOS=YES
+export GET_GFS_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_WAVE=NO
 
-export GET_GFSv17_FCSTS_ATMOS=NO
+export GET_GFSv17_FCSTS_ATMOS=YES
 
 # Select forecast start, end, and increment to download (applies to GFS_FCSTS and GEFS_FCSTS)
 export FHR_START=0			 # Typically 0 hours (beginning of forecast)
-export FHR_END=6   #192                    # Typically 384 or 240 hours (10-day forecast)
+export FHR_END=192   #192                    # Typically 384 or 240 hours (10-day forecast)
 export FHR_INC=6                         # Typically 6-hour timestep between forecast files
 
 # ******************************************
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20220928
+for longdate in 20260406
 do
 
 # Specify the init. hours to download on each initalization date (typically 06 18)

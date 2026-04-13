@@ -191,6 +191,10 @@ elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
 elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
+elif grid == 'westcoast':
+        fig = plt.figure(figsize=(12, 12))
+elif grid == 'easternUS':
+        fig = plt.figure(figsize=(13, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -236,67 +240,61 @@ plot_configs = [
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
-	config = plot_configs[i]
+    config = plot_configs[i]
 
 	# Add subplot with projection
-	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-	ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
-	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
-	ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
-	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
+    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
+    ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
+    ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
+    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
 	
 	# Add the land feature and shade it gray
-	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
+    ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
 	# Add oceans for contrast (optional)
 	#ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
 
 	# Define domain
-	if grid == 'northeast':   
-		ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
-		# Add manual aspect ratio here. 
-		# Increase this number (e.g., 1.4) to stretch it more vertically
-		ax.set_aspect(1.25, adjustable='datalim')
-	elif grid == 'conus':                
-		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
-                # Increase this number (e.g., 1.4) to stretch it more vertically
-		ax.set_aspect(1.2, adjustable='datalim')
-	elif grid == 'eastcoast':
-                ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
-                # Increase this number (e.g., 1.4) to stretch it more vertically
-                ax.set_aspect(1.25, adjustable='datalim')
+    if grid == 'northeast':   
+        ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'conus':                
+        ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.2, adjustable='datalim')
+    elif grid == 'eastcoast':
+        ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'westcoast':
+        ax.set_extent([-124.0, -108.0, 31.0, 50.0], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'easternUS':
+        ax.set_extent([-97, -72, 25.0, 48.0], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
 
 	# Plot the shading
-	im = ax.contourf(lons, lats, config['data'], 
+    im = ax.contourf(lons, lats, config['data'], 
 		     levels=config['levels'],
 		     norm=config['norm'], 
 		     cmap= config['cmap'],
 		     transform=ccrs.PlateCarree(),
 		     extend='max')
 
-	## Plot the contour lines
-	## Only add lines if it's one of the MSLP panels (0 or 1)
-	#contours = ax.contour(lons, lats, config['data'], 
-	#		      levels=config['levels'], 
-	#		      colors='black', 
-	#		      linewidths=2.0, 
-	#		      transform=ccrs.PlateCarree())
-	## Add labels to the lines (e.g., '1012')
-	## Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	#ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
-
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
-	ax.set_title(config['title'], fontweight='bold', fontsize=24)
+    cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
+    ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
-	cbar.ax.tick_params(labelsize=24)
+    cbar.ax.tick_params(labelsize=24)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
-	cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
+    cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
 
 #################################################
 

@@ -21,19 +21,19 @@ module load libjpeg/9c
 module load grib_util/1.2.4
 
 #===============================================================================================================
-export CASE='jan2026snow'
+export CASE='heat_example'
 export cyc="12"
-export initdate="20260123"
-export fhr="048"  #240,216,192,168,144,120,096,072,048,024
+export initdate="20240903"
+export fhr="120"  #240,216,192,168,144,120,096,072,048,024
 
 # Current domain options: conus, eastcoast, northeast, easternUS, southeastUS, westcoast
-export DOMAIN='easternUS'
+export DOMAIN='conus'
 
 #If plotting precip or snowfall, choose a duration (typically 24 or 36)
 export duration='72'
 
-#If plotting CCPA or NOHRSC, select a valid time
-export vdate="20260219" #This is the last time in the period covered
+#If plotting CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
+export vdate="20240908" #This is the last time in the period covered
 export vhour="12"
 
 # *************************************************************
@@ -50,8 +50,10 @@ export PLOT_HGEFS_FCSTS=NO
 
 export PLOT_GFSv17_FCSTS=YES
 
+export PLOT_CCPA_ANALYSIS=NO
 export PLOT_NOHRSC_ANALYSIS=NO
-export PLOT_URMA_ANALYSIS=NO
+export PLOT_URMA_ANALYSIS=YES
+export PLOT_RAP_ANALYSIS=NO
 
 #===============================================================================================================
 #===============================================================================================================
@@ -82,7 +84,8 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
 #        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_gfs_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#	python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfs_cape_sfc_based.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#	 python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_weasd_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
@@ -135,13 +138,22 @@ if [ $PLOT_GFSv17_FCSTS = YES ]; then
 #        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_gfsv17_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_gfsv17_diff_2mT.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#        python ${SCRIPTS_PATH}/plot_gfsv17_freezing_rain.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfsv17_cape_sfc_based.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#	python ${SCRIPTS_PATH}/plot_gfsv17_diff_cape.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfsv17_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 # 	 python ${SCRIPTS_PATH}/plot_gfsv17_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #	 python ${SCRIPTS_PATH}/plot_gfsv17_tsnowp_sden.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfsv17_freezing_rain.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfsv17_hybrid1_mixing_ratios.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 	sleep 1
+fi
+
+if [ $PLOT_CCPA_ANALYSIS = YES ]; then
+        export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/global/archive/obs_data/ccpa_accum6hr'
+        echo "Kickoff ${CASE} scripts to plot CCPA analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_ccpa_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
+        sleep 1
 fi
 
 if [ $PLOT_NOHRSC_ANALYSIS = YES ]; then
@@ -153,8 +165,16 @@ if [ $PLOT_NOHRSC_ANALYSIS = YES ]; then
 fi
 
 if [ $PLOT_URMA_ANALYSIS = YES ]; then
-        echo "Kickoff ${CASE} scripts to plot URMA analysis (Valid: ${vdate}${vhour} for ${DOMAIN})"
+        export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/urma_data'
+	echo "Kickoff ${CASE} scripts to plot URMA analysis (Valid: ${vdate}${vhour} for ${DOMAIN})"
         python ${SCRIPTS_PATH}/plot_urma_2m_temperature.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+if [ $PLOT_RAP_ANALYSIS = YES ]; then
+        export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/rap_data'
+        echo "Kickoff ${CASE} scripts to plot RAP analysis (Valid: ${vdate}${vhour} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_rap_cape_sfc_based.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 

@@ -22,7 +22,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "2mT"
+var = "cape_sfc_based_diff"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -62,17 +62,30 @@ print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
+# Open GFS GRIB2 file and extract parameters
+filename_gfs = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
+with grib2io.open(filename_gfs) as f_gfs:
+
+    # Select the specific messages we want
+    cape_gfsv16_msg = f_gfs.select(shortName='CAPE', level='surface')[0]
+
+    # Extract values
+    cape_gfsv16_data = cape_gfsv16_msg.data
+
 filename_gfsv17 = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
 with grib2io.open(filename_gfsv17) as f_gfsv17:
 
     # Select the specific messages we want
-    temp_msg = f_gfsv17.select(shortName='TMP', level='2 m above ground')[0]
+    cape_gfsv17_msg = f_gfsv17.select(shortName='CAPE', level='surface')[0]
 
     # Extract values
-    temp_data = (temp_msg.data - 273.15)*(9.0/5.0)+32.0  # Convert K to F
+    cape_gfsv17_data = cape_gfsv17_msg.data
 
     # Extract data and coordinates
-    lats, lons = temp_msg.latlons()
+    lats, lons = cape_gfsv17_msg.latlons()
+
+# Subtraction (GFSv17 - GFSv16)
+diff_data = cape_gfsv17_data - cape_gfsv16_data
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -94,15 +107,15 @@ if lons.ndim == 2:
 else:
 	lons = lons[i_sort]
 
-temp_data = temp_data[:, i_sort]
+diff_data = diff_data[:, i_sort]
 
 # Finding the values
-minimum = np.min(temp_data)
-maximum = np.max(temp_data)
+minimum = np.min(diff_data)
+maximum = np.max(diff_data)
 
 # Printing the results
-print(f"The minimum temperature is: {minimum}")
-print(f"The maximum temperature is: {maximum}")
+print(f"The minimum 2mT difference is: {minimum}")
+print(f"The maximum 2mT diference is: {maximum}")
 
 #########################################################
 
@@ -124,33 +137,26 @@ elif grid == 'easternUS':
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
-temp_norm = mcolors.Normalize(vmin=-36, vmax=120)
-temp_levels = np.arange(-36, 124, 4)
-T2m_levels = np.array([-36, -24, -12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120])
+# New normalization for the difference plot so that near 0 is white
+diff_norm = mcolors.TwoSlopeNorm(vcenter=0, vmin=-2000, vmax=2000)
+diff_levels = np.arange(-2000, 2100, 100)
 
-temp_colors = [
-    "#555555", "#666666", "#999999", "#CCCCCC", # -36 to -24
-    "#9300FF", "#7D00E3", "#6700C7", "#5100AB", # -24 to -12
-    "#E642A5", "#D23791", "#BE2C7D", "#AA2169", # -12 to 0
-    "#C77EB5", "#BA8EBD", "#AD9EC5", "#A0AECD", # 0 to 12
-    "#C2C2EB", "#D1D1F2", "#E0E0F9", "#EFEFFF", # 12 to 24
-    "#63B8FF", "#0096FF", "#0073FF", "#0050FF", # 24 to 36
-    "#009000", "#00A300", "#00B600", "#00C900", # 36 to 48
-    "#C6EF00", "#D6F500", "#E6FB00", "#F6FF00", # 48 to 60
-    "#FFEB00", "#FFD700", "#FFC300", "#FFAF00", # 60 to 72
-    "#FF8C00", "#FF6600", "#FF4000", "#FF1A00", # 72 to 84
-    "#E31A1C", "#C81416", "#AD0E10", "#92080A", # 84 to 96
-    "#980043", "#83003B", "#6E0033", "#59002B", # 96 to 108
-    "#FF00FF", "#FF55FF", "#FFAAFF", "#FFD9F5"  # 108 to 120+
-]
+# Take 42 colors from the 'seismic' colormap
+base_cmap = plt.get_cmap('seismic', 42)
+new_colors = base_cmap(np.linspace(0, 1, 42))
 
-cmap = mcolors.ListedColormap(temp_colors)
-cmap.set_under('#333333')
-cmap.set_over('#FFFFFF')
+# Force the middle two colors (index 21 and 22) to be white
+# Format is [Red, Green, Blue, Alpha]
+new_colors[20] = [1, 1, 1, 1]  # Middle-left
+new_colors[21] = [1, 1, 1, 1]  # Middle-right
+
+# Create the new colormap
+white_center_cmap = mcolors.ListedColormap(new_colors)
+print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-    {'data': temp_data, 'cmap': cmap, 'norm': temp_norm, 'levels': temp_levels, 'title': f'GFSv17 2-m Temperature (F)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+        {'data': diff_data,       'cmap': white_center_cmap,      'norm': diff_norm, 'levels': diff_levels, 'title': f'GFSv17 minus GFSv16 Surface-based CAPE (J/kg)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'}
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -202,8 +208,8 @@ for i, loc in enumerate(grid_locs):
 
     # Set the "over" and "under" colors
     # You can use named colors, hex codes, or RGB tuples
-    current_cmap.set_over('crimson')   # Color for values > max
-    current_cmap.set_under('deeppink')  # Color for values < min
+    #current_cmap.set_over('crimson')   # Color for values > max
+    #current_cmap.set_under('deeppink')  # Color for values < min
 
 	# Plot the shading
     im = ax.contourf(lons, lats, config['data'], 

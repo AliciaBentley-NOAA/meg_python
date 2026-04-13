@@ -115,7 +115,7 @@ maximum = np.max(diff_data)
 
 # Printing the results
 print(f"The minimum 2mT difference is: {minimum}")
-print(f"The maximum 2mT diference is: {maximum}")
+print(f"The maximum 2mT difference is: {maximum}")
 
 #########################################################
 
@@ -156,7 +156,7 @@ print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-        {'data': diff_data,       'cmap': 'seismic',      'norm': diff_norm, 'levels': diff_levels, 'title': f'GFSv17 minus GFSv16 2-m Temperature (F)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'}
+        {'data': diff_data,       'cmap': white_center_cmap,      'norm': diff_norm, 'levels': diff_levels, 'title': f'GFSv17 minus GFSv16 2-m Temperature (F)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'}
 ]
 
 # Define the grid locations: [row, col] or [row, span]

@@ -22,57 +22,51 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "2mT"
+var = "cape_sfc_based"
 
 pdy = str(sys.argv[1])             # 20251120
-cyc = str(sys.argv[2])		   # 12 
-fhr = str(sys.argv[3])             # 024 (3 digits) 
-grid = str(sys.argv[4])            # conus
-DATA_PATH = str(sys.argv[5])       # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026
-MAP_PATH = str(sys.argv[6])        # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026/maps
+cyc = str(sys.argv[2])         # 12 
+grid = str(sys.argv[3])            # conus
+DATA_PATH = str(sys.argv[4])       # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026
+MAP_PATH = str(sys.argv[5])        # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026/maps
+
 show_colorbar="yes"
 
 print("pdy:", pdy)
 print("cyc:", cyc)
-print("fhr:", fhr)
 print("grid:", grid)
 
-init_str = str(pdy)
-init_hour = int(cyc)
+valid_str = str(pdy)
+valid_hour = int(cyc)
 
 #Create the datetime object
 # strptime converts the string to a datetime object
-init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
+valid_dt = datetime.strptime(valid_str, "%Y%m%d").replace(hour=valid_hour)
 
 # Create maps directory
 Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 
 ####################################################
 
-# Use f-string to format with leading zeros (e.g., 000, 006)
-fhr_str = f"{fhr}"
-fcst_hour= int(fhr)
-    
-# Add the forecast lead time
-forecast_delta = timedelta(hours=fcst_hour)
-valid_dt = init_dt + forecast_delta
-
 # Print the results in a readable format
-print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
-print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-filename_gfsv17 = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
-with grib2io.open(filename_gfsv17) as f_gfsv17:
+#---------------------------------------------------------
+#---------------------------------------------------------
+#---------------------------------------------------------
 
-    # Select the specific messages we want
-    temp_msg = f_gfsv17.select(shortName='TMP', level='2 m above ground')[0]
+# Open RAP GRIB2 file and extract parameters
+filename_rap = f"{DATA_PATH}/{pdy}/rap.t{cyc}z.awp130pgrbf00.grib2"
+with grib2io.open(filename_rap) as f_rap:
 
-    # Extract values
-    temp_data = (temp_msg.data - 273.15)*(9.0/5.0)+32.0  # Convert K to F
+	# Select the specific messages we want
+	cape_msg = f_rap.select(shortName='CAPE', level='surface')[0]
 
-    # Extract data and coordinates
-    lats, lons = temp_msg.latlons()
+	# Extract values
+	cape_data = cape_msg.data
+
+	# Extract data and coordinates
+	lats, lons = cape_msg.latlons()
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -94,15 +88,15 @@ if lons.ndim == 2:
 else:
 	lons = lons[i_sort]
 
-temp_data = temp_data[:, i_sort]
+cape_data = cape_data[:, i_sort]
 
 # Finding the values
-minimum = np.min(temp_data)
-maximum = np.max(temp_data)
+minimum = np.min(cape_data)
+maximum = np.max(cape_data)
 
 # Printing the results
-print(f"The minimum temperature is: {minimum}")
-print(f"The maximum temperature is: {maximum}")
+print(f"The minimum surface-based CAPE is: {minimum}")
+print(f"The maximum surface-based CAPE is: {maximum}")
 
 #########################################################
 
@@ -124,33 +118,30 @@ elif grid == 'easternUS':
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
-temp_norm = mcolors.Normalize(vmin=-36, vmax=120)
-temp_levels = np.arange(-36, 124, 4)
-T2m_levels = np.array([-36, -24, -12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120])
+# Define the specific normalization (Panel 1)
+cape_levels = np.array([100,250,500,1000,1500,2000,2500,3000,3500,4000,4500,5000])
+cape_colors = [
+    '#ffffcc', # 100-250: Pale Yellow
+    '#ffeda0', # 250-500: Light Yellow
+    '#fed976', # 500-1000: Yellow
+    '#feb24c', # 1000-1500: Light Orange
+    '#fd8d3c', # 1500-2000: Orange
+    '#fc4e2a', # 2000-2500: Red-Orange
+    '#e31a1c', # 2500-3000: Red
+    '#bd0026', # 3000-3500: Dark Red
+    '#980043', # 3500-4000: Dark Magenta
+    '#670043', # 4000-4500: Deep Plum
+    '#49006a', # 4000-4500: Dark Purple
+    ]
 
-temp_colors = [
-    "#555555", "#666666", "#999999", "#CCCCCC", # -36 to -24
-    "#9300FF", "#7D00E3", "#6700C7", "#5100AB", # -24 to -12
-    "#E642A5", "#D23791", "#BE2C7D", "#AA2169", # -12 to 0
-    "#C77EB5", "#BA8EBD", "#AD9EC5", "#A0AECD", # 0 to 12
-    "#C2C2EB", "#D1D1F2", "#E0E0F9", "#EFEFFF", # 12 to 24
-    "#63B8FF", "#0096FF", "#0073FF", "#0050FF", # 24 to 36
-    "#009000", "#00A300", "#00B600", "#00C900", # 36 to 48
-    "#C6EF00", "#D6F500", "#E6FB00", "#F6FF00", # 48 to 60
-    "#FFEB00", "#FFD700", "#FFC300", "#FFAF00", # 60 to 72
-    "#FF8C00", "#FF6600", "#FF4000", "#FF1A00", # 72 to 84
-    "#E31A1C", "#C81416", "#AD0E10", "#92080A", # 84 to 96
-    "#980043", "#83003B", "#6E0033", "#59002B", # 96 to 108
-    "#FF00FF", "#FF55FF", "#FFAAFF", "#FFD9F5"  # 108 to 120+
-]
-
-cmap = mcolors.ListedColormap(temp_colors)
-cmap.set_under('#333333')
-cmap.set_over('#FFFFFF')
+cmap = mcolors.ListedColormap(cape_colors)
+cmap.set_under('none')
+cmap.set_over('#240036') # Midnight Purple
+cape_norm = mcolors.BoundaryNorm(cape_levels, cmap.N)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-    {'data': temp_data, 'cmap': cmap, 'norm': temp_norm, 'levels': temp_levels, 'title': f'GFSv17 2-m Temperature (F)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': cape_data, 'cmap': cmap, 'norm': cape_norm, 'levels': cape_levels, 'title': f'RAP Surface-based CAPE (J/kg)\nValid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -163,10 +154,12 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
-	# Geographic features
-    ax.add_feature(cfeature.COASTLINE, linewidth=2.0)
-    ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2.0)
-    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=2.0)
+    # Geographic features
+    ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
+    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+    ax.add_feature(cfeature.COASTLINE, edgecolor='0.3', linewidth=2, zorder=4)
+    ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2, zorder=4)
+    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=2, zorder=4)
 
 	# Define domain
     if grid == 'northeast':   
@@ -202,8 +195,8 @@ for i, loc in enumerate(grid_locs):
 
     # Set the "over" and "under" colors
     # You can use named colors, hex codes, or RGB tuples
-    current_cmap.set_over('crimson')   # Color for values > max
-    current_cmap.set_under('deeppink')  # Color for values < min
+    #current_cmap.set_over('crimson')   # Color for values > max
+    #current_cmap.set_under('deeppink')  # Color for values < min
 
 	# Plot the shading
     im = ax.contourf(lons, lats, config['data'], 
@@ -211,13 +204,14 @@ for i, loc in enumerate(grid_locs):
 		     norm=config['norm'], 
 		     cmap=current_cmap,
 		     transform=ccrs.PlateCarree(),
-		     extend='both')
+		     extend='both',
+             zorder=3)
 
 	# Plot the contour lines
 	# Only add lines if it's one of the MSLP panels (0 or 1)
     #contours = ax.contour(lons, lats, config['data'], 
-	#		      levels=[32], 
-	#		      colors='white', 
+	#		      levels='cape_level', 
+	#		      colors='cape_colors', 
 	#		      linewidths=3.0, 
 	#		      transform=ccrs.PlateCarree())
 	# Add labels to the lines (e.g., '1012')
@@ -234,6 +228,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFSv16 | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv17_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/rap_{var}_valid{pdy}_{cyc}Z.png", bbox_inches='tight', pad_inches=0.1)

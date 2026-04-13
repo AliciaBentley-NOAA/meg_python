@@ -125,16 +125,33 @@ elif grid == 'easternUS':
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
-# Define the specific normalization (Panel 1)
-#temp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-#temp_levels = np.arange(968, 1056, 4)
-temp_norm = mcolors.Normalize(vmin=-30, vmax=126)
-temp_levels = np.arange(-30, 128, 2)
-#temp_levels_lines = np.arange(932, 1060, 4)
+temp_norm = mcolors.Normalize(vmin=-36, vmax=120)
+temp_levels = np.arange(-36, 124, 4)
+T2m_levels = np.array([-36, -24, -12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120])
+
+temp_colors = [
+    "#555555", "#666666", "#999999", "#CCCCCC", # -36 to -24
+    "#9300FF", "#7D00E3", "#6700C7", "#5100AB", # -24 to -12
+    "#E642A5", "#D23791", "#BE2C7D", "#AA2169", # -12 to 0
+    "#C77EB5", "#BA8EBD", "#AD9EC5", "#A0AECD", # 0 to 12
+    "#C2C2EB", "#D1D1F2", "#E0E0F9", "#EFEFFF", # 12 to 24
+    "#63B8FF", "#0096FF", "#0073FF", "#0050FF", # 24 to 36
+    "#009000", "#00A300", "#00B600", "#00C900", # 36 to 48
+    "#C6EF00", "#D6F500", "#E6FB00", "#F6FF00", # 48 to 60
+    "#FFEB00", "#FFD700", "#FFC300", "#FFAF00", # 60 to 72
+    "#FF8C00", "#FF6600", "#FF4000", "#FF1A00", # 72 to 84
+    "#E31A1C", "#C81416", "#AD0E10", "#92080A", # 84 to 96
+    "#980043", "#83003B", "#6E0033", "#59002B", # 96 to 108
+    "#FF00FF", "#FF55FF", "#FFAAFF", "#FFD9F5"  # 108 to 120+
+]
+
+cmap = mcolors.ListedColormap(temp_colors)
+cmap.set_under('#333333')
+cmap.set_over('#FFFFFF')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': temp_data, 'cmap': 'gist_rainbow_r', 'norm': temp_norm, 'levels': temp_levels, 'title': f'GFSv16 2-m Temperature (F)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': temp_data, 'cmap': cmap, 'norm': temp_norm, 'levels': temp_levels, 'title': f'GFSv16 2-m Temperature (F)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -186,8 +203,8 @@ for i, loc in enumerate(grid_locs):
 
     # Set the "over" and "under" colors
     # You can use named colors, hex codes, or RGB tuples
-    current_cmap.set_over('crimson')   # Color for values > max
-    current_cmap.set_under('deeppink')  # Color for values < min
+    #current_cmap.set_over('crimson')   # Color for values > max
+    #current_cmap.set_under('deeppink')  # Color for values < min
 
 	# Plot the shading
     im = ax.contourf(lons, lats, config['data'], 
@@ -199,14 +216,14 @@ for i, loc in enumerate(grid_locs):
 
 	# Plot the contour lines
 	# Only add lines if it's one of the MSLP panels (0 or 1)
-    contours = ax.contour(lons, lats, config['data'], 
-			      levels=[32], 
-			      colors='white', 
-			      linewidths=3.0, 
-			      transform=ccrs.PlateCarree())
+    #contours = ax.contour(lons, lats, config['data'], 
+	#		      levels=[32], 
+	#		      colors='white', 
+	#		      linewidths=3.0, 
+	#		      transform=ccrs.PlateCarree())
 	# Add labels to the lines (e.g., '1012')
 	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-    ax.clabel(contours, contours.levels, inline=True, fontsize=18, fmt='%i', inline_spacing=8)
+    #ax.clabel(contours, contours.levels, inline=True, fontsize=18, fmt='%i', inline_spacing=8)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
     cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
