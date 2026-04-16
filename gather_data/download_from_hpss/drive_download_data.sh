@@ -76,11 +76,11 @@ export FHR_INC=6                         # Typically 6-hour timestep between for
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20260406
+for longdate in 20260410 20260411
 do
 
 # Specify the init. hours to download on each initalization date (typically 06 18)
-for hour in 18
+for hour in 06 18
 do
 
 #===============================================================================================================	

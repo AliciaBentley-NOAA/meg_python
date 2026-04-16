@@ -23,7 +23,7 @@ from pathlib import Path
 import subprocess
 
 #####################################################
-var = "urma_2mT"
+var = "urma_2mTd"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -63,7 +63,7 @@ filename_urma = f"{DATA_PATH}/{pdy}/urma2p5.t{cyc}z.2dvaranl_ndfd.grb2_wexp"
 with grib2io.open(filename_urma) as f_urma:
 
     # Select the specific messages we want
-    temp_msg = f_urma.select(shortName='TMP', level='2 m above ground')[0]
+    temp_msg = f_urma.select(shortName='DPT', level='2 m above ground')[0]
 
     # Extract values
     temp_data = (temp_msg.data - 273.15)*(9.0/5.0)+32.0  # Convert K to F
@@ -119,7 +119,7 @@ cmap.set_over('#FFFFFF')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-    {'data': temp_data, 'cmap': cmap, 'norm': temp_norm, 'levels': temp_levels, 'title': f'URMA 2-m Temperature (F)\nValid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+    {'data': temp_data, 'cmap': cmap, 'norm': temp_norm, 'levels': temp_levels, 'title': f'URMA 2-m Dewpoint (F)\nValid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]

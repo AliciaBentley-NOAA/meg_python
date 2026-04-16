@@ -22,9 +22,9 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='heat_example'
-export cyc="12"
-export initdate="20240903"
-export fhr="120"  #240,216,192,168,144,120,096,072,048,024
+export cyc="00"
+export initdate="20240731"
+export fhr="000"  #240,216,192,168,144,120,096,072,048,024
 
 # Current domain options: conus, eastcoast, northeast, easternUS, southeastUS, westcoast
 export DOMAIN='conus'
@@ -33,8 +33,8 @@ export DOMAIN='conus'
 export duration='72'
 
 #If plotting CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
-export vdate="20240908" #This is the last time in the period covered
-export vhour="12"
+export vdate="20240731" #This is the last time in the period covered
+export vhour="00"
 
 # *************************************************************
 # ****Specify which models to plot, forecast hours, domains****
@@ -83,7 +83,8 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfs_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfs_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gfs_2m_dewpoint.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_cape_sfc_based.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #	 python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
@@ -136,10 +137,12 @@ if [ $PLOT_GFSv17_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFSv17 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gfsv17_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfsv17_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfsv17_diff_2mT.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_diff_2mT.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gfsv17_2m_dewpoint.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gfsv17_diff_2mTd.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_cape_sfc_based.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#	python ${SCRIPTS_PATH}/plot_gfsv17_diff_cape.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#	 python ${SCRIPTS_PATH}/plot_gfsv17_diff_cape.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfsv17_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 # 	 python ${SCRIPTS_PATH}/plot_gfsv17_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
@@ -167,8 +170,9 @@ fi
 if [ $PLOT_URMA_ANALYSIS = YES ]; then
         export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/urma_data'
 	echo "Kickoff ${CASE} scripts to plot URMA analysis (Valid: ${vdate}${vhour} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_urma_2m_temperature.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH
-        sleep 1
+#        python ${SCRIPTS_PATH}/plot_urma_2m_temperature.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_urma_2m_dewpoint.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH
+	sleep 1
 fi
 
 if [ $PLOT_RAP_ANALYSIS = YES ]; then
