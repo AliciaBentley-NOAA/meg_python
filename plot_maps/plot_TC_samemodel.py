@@ -113,7 +113,7 @@ if not os.path.exists(OUT_DIR):
 
 # Set Landfall Date based on NHC 
 # Needed to only look for RI periods prior to this time
-landfall_date = datetime.datetime(2024,9,27,3,0,0)
+landfall_date = datetime.datetime(2022,9,28,19,0,0)
 landfall_date2 = datetime.datetime(2020,8,29,16,55,0)
 
 try:
@@ -123,7 +123,7 @@ except NameError:
 
 
 # Get list of GFS cycles to get max number of cycles
-filelist1 = [f for f in glob.glob(DATA_DIR+'/'+str.lower(TC_name)+'_gfs_'+str(YYYY)+'*csv')]
+filelist1 = [f for f in glob.glob(DATA_DIR+'/'+str.lower(model_str)+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+str(YYYY)+'*csv')]
 max_cycles_unordered = [filelist1[x][-14:-4] for x in range(len(filelist1))]
 max_cycles_int = [int(x) for x in max_cycles_unordered]
 max_cycles_int.sort()
@@ -132,7 +132,7 @@ max_ncycles = len(max_cycles)
 
 
 # Get list of cycles based on matching files in DATA_DIR
-filelist = [f for f in glob.glob(DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+str(YYYY)+'*csv')]
+filelist = [f for f in glob.glob(DATA_DIR+'/'+str.lower(model_str)+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+str(YYYY)+'*csv')]
 
 cycles_unordered = [filelist[x][-14:-4] for x in range(len(filelist))]
 cycles_int = [int(x) for x in cycles_unordered]
@@ -263,7 +263,7 @@ for cycle in cycles:
 
    cycle_date = datetime.datetime(YYYY,MM,DD,HH,0,0)
 
-   track_file = DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+cycle+'.csv' 
+   track_file = DATA_DIR+'/'+str.lower(model_str)+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+cycle+'.csv' 
 
    # lat/lon lists for each model
    clat=[]
@@ -744,7 +744,7 @@ def check_RI():
 
    write_RI_list = True
    if write_RI_list:
-      f = open(DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_RIlist.csv','wt')      
+      f = open(DATA_DIR+'/'+str.lower(model_str)+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_RIlist.csv','wt')      
       try:
          writer = csv.writer(f)
          writer.writerow(RI_cycle_list)
@@ -810,7 +810,7 @@ def check_max_vmax():
 
    write_vmax_list = True
    if write_vmax_list:
-      f = open(DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_vmaxlist.csv','wt')      
+      f = open(DATA_DIR+'/'+str.lower(model_str)+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_vmaxlist.csv','wt')      
       try:
          writer = csv.writer(f)
          writer.writerow(this_list)
@@ -821,7 +821,7 @@ def check_max_vmax():
 
    write_hurr_list = True
    if write_hurr_list:
-      f = open(DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_hurrrlist.csv','wt')      
+      f = open(DATA_DIR+'/'+str.lower(model_str)+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_hurrrlist.csv','wt')      
       try:
          writer = csv.writer(f)
          writer.writerow(hurr_list)
@@ -831,7 +831,7 @@ def check_max_vmax():
 
    write_major_list = True
    if write_major_list:
-      f = open(DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_majorlist.csv','wt')      
+      f = open(DATA_DIR+'/'+str.lower(model_str)+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_majorlist.csv','wt')      
       try:
          writer = csv.writer(f)
          writer.writerow(major_list)

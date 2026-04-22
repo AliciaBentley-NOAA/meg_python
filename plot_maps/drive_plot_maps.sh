@@ -21,7 +21,7 @@ module load libjpeg/9c
 module load grib_util/1.2.4
 
 #===============================================================================================================
-export CASE='tc_helene_2024'
+export CASE='tc_ian_2022'
 export cyc="00"
 export initdate="20240917"
 export fhr="240"  #240,216,192,168,144,120,096,072,048,024
@@ -37,7 +37,7 @@ export vdate="20220928" #This is the last time in the period covered
 export vhour="18"
 
 #If plotting TC track/intensity
-export longname="HeleneAL092024"
+export longname="IanAL092022"
 
 # *************************************************************
 # ****Specify which models to plot, forecast hours, domains****
@@ -58,7 +58,8 @@ export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
 export PLOT_RAP_ANALYSIS=NO
 
-export PLOT_GFS_TC_FCSTS=YES
+export PLOT_GFS_TC_FCSTS=NO
+export PLOT_GFSv17_TC_FCSTS=YES
 
 #===============================================================================================================
 #===============================================================================================================
@@ -191,6 +192,12 @@ fi
 if [ $PLOT_GFS_TC_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFS TC forecasts for ${longname}"
         python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
+	sleep 1
+fi
+
+if [ $PLOT_GFSv17_TC_FCSTS = YES ]; then
+        echo "Kickoff ${CASE} scripts to plot GFS TC forecasts for ${longname}"
+        python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
         sleep 1
 fi
 
