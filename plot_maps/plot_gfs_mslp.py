@@ -1,5 +1,6 @@
 import time, os, sys
 import numpy as np
+import copy
 from datetime import datetime, timedelta
 import grib2io
 import matplotlib
@@ -114,6 +115,10 @@ elif grid == 'westcoast':
     fig = plt.figure(figsize=(13, 12))
 elif grid == 'alaska':
         fig = plt.figure(figsize=(12, 12))
+elif grid == 'easternUS':
+    fig = plt.figure(figsize=(13, 12))
+elif grid == 'florida':
+        fig = plt.figure(figsize=(12, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -171,9 +176,20 @@ for i, loc in enumerate(grid_locs):
         ax.set_extent([-180, -130, 50.0, 70.0], crs=ccrs.PlateCarree())
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.6, adjustable='datalim')
+    elif grid == 'easternUS':
+        ax.set_extent([-97, -72, 25.0, 48.0], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'florida':
+        ax.set_extent([-86, -81, 23.0, 34.0], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
-    current_cmap = config['cmap']
+    #current_cmap = config['cmap']
+    current_cmap = copy.copy(plt.get_cmap(config['cmap']))
+    current_cmap.set_under('firebrick')
+    current_cmap.set_over('deeppink')
 
 	# Plot the shading
     im = ax.contourf(lons, lats, config['data'], 

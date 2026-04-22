@@ -69,18 +69,18 @@ export GET_GFSv17_FCSTS_ATMOS=YES
 
 # Select forecast start, end, and increment to download (applies to GFS_FCSTS and GEFS_FCSTS)
 export FHR_START=0			 # Typically 0 hours (beginning of forecast)
-export FHR_END=192   #192                    # Typically 384 or 240 hours (10-day forecast)
+export FHR_END=6   #192                    # Typically 384 or 240 hours (10-day forecast)
 export FHR_INC=6                         # Typically 6-hour timestep between forecast files
 
 # ******************************************
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20260410 20260411
+for longdate in 20220928
 do
 
 # Specify the init. hours to download on each initalization date (typically 06 18)
-for hour in 06 18
+for hour in 18
 do
 
 #===============================================================================================================	
