@@ -79,7 +79,7 @@ if str.upper(model_str[0:3]) == 'HF3':
     ADECK_DIR = '/lfs/h2/emc/hur/noscrub/zhan.zhang/real-time-2022'
 else:
     ADECK_DIR = '/lfs/h1/ops/prod/dcom/nhc/atcf-noaa/aid_nws'
-DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'MEG', TC_name, 'data')
+DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'MEG', TC_name, 'data', str.lower(model_str))
 
 if not os.path.exists(DATA_DIR):
       os.makedirs(DATA_DIR)

@@ -69,7 +69,7 @@ print(TC_name, TC_number, YYYY)
 # Set path and create data directory (if not already created)
 DIR = os.getcwd()
 ADECK_DIR = '/lfs/h2/emc/vpppg/noscrub/alicia.bentley/adecks_gfsv17'
-DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'MEG', TC_name, 'data')
+DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'MEG', TC_name, 'data', str.lower(model_str))
 
 if not os.path.exists(DATA_DIR):
       os.makedirs(DATA_DIR)

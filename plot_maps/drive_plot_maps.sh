@@ -37,7 +37,7 @@ export vdate="20220928" #This is the last time in the period covered
 export vhour="18"
 
 #If plotting TC track/intensity
-export longname="IanAL092022"
+export longname="HeleneAL092024"
 
 # *************************************************************
 # ****Specify which models to plot, forecast hours, domains****
@@ -58,7 +58,7 @@ export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
 export PLOT_RAP_ANALYSIS=NO
 
-export PLOT_GFS_TC_FCSTS=NO
+export PLOT_GFS_TC_FCSTS=YES
 export PLOT_GFSv17_TC_FCSTS=YES
 
 #===============================================================================================================

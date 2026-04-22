@@ -113,7 +113,7 @@ if not os.path.exists(OUT_DIR):
 
 # Set Landfall Date based on NHC 
 # Needed to only look for RI periods prior to this time
-landfall_date = datetime.datetime(2022,9,28,19,0,0)
+landfall_date = datetime.datetime(2024,9,27,3,0,0)
 landfall_date2 = datetime.datetime(2020,8,29,16,55,0)
 
 try:
