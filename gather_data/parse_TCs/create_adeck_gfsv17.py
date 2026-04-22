@@ -62,12 +62,12 @@ print(TC_name, TC_number, TC_basin, TC_num, YYYY)
 # Set path and create data directory (if not already created)
 DIR = os.getcwd()
 
-ADECK_DIR = '/lfs/h2/emc/gfstemp/emc.global/archive/retrov17_01_stream2'    #stream1a, stream2, stream4
+ADECK_DIR = '/lfs/h2/emc/gfstemp/emc.global/archive/retrov17_01_stream1a'    #stream1a, stream2, stream4
 
 # Define start and end points
 # Format: Year, Month, Day, Hour (Cycle)
-start_date = datetime(2024, 9, 1, 0)
-end_date = datetime(2024, 10, 15, 18)
+start_date = datetime(2022, 9, 1, 0)
+end_date = datetime(2022, 10, 15, 18)
 current_date = start_date
 
 DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'adecks_gfsv17')

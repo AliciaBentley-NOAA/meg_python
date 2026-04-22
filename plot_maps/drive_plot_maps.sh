@@ -37,7 +37,7 @@ export vdate="20220928" #This is the last time in the period covered
 export vhour="18"
 
 #If plotting TC track/intensity
-export longname="HeleneAL092024"
+export longname="IanAL092022"
 
 # *************************************************************
 # ****Specify which models to plot, forecast hours, domains****
