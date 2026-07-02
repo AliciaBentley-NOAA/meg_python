@@ -133,12 +133,16 @@ elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
 elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
+elif grid == 'easternUS':
+        fig = plt.figure(figsize=(14, 11))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-snod_levels = np.array([0.1, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0, 60.0])
+#snod_levels = np.array([0.1, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0, 60.0])
+#snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9', '#CD0ACD']
+snod_levels = np.array([1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0, 60.0])
 snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9', '#CD0ACD']
 
 cmap = mcolors.ListedColormap(snod_colors)
@@ -147,7 +151,8 @@ cmap = mcolors.ListedColormap(snod_colors)
 
 # Mask values that are clearly 'missing' (usually > 100 inches) 
 # or zero (to keep the ocean clean)
-nohrsc_total = np.where((nohrsc_total > 100.0) | (nohrsc_total < 0.1), np.nan, nohrsc_total)
+#nohrsc_total = np.where((nohrsc_total > 100.0) | (nohrsc_total < 0.1), np.nan, nohrsc_total)
+nohrsc_total = np.where((nohrsc_total > 100.0) | (nohrsc_total < 1.0), np.nan, nohrsc_total)
 
 norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
@@ -180,19 +185,20 @@ for i, loc in enumerate(grid_locs):
 	# Define domain
 	if grid == 'northeast':   
 		ax.set_extent([-82.5, -66.5, 39.25, 45.25], crs=ccrs.PlateCarree())
-		# Add manual aspect ratio here. 
 		# Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.25, adjustable='datalim')
 	elif grid == 'conus':                
 		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
 	elif grid == 'eastcoast':
                 ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
                 # Increase this number (e.g., 1.4) to stretch it more vertically
                 ax.set_aspect(1.25, adjustable='datalim')
+	elif grid == 'easternUS':
+               ax.set_extent([-97, -72, 26.0, 47.0], crs=ccrs.PlateCarree())
+               # Increase this number (e.g., 1.4) to stretch it more vertically
+               ax.set_aspect(1.25, adjustable='datalim')
 
 	# 1. Define the Globe (The 'NCEP Sphere')
 	# This is the most common reason for shifted high-res grids!

@@ -138,6 +138,8 @@ elif grid == 'colorado':
         fig = plt.figure(figsize=(14, 12))
 elif grid == 'westcoast':
         fig = plt.figure(figsize=(14, 12))
+elif grid == 'easternUS':
+        fig = plt.figure(figsize=(14, 11))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -145,6 +147,8 @@ gs = gridspec.GridSpec(1, 1, figure=fig)
 # Define the specific normalization (Panel 1)
 snod_levels = np.array([0.1, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0, 60.0])
 snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9', '#CD0ACD']
+#snod_levels = np.array([1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0, 60.0])
+#snod_colors = ['#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9', '#CD0ACD']
 
 cmap = mcolors.ListedColormap(snod_colors)
 #cmap.set_under('white')
@@ -153,6 +157,7 @@ cmap = mcolors.ListedColormap(snod_colors)
 # Mask values that are clearly 'missing' (usually > 100 inches) 
 # or zero (to keep the ocean clean)
 nohrsc_total = np.where((nohrsc_total > 100.0) | (nohrsc_total < 0.1), np.nan, nohrsc_total)
+#nohrsc_total = np.where((nohrsc_total > 100.0) | (nohrsc_total < 1.0), np.nan, nohrsc_total)
 
 norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
@@ -208,6 +213,10 @@ for i, loc in enumerate(grid_locs):
         # Add manual aspect ratio here. 
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'easternUS':
+        ax.set_extent([-97, -72, 26.0, 47.0], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
 
 	# 1. Define the Globe (The 'NCEP Sphere')
 	# This is the most common reason for shifted high-res grids!
@@ -259,6 +268,8 @@ for i, loc in enumerate(grid_locs):
     elif grid == 'colorado':
         cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
     elif grid == 'westcoast':
+        cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
+    else:
         cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
     ax.set_title(config['title'], fontweight='bold', fontsize=18)
 
