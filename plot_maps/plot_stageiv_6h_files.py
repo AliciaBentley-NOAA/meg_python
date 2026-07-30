@@ -51,7 +51,6 @@ Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 
 # Use f-string to format with leading zeros (e.g., 000, 006)
 duration_hour = int(duration)
-#start_fhr_str = f"{start_fhr:03}"
     
 # Add the forecast lead time
 duration_delta = timedelta(hours=duration_hour)
@@ -71,7 +70,7 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 segments = int(duration) / int(6) 
 print(f"Number of StageIV files needed: {segments}")
 
-st4_array = np.zeros((int(segments), 1121, 881), dtype=np.float32)
+st4_array = np.zeros((int(segments), 881, 1121), dtype=np.float32)
 
 for j in range(int(segments)):
 
@@ -83,36 +82,27 @@ for j in range(int(segments)):
 	# Open 6-h stageiv file 
 	filename_st4 = f"{DATA_PATH}/stageiv/st4_conus.{date_string}.06h.grb2"
 
-	# 1. Define a temporary binary file name
-	bin_file = f"temp_data_{j}.bin"
-
 	try:
-		# 2. Use wgrib2 to export the data to a raw float32 binary file
-		# -bin exports the data, -no_header removes metadata
-		cmd = f"wgrib2 {filename_st4} -bin {bin_file} -no_header"
-		subprocess.run(cmd, shell=True, check=True, capture_output=True)
+        	# Open directly using grib2io (No binary files or wgrib2 needed!)
+        	with grib2io.open(filename_st4) as gfile:
+            		# Select the total precipitation message
+            		msg = gfile.select(shortName='APCP')[0]
+            
+            		# .data automatically returns a 2D array with shape (881, 1121)
+            		# Fill undef/mask values with 0.0 mm so the sum works correctly
+            		data = np.nan_to_num(msg.data, nan=0.0)
+            		data[data > 1000.0] = 0.0  # Mask any raw 9.99e20 fill values
+            
+            		st4_array[j, :, :] = data
 
-		# 3. Read the binary file directly into NumPy
-		st4_data = np.fromfile(bin_file, dtype=np.float32)
-    
-		# 4. Reshape it to the correct dimensions and save to your array
-		st4_array[j, :, :] = st4_data.reshape((1121, 881))
-
-		print(f"Success! Loaded {date_string} using wgrib2.")
+        	print(f"Success! Loaded {date_string} using grib2io.")
 
 	except Exception as e:
     		print(f"wgrib2 failed for {date_string}: {e}")
 
-	finally:
-		# 5. Clean up the binary file
-		if os.path.exists(bin_file):
-			os.remove(bin_file)
-
-	#lats, lons = st4_msg.latlons()
-
 	print(f"Added StageIV for {j}!")
 
-# Sum across the 6 time segments (axis 0) 
+# Sum across the 6 time segments (axis 0) --> resulting shape (881,1121) 
 # This gives you a 2D map of the total accumulation
 st4_total = np.sum(st4_array, axis=0) * .0393701   # convert mm to inches
 
@@ -139,7 +129,7 @@ elif grid == 'easternUS':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
+snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
 
 snod_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
@@ -162,14 +152,14 @@ snod_colors = [
 ]
 
 cmap = mcolors.ListedColormap(snod_colors)
-#cmap.set_under('white')
+cmap.set_under(color='none')
 cmap.set_over('tan')
 
 norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': st4_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'StageIV | {duration}-h Precip. Analysis (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': st4_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'Stage IV | {duration}-h Precipitation Analysis (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -212,43 +202,42 @@ for i, loc in enumerate(grid_locs):
                ax.set_aspect(1.25, adjustable='datalim')
 
 	# 1. Define the Globe (The 'NCEP Sphere')
-	# This is the most common reason for shifted high-res grids!
 	ncep_globe = ccrs.Globe(ellipse=None, semimajor_axis=6371200.0, semiminor_axis=6371200.0)
 
 	# 2. Update the Projection to use this globe
 	st4_proj = ccrs.NorthPolarStereo(
-                                    central_longitude=105.0,
-                                    true_scale_latitude=60.0,
-                                    globe=ncep_globe)
-
-	# Convert lower-left and upper-right grid corners back to Lat/Lon degrees
-	lon_ll, lat_ll = ccrs.PlateCarree().transform_point(X[0,0], Y[0,0], st4_proj)
-	lon_ur, lat_ur = ccrs.PlateCarree().transform_point(X[-1,-1], Y[-1,-1], st4_proj)
-
-	print("--- GRID LOCATION CHECK ---")
-	print(f"Calculated Lower-Left Corner:  Lat {lat_ll:.2f}°, Lon {lon_ll:.2f}°")
-	print(f"Calculated Upper-Right Corner: Lat {lat_ur:.2f}°, Lon {lon_ur:.2f}°")
+               central_longitude=-105.0,
+               true_scale_latitude=60.0,
+               globe=ncep_globe)
 
 	# Use linspace to guarantee matching dimensions
 	# We calculate the start/end in meters based on the Dx/Dy and origin
 	dx = 4762.500000
 	dy = 4762.500000
-
-	x0, y0 = st4_proj.transform_point(240.976992 - 360, 23.117000, ccrs.PlateCarree())
-
-	# Build coordinate mesh matching st4_proj
-	# Grid dimensions from wgrib2 (1121 x 881)
 	nx = 1121
 	ny = 881
+
+	x0, y0 = st4_proj.transform_point(240.976992 - 360, 23.117000, ccrs.PlateCarree())
+	#print(f"x0, y0 -> x0: {x0:.2f}, y0: {y0:.2f}")
+
+	# Build coordinate mesh matching st4_proj
 	x_coords = x0 + np.arange(nx) * dx
 	y_coords = y0 + np.arange(ny) * dy
 	X, Y = np.meshgrid(x_coords, y_coords)   # Shape: (881, 1121)
+
+	# THEN check the corner coordinates
+	lon_ll, lat_ll = ccrs.PlateCarree().transform_point(X[0, 0], Y[0, 0], st4_proj)
+	lon_ur, lat_ur = ccrs.PlateCarree().transform_point(X[-1, -1], Y[-1, -1], st4_proj)
+
+	print("--- GRID LOCATION CHECK ---")
+	print(f"Calculated Lower-Left Corner:  Lat {lat_ll:.2f}°, Lon {lon_ll:.2f}°")
+	print(f"Calculated Upper-Right Corner: Lat {lat_ur:.2f}°, Lon {lon_ur:.2f}°")
 
 	# Mask NOAA undef / fill values (anything > 1000)
 	config['data'] = np.ma.masked_greater(config['data'], 1000.0)
 
 	# Plot the shading
-	im = ax.pcolormesh(X, Y, config['data'].transpose(), 
+	im = ax.pcolormesh(X, Y, config['data'], 
 		     norm=config['norm'], 
 		     cmap= config['cmap'],
 		     transform=st4_proj,
@@ -270,7 +259,7 @@ for i, loc in enumerate(grid_locs):
 	ax.set_title(config['title'], fontweight='bold', fontsize=18)
 
 	# Set the label size for the ticks
-	cbar.ax.tick_params(labelsize=20)
+	cbar.ax.tick_params(labelsize=16)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
 	cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])

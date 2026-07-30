@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- User Defined Variables ---
-YYYYMMDD="20260213"
+YYYYMMDD="20260729"
 
 # --- Outer Loop: Iterate through the Cycles ---
 for var in pres sfc; do
@@ -9,8 +9,8 @@ for HH in 00 12; do
 
 # --- Define Paths ---
 # Using ${HH} in both the path and the filename pattern
-SOURCE_DIR="/lfs/h1/ops/prod/com/aigfs/v1.0/aigfs.${YYYYMMDD}/${HH}/model/atmos/grib2"
-DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026/aigfs.${YYYYMMDD}/${HH}/atmos"
+SOURCE_DIR="/lfs/h1/ops/prod/com/aigfs/v1.1/aigfs.${YYYYMMDD}/${HH}/model/atmos/grib2"
+DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/alb_flood/aigfs.${YYYYMMDD}/${HH}/atmos"
 
 # Create the destination directory if it doesn't exist
 mkdir -p "$DEST_DIR"
@@ -21,8 +21,8 @@ echo "Source: $SOURCE_DIR"
 echo "Dest:   $DEST_DIR"
 echo "----------------------------------------------------------"
 
-# Loop from 0 to 198 in increments of 6
-for h in $(seq 198 6 264); do
+# Loop from 0 to 240 in increments of 6
+for h in $(seq 0 6 246); do
     # Format the forecast hour to be 3 digits (e.g., 000, 006, 012)
     HHH=$(printf "%03d" $h)
     

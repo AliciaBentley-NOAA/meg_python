@@ -27,7 +27,7 @@ export initdate="20240917"
 export fhr="240"  #240,216,192,168,144,120,096,072,048,024
 
 # Current domain options: conus, eastcoast, northeast, easternUS, southeastUS, westcoast, florida
-export DOMAIN='easternUS'
+export DOMAIN='northeast'
 
 #If plotting precip or snowfall, choose a duration (typically 24 or 36)
 export duration='36'   #72, 48, 36, 24, 12, 6
