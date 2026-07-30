@@ -21,7 +21,7 @@ module load libjpeg/9c
 module load grib_util/1.2.4
 
 #===============================================================================================================
-export CASE='ccpa_jan2026'
+export CASE='alb_flood'
 export cyc="00"
 export initdate="20240917"
 export fhr="240"  #240,216,192,168,144,120,096,072,048,024
@@ -30,11 +30,11 @@ export fhr="240"  #240,216,192,168,144,120,096,072,048,024
 export DOMAIN='easternUS'
 
 #If plotting precip or snowfall, choose a duration (typically 24 or 36)
-export duration='6'   #72, 48, 36, 24, 12, 6
+export duration='36'   #72, 48, 36, 24, 12, 6
 
-#If plotting CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
-export vdate="20260125" #This is the last time in the period covered
-export vhour="12"
+#If plotting StageIV, CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
+export vdate="20260730" #This is the last time in the period covered
+export vhour="00"
 
 #If plotting TC track/intensity
 export longname="IanAL092022"
@@ -53,8 +53,9 @@ export PLOT_HGEFS_FCSTS=NO
 
 export PLOT_GFSv17_FCSTS=NO
 
+export PLOT_ST4_ANALYSIS=YES
 export PLOT_CCPA_ANALYSIS=NO
-export PLOT_NOHRSC_ANALYSIS=YES
+export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
 export PLOT_RAP_ANALYSIS=NO
 
@@ -72,9 +73,9 @@ export PLOT_GFSv17_TC_FCSTS=NO
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/plot_maps'
 
 # Location of downloaded forecast/analysis files
-export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/ccpa_jan2026'
+#export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/ccpa_jan2026'
 #export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv16archive/data'
-#export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv17archive/data'
+export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv17archive/data'
 #export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/global/eval/model_data/gfs/prod'
 
 # Location to plot maps
@@ -158,6 +159,13 @@ if [ $PLOT_GFSv17_FCSTS = YES ]; then
 #        python ${SCRIPTS_PATH}/plot_gfsv17_hybrid1_mixing_ratios.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 	sleep 1
 fi
+
+if [ $PLOT_ST4_ANALYSIS = YES ]; then
+        export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/alb_flood'
+        echo "Kickoff ${CASE} scripts to plot StageIV analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_stageiv_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
+        sleep 1 
+fi 
 
 if [ $PLOT_CCPA_ANALYSIS = YES ]; then
         export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/global/archive/obs_data/ccpa_accum6hr'

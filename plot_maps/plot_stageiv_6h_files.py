@@ -22,7 +22,7 @@ from pathlib import Path
 import subprocess
 
 #####################################################
-var = "nohrsc"
+var = "stageiv"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -55,7 +55,7 @@ duration_hour = int(duration)
     
 # Add the forecast lead time
 duration_delta = timedelta(hours=duration_hour)
-nohrsc_delta = timedelta(hours=6)
+st4_delta = timedelta(hours=6)
 start_dt = valid_dt - duration_delta
 current_dt = start_dt
 
@@ -69,19 +69,19 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Determine how many 6-hour periods are in the full duration (e.g., 24h/6h)
 segments = int(duration) / int(6) 
-print(f"Number of NOHRSC files needed: {segments}")
+print(f"Number of StageIV files needed: {segments}")
 
-nohrsc_array = np.zeros((int(segments), 1377, 2145), dtype=np.float32)
+st4_array = np.zeros((int(segments), 1121, 881), dtype=np.float32)
 
 for j in range(int(segments)):
 
-	# Remember: Valid time in NOHRSC filenames is at the *end* of the 6-h period (add nohrsc_delta)
-	current_dt = current_dt + nohrsc_delta
-	print(f"Current NOHRSC File Time: {current_dt.strftime('%Y-%m-%d %HZ')}")
+	# Remember: Valid time in StageIV filenames is at the *end* of the 6-h period (add st4_delta)
+	current_dt = current_dt + st4_delta
+	print(f"Current StageIV File Time: {current_dt.strftime('%Y-%m-%d %HZ')}")
 	date_string = current_dt.strftime('%Y%m%d%H')
 
-	# Open 6-h NOHRSC file 
-	filename_nohrsc = f"{DATA_PATH}/nohrsc/sfav2_CONUS_6h_{date_string}_grid184.grb2"
+	# Open 6-h stageiv file 
+	filename_st4 = f"{DATA_PATH}/stageiv/st4_conus.{date_string}.06h.grb2"
 
 	# 1. Define a temporary binary file name
 	bin_file = f"temp_data_{j}.bin"
@@ -89,15 +89,14 @@ for j in range(int(segments)):
 	try:
 		# 2. Use wgrib2 to export the data to a raw float32 binary file
 		# -bin exports the data, -no_header removes metadata
-		cmd = f"wgrib2 {filename_nohrsc} -bin {bin_file} -no_header"
+		cmd = f"wgrib2 {filename_st4} -bin {bin_file} -no_header"
 		subprocess.run(cmd, shell=True, check=True, capture_output=True)
 
 		# 3. Read the binary file directly into NumPy
-		# NOHRSC Grid 184 is 1377 rows x 2145 columns
-		nohrsc_data = np.fromfile(bin_file, dtype=np.float32)
+		st4_data = np.fromfile(bin_file, dtype=np.float32)
     
 		# 4. Reshape it to the correct dimensions and save to your array
-		nohrsc_array[j, :, :] = nohrsc_data.reshape((1377, 2145))
+		st4_array[j, :, :] = st4_data.reshape((1121, 881))
 
 		print(f"Success! Loaded {date_string} using wgrib2.")
 
@@ -109,16 +108,16 @@ for j in range(int(segments)):
 		if os.path.exists(bin_file):
 			os.remove(bin_file)
 
-	#lats, lons = nohrsc_msg.latlons()
+	#lats, lons = st4_msg.latlons()
 
-	print(f"Added NOHRSC for {j}!")
+	print(f"Added StageIV for {j}!")
 
 # Sum across the 6 time segments (axis 0) 
 # This gives you a 2D map of the total accumulation
-nohrsc_total = np.sum(nohrsc_array, axis=0) * 39.3701   # convert meters to inches
+st4_total = np.sum(st4_array, axis=0) * .0393701   # convert mm to inches
 
 # This tells us the exact lat/lon bounds wgrib2 sees in the file
-result = subprocess.run(f"wgrib2 {filename_nohrsc} -grid", shell=True, capture_output=True, text=True)
+result = subprocess.run(f"wgrib2 {filename_st4} -grid", shell=True, capture_output=True, text=True)
 print(result.stdout)
 
 #########################################################
@@ -140,25 +139,37 @@ elif grid == 'easternUS':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-#snod_levels = np.array([0.1, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0, 60.0])
-#snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9', '#CD0ACD']
-snod_levels = np.array([1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 18.0, 24.0, 30.0, 36.0, 48.0, 60.0])
-snod_colors = ['#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9', '#CD0ACD']
+snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
+
+snod_colors = [
+    '#33ff00', # 0.01 - 0.1  (Bright Green)
+    '#00cd00', # 0.1 - 0.25  (Medium Green)
+    '#008b00', # 0.25 - 0.5  (Dark Green)
+    '#104e8b', # 0.5 - 0.75  (Deep Blue)
+    '#1e90ff', # 0.75 - 1.0  (Dodger Blue)
+    '#00b2ee', # 1.0 - 1.25  (Sky Blue)
+    '#00eeee', # 1.25 - 1.5  (Cyan)
+    '#8968cd', # 1.5 - 1.75  (Medium Purple)
+    '#912cee', # 1.75 - 2.0  (Vibrant Purple)
+    '#8b008b', # 2.0 - 2.5   (Dark Magenta)
+    '#8b0000', # 2.5 - 3.0   (Dark Red)
+    '#cd0000', # 3.0 - 4.0   (Red)
+    '#ee0000', # 4.0 - 5.0   (Bright Red)
+    '#ff7f00', # 5.0 - 7.0   (Orange)
+    '#cd8500', # 7.0 - 10.0  (Gold/Tan)
+    '#ffd700', # 10.0 - 15.0 (Goldenrod)
+    '#ffff00', # 15.0 - 20.0 (Yellow)
+]
 
 cmap = mcolors.ListedColormap(snod_colors)
 #cmap.set_under('white')
-#cmap.set_over('#CD0ACD')
-
-# Mask values that are clearly 'missing' (usually > 100 inches) 
-# or zero (to keep the ocean clean)
-nohrsc_total = np.where((nohrsc_total > 100.0) | (nohrsc_total < 0.1), np.nan, nohrsc_total)
-#nohrsc_total = np.where((nohrsc_total > 100.0) | (nohrsc_total < 1.0), np.nan, nohrsc_total)
+cmap.set_over('tan')
 
 norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': nohrsc_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'NOHRSC | {duration}-h Snowfall Analysis (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': st4_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'StageIV | {duration}-h Precip. Analysis (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -202,45 +213,57 @@ for i, loc in enumerate(grid_locs):
 
 	# 1. Define the Globe (The 'NCEP Sphere')
 	# This is the most common reason for shifted high-res grids!
-	ncep_globe = ccrs.Globe(ellipse=None, semimajor_axis=6371229, semiminor_axis=6371229)
+	ncep_globe = ccrs.Globe(ellipse=None, semimajor_axis=6371200.0, semiminor_axis=6371200.0)
 
 	# 2. Update the Projection to use this globe
-	nohrsc_proj = ccrs.LambertConformal(central_longitude=-95.0,
-                                    central_latitude=25.0,
-                                    standard_parallels=(25.0, 25.0),
+	st4_proj = ccrs.NorthPolarStereo(
+                                    central_longitude=105.0,
+                                    true_scale_latitude=60.0,
                                     globe=ncep_globe)
-#	gfs_proj = ccrs.PlateCarree(globe=ncep_globe)
+
+	# Convert lower-left and upper-right grid corners back to Lat/Lon degrees
+	lon_ll, lat_ll = ccrs.PlateCarree().transform_point(X[0,0], Y[0,0], st4_proj)
+	lon_ur, lat_ur = ccrs.PlateCarree().transform_point(X[-1,-1], Y[-1,-1], st4_proj)
+
+	print("--- GRID LOCATION CHECK ---")
+	print(f"Calculated Lower-Left Corner:  Lat {lat_ll:.2f}°, Lon {lon_ll:.2f}°")
+	print(f"Calculated Upper-Right Corner: Lat {lat_ur:.2f}°, Lon {lon_ur:.2f}°")
 
 	# Use linspace to guarantee matching dimensions
 	# We calculate the start/end in meters based on the Dx/Dy and origin
-	dx = 2539.703
-	dy = 2539.703
+	dx = 4762.500000
+	dy = 4762.500000
 
-	x0, y0 = nohrsc_proj.transform_point(238.446 - 360, 20.191999, ccrs.PlateCarree())
+	x0, y0 = st4_proj.transform_point(240.976992 - 360, 23.117000, ccrs.PlateCarree())
 
-	# Generate exactly the right number of points
-	x_coords = np.linspace(x0, x0 + (2144 * dx), 2145)
-	y_coords = np.linspace(y0, y0 + (1376 * dy), 1377)
+	# Build coordinate mesh matching st4_proj
+	# Grid dimensions from wgrib2 (1121 x 881)
+	nx = 1121
+	ny = 881
+	x_coords = x0 + np.arange(nx) * dx
+	y_coords = y0 + np.arange(ny) * dy
+	X, Y = np.meshgrid(x_coords, y_coords)   # Shape: (881, 1121)
 
-	X, Y = np.meshgrid(x_coords, y_coords)
+	# Mask NOAA undef / fill values (anything > 1000)
+	config['data'] = np.ma.masked_greater(config['data'], 1000.0)
 
 	# Plot the shading
-	im = ax.pcolormesh(X, Y, config['data'], 
+	im = ax.pcolormesh(X, Y, config['data'].transpose(), 
 		     norm=config['norm'], 
 		     cmap= config['cmap'],
-		     transform=nohrsc_proj,
+		     transform=st4_proj,
 		     shading='nearest')
 
-	## Plot the contour lines
-	## Only add lines if it's one of the MSLP panels (0 or 1)
-	#contours = ax.contour(lons, lats, config['data'], 
-	#		      levels=config['levels'], 
-	#		      colors='black', 
-	#		      linewidths=2.0, 
-	#		      transform=ccrs.PlateCarree())
-	## Add labels to the lines (e.g., '1012')
-	## Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	#ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
+	data = config['data']
+
+	print("--- DATA DIAGNOSTICS ---")
+	print("Data type:", data.dtype)
+	print("Data shape:", data.shape)
+	print("Min value:", np.nanmin(data))
+	print("Max value:", np.nanmax(data))
+	print("Mean value:", np.nanmean(data))
+	print("Number of NaNs:", np.isnan(data).sum())
+	print("Number of non-zero values:", np.count_nonzero(data))
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
