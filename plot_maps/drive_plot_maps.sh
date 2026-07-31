@@ -23,14 +23,14 @@ module load grib_util/1.2.4
 #===============================================================================================================
 export CASE='alb_flood'
 export cyc="00"
-export initdate="20240917"
-export fhr="240"  #240,216,192,168,144,120,096,072,048,024
+export initdate="20260729"
+export fhr="024"  #240,216,192,168,144,120,096,072,048,024
 
 # Current domain options: conus, eastcoast, northeast, easternUS, southeastUS, westcoast, florida
 export DOMAIN='northeast'
 
 #If plotting precip or snowfall, choose a duration (typically 24 or 36)
-export duration='36'   #72, 48, 36, 24, 12, 6
+export duration='24'   #72, 48, 36, 24, 12, 6
 
 #If plotting StageIV, CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
 export vdate="20260730" #This is the last time in the period covered
@@ -48,12 +48,13 @@ export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 
 export PLOT_GEFS_FCSTS=NO
-export PLOT_AIGEFS_FCSTS=NO
+export PLOT_AIGEFS_FCSTS=YES
 export PLOT_HGEFS_FCSTS=NO
+export PLOT_ECENS_FCSTS=NO
 
 export PLOT_GFSv17_FCSTS=NO
 
-export PLOT_ST4_ANALYSIS=YES
+export PLOT_ST4_ANALYSIS=NO
 export PLOT_CCPA_ANALYSIS=NO
 export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
@@ -73,9 +74,9 @@ export PLOT_GFSv17_TC_FCSTS=NO
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/plot_maps'
 
 # Location of downloaded forecast/analysis files
-#export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/ccpa_jan2026'
+export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/'${CASE}
 #export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv16archive/data'
-export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv17archive/data'
+#export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv17archive/data'
 #export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/global/eval/model_data/gfs/prod'
 
 # Location to plot maps
@@ -88,8 +89,8 @@ mkdir -p ${MAP_PATH}
 
 if [ $PLOT_GFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-#        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_2m_dewpoint.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_cape_sfc_based.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
@@ -103,23 +104,24 @@ fi
 
 if [ $PLOT_AIGFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot AIGFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-#        python ${SCRIPTS_PATH}/plot_aigfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_aigfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_aigfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_aigfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
 if [ $PLOT_ECMWF_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot ECMWF forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-#        python ${SCRIPTS_PATH}/plot_ecmwf_hires_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_ecmwf_hires_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_ecmwf_hires_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-	python ${SCRIPTS_PATH}/plot_ecmwf_hires_snow.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#	python ${SCRIPTS_PATH}/plot_ecmwf_hires_snow.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
 
 if [ $PLOT_GEFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
@@ -127,7 +129,8 @@ fi
 if [ $PLOT_AIGEFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot AIGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_aigefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_aigefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_aigefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
@@ -135,8 +138,15 @@ fi
 if [ $PLOT_HGEFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot HGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_hgefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_hgefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_hgefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_hgefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_hgefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+if [ $PLOT_ECENS_FCSTS = YES ]; then
+        echo "Kickoff ${CASE} scripts to plot ECENS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_ecens_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 

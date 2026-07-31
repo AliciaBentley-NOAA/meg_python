@@ -3,7 +3,7 @@
 # --- User Defined Variables ---
 YYYY="2026"
 MM="07"
-DD="29"
+DD="28"
 
 # Combine them for use in paths
 YYYYMMDD="${YYYY}${MM}${DD}"
@@ -26,7 +26,7 @@ echo "Dest:   $DEST_DIR"
 echo "----------------------------------------------------------"
 
 # Loop from 0 to 246 in increments of 6
-for h in $(seq 0 6 24); do
+for h in $(seq 0 6 246); do
     # Format the forecast hour to be 3 digits (e.g., 000, 006, 012)
     HHH=$(printf "%03d" $h)
 
@@ -38,8 +38,7 @@ for h in $(seq 0 6 24); do
         VALID_HH=$(date -d "${YYYYMMDD} ${HH} + ${h} hours" +%H)
 
     # Construct the filename
-    FILE="E2E${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"   # pressure level parameters
-    #FILE="ESE${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"   # surface parameters
+    FILE="ESE${MM}${DD}${HH}00${VALID_MMDD}${VALID_HH}001"   # surface parameters
 
     if [ -f "$SOURCE_DIR/$FILE" ]; then
         cp "$SOURCE_DIR/$FILE" "$DEST_DIR/"
