@@ -292,7 +292,7 @@ for i, loc in enumerate(grid_locs):
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
-    cbar.ax.tick_params(labelsize=24)
+    cbar.ax.tick_params(labelsize=20)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
     cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
@@ -300,6 +300,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv16_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

@@ -71,12 +71,12 @@ print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Start Time:          {start_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open GFS GRIB2 file at the start of the snowfall period and extract parameters
-filename_gfss = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{start_fhr_str}.grib2"
-with grib2io.open(filename_gfss) as f_gfss:
+# Open AIGFS GRIB2 file at the start of the snowfall period and extract parameters
+filename_aigfss = f"{DATA_PATH}/aigfs.{pdy}/{cyc}/atmos/aigfs.t{cyc}z.sfc.f{start_fhr_str}.grib2"
+with grib2io.open(filename_aigfss) as f_aigfss:
 
         # Run wgrib2 and grab lines with APCP
-        cmd = f"wgrib2 {filename_gfss} | grep 'APCP'"
+        cmd = f"wgrib2 {filename_aigfss} | grep 'APCP'"
         # We use getoutput to keep it concise; it returns a string of the results
         output = subprocess.getoutput(cmd)
 
@@ -92,7 +92,7 @@ with grib2io.open(filename_gfss) as f_gfss:
             target_idx = apcp_indices[1]
 
             # Extract the message and data
-            precip_start_msg = f_gfss[target_idx]
+            precip_start_msg = f_aigfss[target_idx]
             precip_start_data = precip_start_msg.data * 0.0393701 # Convert mm to inches
 
             print(f"Extracted: {precip_start_msg.shortName} for {precip_start_msg.leadTime} hours")
@@ -105,10 +105,10 @@ with grib2io.open(filename_gfss) as f_gfss:
             # We can use your manual index search or the select method if PRMSL is indexed
             try:
                 # PRMSL is almost always the first message or easily found
-                dummy_msg = f_gfss.select(shortName='PRMSL')[0]
+                dummy_msg = f_aigfss.select(shortName='PRMSL')[0]
             except:
                 # Fallback: just grab the very first message in the file if select fails
-                dummy_msg = f_gfss[0]
+                dummy_msg = f_aigfss[0]
             
             # 2. Create a data array of zeros with the same shape as the grid
             # Multiplying the existing data by 0.0 is the safest way to preserve shape
@@ -117,12 +117,12 @@ with grib2io.open(filename_gfss) as f_gfss:
             print(f"Zero-field created using {dummy_msg.shortName} dimensions.")
             print(f"Max Precip: {precip_start_data.max():.2f} inches")
 
-# Open GFS GRIB2 file at the end of the snowfall period and extract parameters
-filename_gfs = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
-with grib2io.open(filename_gfs) as f_gfs:
+# Open AIGFS GRIB2 file at the end of the snowfall period and extract parameters
+filename_aigfs = f"{DATA_PATH}/aigfs.{pdy}/{cyc}/atmos/aigfs.t{cyc}z.sfc.f{fhr_str}.grib2"
+with grib2io.open(filename_aigfs) as f_aigfs:
 
         # Run wgrib2 and grab lines with APCP
-        cmd = f"wgrib2 {filename_gfs} | grep 'APCP'"
+        cmd = f"wgrib2 {filename_aigfs} | grep 'APCP'"
         # We use getoutput to keep it concise; it returns a string of the results
         output = subprocess.getoutput(cmd)
 
@@ -138,7 +138,7 @@ with grib2io.open(filename_gfs) as f_gfs:
             target_idx = apcp_indices[1]
 
             # Extract the message and data
-            precip_msg = f_gfs[target_idx]
+            precip_msg = f_aigfs[target_idx]
             precip_data = precip_msg.data * 0.0393701 # Convert mm to inches
 
             print(f"Extracted: {precip_msg.shortName} for {precip_msg.leadTime} hours")
@@ -204,6 +204,7 @@ gs = gridspec.GridSpec(1, 1, figure=fig)
 #snod_levels = np.arange(0, 25, 1)
 snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
 
+#snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9']
 snod_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
     '#00cd00', # 0.1 - 0.25  (Medium Green)
@@ -232,7 +233,7 @@ norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'GFSv17 | {duration}-h Accumulated Precipitation (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'AIGFS | {duration}-h Accumulated Precipitation (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -242,7 +243,7 @@ grid_locs = [gs[0, 0]]
 for i, loc in enumerate(grid_locs):
     config = plot_configs[i]
 
-	# Add subplot with projection
+    # Add subplot with projection
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
@@ -300,4 +301,4 @@ for i, loc in enumerate(grid_locs):
 
 # Add a title and adjust layout to prevent overlapping
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv17_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/aigfs_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

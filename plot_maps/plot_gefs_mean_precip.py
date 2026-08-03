@@ -25,26 +25,33 @@ from pathlib import Path
 var = "precip"
 
 pdy = str(sys.argv[1])             # 20251120
-cyc = str(sys.argv[2])		   # 12 
-fhr = str(sys.argv[3])             # 024 (3 digits) 
+cyc = str(sys.argv[2])             # 12
+fhr = str(sys.argv[3])             # 024 (3 digits)
 grid = str(sys.argv[4])            # conus
 DATA_PATH = str(sys.argv[5])       # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026
 MAP_PATH = str(sys.argv[6])        # /lfs/h2/emc/vpppg/noscrub/alicia.bentley/feb2026/maps
 duration = str(sys.argv[7])        # 36 (hours)
+vpdy = str(sys.argv[8])            # 20251121
+vhr = str(sys.argv[9])             # 12
 
 show_colorbar="yes"
 
 print("pdy:", pdy)
 print("cyc:", cyc)
-print("fhr:", fhr)
 print("grid:", grid)
+print("vpdy:", vpdy)
+print("vhr:", vhr)
+print("duration:", duration)
 
 init_str = str(pdy)
 init_hour = int(cyc)
+valid_str = str(vpdy)
+valid_hour = int(vhr)
 
 #Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
+valid_dt = datetime.strptime(valid_str, "%Y%m%d").replace(hour=valid_hour)
 
 # Create maps directory
 Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
@@ -57,13 +64,13 @@ fcst_hour= int(fhr)
 duration_hour = int(duration)
 start_fhr = fcst_hour - duration_hour
 start_fhr_str = f"{start_fhr:03}"
-    
+
 # Add the forecast lead time
 forecast_delta = timedelta(hours=fcst_hour)
 duration_delta = timedelta(hours=duration_hour)
-nohrsc_delta = timedelta(hours=6)
-valid_dt = init_dt + forecast_delta
-start_dt = valid_dt - duration_delta    # Remember: Valid time in NOHRSC filenames is at the *end* of the duration period
+ccpa_delta = timedelta(hours=6)
+start_dt = valid_dt - duration_delta
+current_dt = start_dt
 
 # Print the results in a readable format
 print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
@@ -71,33 +78,40 @@ print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Start Time:          {start_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
+# Determine how many 6-hour periods are in the full duration (e.g., 24h/6h)
+segments = int(duration) / int(6)
+print(f"Number of CCPA files needed: {segments}")
 
+gefs_array = np.zeros((int(segments), 721, 1440), dtype=np.float32)
 
-# Open GEFS GRIB2 file at the start of the snowfall period and extract parameters
-filename_gefss = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/geavg.t{cyc}z.pgrb2s.0p25.f{start_fhr_str}"
-print(filename_gefss)
-with grib2io.open(filename_gefss) as f_gefss:
+for j in range(int(segments)):
 
-   try:
-        # Select the specific messages we want
-        precip_start_msg = f_gefss.select(shortName='APCP')[0]
+    # Remember: Valid time in filenames is at the *end* of the 6-h period (add ccpa_delta)
+    current_dt = current_dt + ccpa_delta
+    print(f"Current GEFS File Time: {current_dt.strftime('%Y-%m-%d %HZ')}")
 
-        # Extract values
-        precip_start_data = precip_start_msg.data * 0.0393701 # Convert mm to inches
+    # Subtract datetime objects to get a timedelta
+    time_diff = valid_dt - current_dt
 
-        print(f"Extracted: {precip_start_msg.shortName} for {precip_start_msg.leadTime} hours")
-        print(f"Max Precip: {precip_start_data.max():.2f} inches")
+    # Convert time_diff to hours
+    hours_diff = int(time_diff.total_seconds() // 3600)
 
-   except (IndexError, ValueError):
-        # APCP doesn't exist (Hour 0) -> Load MSLP and set values to 0.0
-        precip_start_msg = f_gefss.select(shortName='PRMSL')[0]
-        precip_start_data = np.zeros_like(precip_start_msg.data, dtype=np.float32)
-            
-# Open GEFS GRIB2 file at the end of the snowfall period and extract parameters
-filename_gefs = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/geavg.t{cyc}z.pgrb2s.0p25.f{fhr_str}"
-print(filename_gefs)
-with grib2io.open(filename_gefs) as f_gefs:
+    # Make sure fhr is an integer when subtracting
+    fhr_new = int(fhr) - hours_diff
 
+    # FIXED: fhr_new is already an integer in hours!
+    fhr_int = fhr_new
+
+    # Format as a string (e.g., "006", "024", or "120" with 3-digit zero-padding)
+    fhr_str = f"{fhr_int:03d}"
+    print(fhr_str)
+
+    # Open GEFS GRIB2 file at the start of the snowfall period and extract parameters
+    filename_gefs = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/geavg.t{cyc}z.pgrb2s.0p25.f{fhr_str}"
+    print(filename_gefs)
+    with grib2io.open(filename_gefs) as f_gefs:
+
+      try:
         # Select the specific messages we want
         precip_msg = f_gefs.select(shortName='APCP')[0]
 
@@ -107,32 +121,20 @@ with grib2io.open(filename_gefs) as f_gefs:
         print(f"Extracted: {precip_msg.shortName} for {precip_msg.leadTime} hours")
         print(f"Max Precip: {precip_data.max():.2f} inches")
 
-        # Calculate the difference (e.g., SNOD at end - SNOD at start)
-        diff_data = precip_data - precip_start_data
+      except (IndexError, ValueError):
+        # APCP doesn't exist (Hour 0) -> Load MSLP and set values to 0.0
+        precip_msg = f_gefs.select(shortName='PRMSL')[0]
+        precip_data = np.zeros_like(precip_msg.data, dtype=np.float32)
+            
+      gefs_array[j, :, :] = precip_data
 
-        lats, lons = precip_msg.latlons()
+      print(f"Success! Loaded {current_dt} for {j} into CCPA array.")
 
-# Shift longitudes from [0, 360] to [-180, 180]
-lons = np.where(lons > 180, lons - 360, lons)
+      lats, lons = precip_msg.latlons()
 
-# If lons is a 2D meshgrid, we only want the 1D vector to get sort indices
-# We'll take the first row of lons to determine the sorting order
-if lons.ndim == 2:
-	lons_1d = lons[0, :]
-else:
-	lons_1d = lons
-
-# Get the sorting indices
-i_sort = np.argsort(lons_1d)
-
-# Apply sorting to the 2D arrays across the longitude axis (axis=1)
-if lons.ndim == 2:
-	lons = lons[:, i_sort]
-	lats = lats[:, i_sort] # Sort lats too if it's a meshgrid
-else:
-	lons = lons[i_sort]
-
-diff_data = diff_data[:, i_sort]
+# Sum across the time segments (axis 0)
+# This gives you a 2D map of the total accumulation
+diff_data = np.sum(gefs_array, axis=0)
 
 # Finding the values
 minimum = np.min(diff_data)

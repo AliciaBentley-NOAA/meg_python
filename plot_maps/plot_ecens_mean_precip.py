@@ -41,10 +41,14 @@ print("grid:", grid)
 
 init_str = str(pdy)
 init_hour = int(cyc)
-
+ 
 #Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
+ 
+init_MM = init_dt.strftime("%m")  # Result: '02'
+init_DD = init_dt.strftime("%d")    # Result: '26'
+init_HH = init_dt.strftime("%H")  # Result: '06'
 
 # Create maps directory
 Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
@@ -57,7 +61,7 @@ fcst_hour= int(fhr)
 duration_hour = int(duration)
 start_fhr = fcst_hour - duration_hour
 start_fhr_str = f"{start_fhr:03}"
-    
+
 # Add the forecast lead time
 forecast_delta = timedelta(hours=fcst_hour)
 duration_delta = timedelta(hours=duration_hour)
@@ -65,89 +69,73 @@ nohrsc_delta = timedelta(hours=6)
 valid_dt = init_dt + forecast_delta
 start_dt = valid_dt - duration_delta    # Remember: Valid time in NOHRSC filenames is at the *end* of the 6-h period
 
+start_MM = start_dt.strftime("%m")  # Result: '02'
+start_DD = start_dt.strftime("%d")  # Result: '26'
+start_HH = start_dt.strftime("%H")  # Result: '06'
+ 
+valid_MM = valid_dt.strftime("%m")  # Result: '02'
+valid_DD = valid_dt.strftime("%d")  # Result: '26'
+valid_HH = valid_dt.strftime("%H")  # Result: '06'
+
 # Print the results in a readable format
 print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Start Time:          {start_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open GFS GRIB2 file at the start of the snowfall period and extract parameters
-filename_gfss = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{start_fhr_str}.grib2"
-with grib2io.open(filename_gfss) as f_gfss:
+# Open ECMWF file and extract parameters from valid date
+filename_ecmwf_start = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/ESE{init_MM}{init_DD}{init_HH}00{start_MM}{start_DD}{start_HH}001"
+print(filename_ecmwf_start)
+grib2_filename_start = filename_ecmwf_start + ".grib2"
+subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
 
-        # Run wgrib2 and grab lines with APCP
-        cmd = f"wgrib2 {filename_gfss} | grep 'APCP'"
-        # We use getoutput to keep it concise; it returns a string of the results
-        output = subprocess.getoutput(cmd)
+# Open ECMWF file and extract parameters from valid date
+filename_ecmwf = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/ESE{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
+print(filename_ecmwf)
+grib2_filename = filename_ecmwf + ".grib2"
+subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
 
-        if output:
-            print("wgrib2 Output:\n", output)
-    
-            # Parse out the index (first column), convert to int, and subtract 1
-            apcp_indices = [int(line.split(':')[0]) - 1 for line in output.strip().split('\n')]
-    
-            print(f"APCP 0-based Indices: {apcp_indices}")
+#-----------------------------------------------------------
 
-            # Grab the second APCP index (the 0-1 day total)
-            target_idx = apcp_indices[1]
+with grib2io.open(grib2_filename_start) as f_ecmwf:
 
-            # Extract the message and data
-            precip_start_msg = f_gfss[target_idx]
-            precip_start_data = precip_start_msg.data * 0.0393701 # Convert mm to inches
+        # Select ALL ensemble members for Total Precipitation (returns a list of messages)
+        precip_start_msgs = f_ecmwf.select(shortName='APCP', level='surface')
 
-            print(f"Extracted: {precip_start_msg.shortName} for {precip_start_msg.leadTime} hours")
-            print(f"Max Precip: {precip_start_data.max():.2f} inches")
+        print(f"Found {len(precip_start_msgs)} ensemble members at {start_dt.strftime('%Y-%m-%d %HZ')}.")
 
-        else:
-            print("No APCP found in file. Creating a zero-field for F000.")
-            
-            # 1. Grab PRMSL (or any surface variable) to get the correct grid dimensions
-            # We can use your manual index search or the select method if PRMSL is indexed
-            try:
-                # PRMSL is almost always the first message or easily found
-                dummy_msg = f_gfss.select(shortName='PRMSL')[0]
-            except:
-                # Fallback: just grab the very first message in the file if select fails
-                dummy_msg = f_gfss[0]
-            
-            # 2. Create a data array of zeros with the same shape as the grid
-            # Multiplying the existing data by 0.0 is the safest way to preserve shape
-            precip_start_data = dummy_msg.data * 0.0
-            
-            print(f"Zero-field created using {dummy_msg.shortName} dimensions.")
-            print(f"Max Precip: {precip_start_data.max():.2f} inches")
+        # Stack into a 3D NumPy array of shape (num_members, ny, nx)
+        ensemble_stack_start = np.array([msg.data * 39.3701 for msg in precip_start_msgs])  # Convert meters to inches
 
-# Open GFS GRIB2 file at the end of the snowfall period and extract parameters
-filename_gfs = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
-with grib2io.open(filename_gfs) as f_gfs:
+        # Ensemble Mean
+        precip_start_mean = np.mean(ensemble_stack_start, axis=0)
 
-        # Run wgrib2 and grab lines with APCP
-        cmd = f"wgrib2 {filename_gfs} | grep 'APCP'"
-        # We use getoutput to keep it concise; it returns a string of the results
-        output = subprocess.getoutput(cmd)
+        # Ensemble Spread / Standard Deviation
+        # ddof=1 uses sample standard deviation (N-1 degrees of freedom)
+        precip_start_spread = np.std(ensemble_stack_start, axis=0, ddof=1)
 
-        if output:
-            print("wgrib2 Output:\n", output)
+with grib2io.open(grib2_filename) as f_ecmwf:
 
-            # Parse out the index (first column), convert to int, and subtract 1
-            apcp_indices = [int(line.split(':')[0]) - 1 for line in output.strip().split('\n')]
+        # Select ALL ensemble members for Total Precipitation (returns a list of messages)
+        precip_msgs = f_ecmwf.select(shortName='APCP', level='surface')
 
-            print(f"APCP 0-based Indices: {apcp_indices}")
+        print(f"Found {len(precip_msgs)} ensemble members at {valid_dt.strftime('%Y-%m-%d %HZ')}.")
 
-            # Grab the second APCP index (the 0-1 day total)
-            target_idx = apcp_indices[1]
+        # Stack into a 3D NumPy array of shape (num_members, ny, nx)
+        ensemble_stack = np.array([msg.data * 39.3701 for msg in precip_msgs])  # Convert meters to inches
 
-            # Extract the message and data
-            precip_msg = f_gfs[target_idx]
-            precip_data = precip_msg.data * 0.0393701 # Convert mm to inches
+        # Ensemble Mean
+        precip_mean = np.mean(ensemble_stack, axis=0)
 
-            print(f"Extracted: {precip_msg.shortName} for {precip_msg.leadTime} hours")
-            print(f"Max Precip: {precip_data.max():.2f} inches")
+        # Ensemble Spread / Standard Deviation
+        # ddof=1 uses sample standard deviation (N-1 degrees of freedom)
+        precip_spread = np.std(ensemble_stack, axis=0, ddof=1)
 
-        # Calculate the difference (e.g., SNOD at end - SNOD at start)
-        diff_data = precip_data - precip_start_data
+        # Calculate the difference (e.g., APCP at end - APCP at start)
+        diff_data = precip_mean - precip_start_mean 
 
-        lats, lons = precip_msg.latlons()
+        # Extract lats and lons from the first message (they share the same grid)
+        lats, lons = precip_msgs[0].latlons()
 
 # Shift longitudes from [0, 360] to [-180, 180]
 lons = np.where(lons > 180, lons - 360, lons)
@@ -155,19 +143,19 @@ lons = np.where(lons > 180, lons - 360, lons)
 # If lons is a 2D meshgrid, we only want the 1D vector to get sort indices
 # We'll take the first row of lons to determine the sorting order
 if lons.ndim == 2:
-	lons_1d = lons[0, :]
+        lons_1d = lons[0, :]
 else:
-	lons_1d = lons
+        lons_1d = lons
 
 # Get the sorting indices
 i_sort = np.argsort(lons_1d)
 
 # Apply sorting to the 2D arrays across the longitude axis (axis=1)
 if lons.ndim == 2:
-	lons = lons[:, i_sort]
-	lats = lats[:, i_sort] # Sort lats too if it's a meshgrid
+        lons = lons[:, i_sort]
+        lats = lats[:, i_sort] # Sort lats too if it's a meshgrid
 else:
-	lons = lons[i_sort]
+        lons = lons[i_sort]
 
 diff_data = diff_data[:, i_sort]
 
@@ -176,11 +164,8 @@ minimum = np.min(diff_data)
 maximum = np.max(diff_data)
 
 # Printing the results
-print(f"The minimum precip is: {minimum}")
-print(f"The maximum precip is: {maximum}")
-
-#########################################################
-
+print(f"The minimum precip total is: {minimum}")
+print(f"The maximum precip total is: {maximum}")
 
 #########################################################
 
@@ -204,6 +189,7 @@ gs = gridspec.GridSpec(1, 1, figure=fig)
 #snod_levels = np.arange(0, 25, 1)
 snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
 
+#snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9']
 snod_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
     '#00cd00', # 0.1 - 0.25  (Medium Green)
@@ -232,7 +218,7 @@ norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'GFSv17 | {duration}-h Accumulated Precipitation (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'ECENS mean | {duration}-h Accumulated Precipitation (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -242,7 +228,7 @@ grid_locs = [gs[0, 0]]
 for i, loc in enumerate(grid_locs):
     config = plot_configs[i]
 
-	# Add subplot with projection
+    # Add subplot with projection
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
@@ -300,4 +286,4 @@ for i, loc in enumerate(grid_locs):
 
 # Add a title and adjust layout to prevent overlapping
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv17_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecens_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
