@@ -20,6 +20,7 @@ import cartopy
 import cartopy.io.shapereader as shpreader
 from pathlib import Path
 import subprocess
+from metpy.plots import USCOUNTIES
 
 #####################################################
 var = "stageiv"
@@ -177,6 +178,7 @@ for i, loc in enumerate(grid_locs):
 	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
 	ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
 	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
+	ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6)
 	
 	# Add the land feature and shade it gray
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
@@ -267,6 +269,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/{var}_valid{pdy}_{cyc}Z_{duration}h_accum.png", bbox_inches='tight', pad_inches=0.1)
