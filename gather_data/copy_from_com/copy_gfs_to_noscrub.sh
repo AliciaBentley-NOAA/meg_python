@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- User Defined Variables ---
-YYYYMMDD="20260730"
+YYYYMMDD="20260724"
 
 # --- Outer Loop: Iterate through the Cycles ---
 for HH in 00 12; do

@@ -120,7 +120,9 @@ print(result.stdout)
 if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 10))
 elif grid == 'conus':
-	fig = plt.figure(figsize=(15, 12))
+	fig = plt.figure(figsize=(22, 12))
+elif grid == 'wpc':
+        fig = plt.figure(figsize=(20, 12))
 elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
 elif grid == 'easternUS':
@@ -174,11 +176,11 @@ for i, loc in enumerate(grid_locs):
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-	ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
+	ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=1.5)
 	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
 	ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
 	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
-	ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6)
+	#ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6)
 	
 	# Add the land feature and shade it gray
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
@@ -194,6 +196,10 @@ for i, loc in enumerate(grid_locs):
 		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
+	elif grid == 'wpc':
+		ax.set_extent([-125, -67, 22, 52], crs=ccrs.PlateCarree())
+		# Increase this number (e.g., 1.4) to stretch it more vertically
+		ax.set_aspect(1.3, adjustable='datalim')
 	elif grid == 'eastcoast':
                 ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
                 # Increase this number (e.g., 1.4) to stretch it more vertically
@@ -257,14 +263,15 @@ for i, loc in enumerate(grid_locs):
 	print("Number of non-zero values:", np.count_nonzero(data))
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, extend='max', ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
-	ax.set_title(config['title'], fontweight='bold', fontsize=18)
+	cbar = plt.colorbar(im, ax=ax, extend='max', ticks=snod_levels, orientation='vertical', pad=0.01, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
+	ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
-	cbar.ax.tick_params(labelsize=16)
+	cbar.ax.tick_params(labelsize=24)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
-	cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
+	cbar.ax.set_yticks(snod_levels)
+	cbar.ax.set_yticklabels([f'{l:g}' for l in snod_levels])    
 
 #################################################
 

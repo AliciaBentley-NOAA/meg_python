@@ -20,6 +20,7 @@ import pyproj
 import cartopy
 import cartopy.io.shapereader as shpreader
 from pathlib import Path
+from metpy.plots import USCOUNTIES
 
 #####################################################
 var = "precip"
@@ -87,13 +88,13 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 filename_ecmwf_start = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{start_MM}{start_DD}{start_HH}001"
 print(filename_ecmwf_start)
 grib2_filename_start = filename_ecmwf_start + ".grib2"
-subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
+#subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
 
 # Open ECMWF file and extract parameters from valid date
 filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 print(filename_ecmwf)
 grib2_filename = filename_ecmwf + ".grib2"
-subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
 
 #-----------------------------------------------------------
 
@@ -226,10 +227,11 @@ for i, loc in enumerate(grid_locs):
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
+    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.5)
     ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
     ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
     ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
+    ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6)
 	
 	# Add the land feature and shade it gray
     ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')

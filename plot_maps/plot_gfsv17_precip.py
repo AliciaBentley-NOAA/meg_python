@@ -20,6 +20,7 @@ import pyproj
 import cartopy
 import cartopy.io.shapereader as shpreader
 from pathlib import Path
+from metpy.plots import USCOUNTIES
 
 #####################################################
 var = "precip"
@@ -246,10 +247,11 @@ for i, loc in enumerate(grid_locs):
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
+    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.5)
     ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
     ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
     ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
+    ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6)
 	
 	# Add the land feature and shade it gray
     ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
