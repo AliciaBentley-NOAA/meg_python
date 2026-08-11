@@ -20,9 +20,10 @@ import pyproj
 import cartopy
 import cartopy.io.shapereader as shpreader
 from pathlib import Path
+import xarray as xr
 
 #####################################################
-var = "10m_wind_mslp"
+var = "orography"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -63,59 +64,29 @@ print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Open GFS GRIB2 file and extract parameters
-filename_gfs = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
-with grib2io.open(filename_gfs) as f_gfs:
+filename_gfs = f"/lfs/h1/ops/prod/com/gfs/v16.3/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.sfcanl.nc"
 
-	# Select the specific messages we want
-	mslp_msg = f_gfs.select(shortName='PRMSL', level='mean sea level')[0]
-	u10_msg = f_gfs.select(shortName='UGRD', level='10 m above ground')[0]
-	v10_msg = f_gfs.select(shortName='VGRD', level='10 m above ground')[0]
+# 1. Open the NetCDF dataset
+ds = xr.open_dataset(filename_gfs)
 
-	# Extract values
-	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa/mb
-	u10_kts = u10_msg.data * 1.94384  # Convert m/s into kts
-	v10_kts = v10_msg.data * 1.94384  # Convert m/s into kts
+# 2. Extract 'orog' and drop extra dimensions if present (e.g., time)
+orog = ds['orog']
+if 'time' in orog.dims:
+    orog = orog.isel(time=0)
 
-	# Extract data and coordinates
-	lats, lons = mslp_msg.latlons()
+# Squeeze out any single-length dimensions
+orog = orog.squeeze()
 
-# Shift longitudes from [0, 360] to [-180, 180]
-lons = np.where(lons > 180, lons - 360, lons)
+# Convert orog from meters to feet
+orog_ft = orog * 3.28084
 
-# If lons is a 2D meshgrid, we only want the 1D vector to get sort indices
-# We'll take the first row of lons to determine the sorting order
-if lons.ndim == 2:
-	lons_1d = lons[0, :]
-else:
-	lons_1d = lons
+# 3. Extract lat and lon coordinates
+# Common dimension names in GFS NetCDF are 'latitude'/'longitude' or 'lat'/'lon'
+lat_name = 'latitude' if 'latitude' in ds else 'lat'
+lon_name = 'longitude' if 'longitude' in ds else 'lon'
 
-# Get the sorting indices
-i_sort = np.argsort(lons_1d)
-
-# Apply sorting to the 2D arrays across the longitude axis (axis=1)
-if lons.ndim == 2:
-	lons = lons[:, i_sort]
-	lats = lats[:, i_sort] # Sort lats too if it's a meshgrid
-else:
-	lons = lons[i_sort]
-
-mslp_data = mslp_data[:, i_sort]
-u10_kts = u10_kts[:, i_sort]
-v10_kts = v10_kts[:, i_sort]
-
-# Thin the grid for wind barbs (0.25-degree GFS is dense!) ---
-# Adjust skip based on your map domain:
-# CONUS domain: skip = 12 to 15
-# Regional / State domain: skip = 5 to 8
-skip = 3
-
-lats_sub = lats[::skip, ::skip]
-lons_sub = lons[::skip, ::skip]
-u10_sub = u10_kts[::skip, ::skip]
-v10_sub = v10_kts[::skip, ::skip]
-
-#########################################################
-
+lats = ds[lat_name].values
+lons = ds[lon_name].values
 
 #########################################################
 
@@ -140,16 +111,17 @@ elif grid == 'florida':
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
-# Define the specific normalization (Panel 1)
-#mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-#mslp_levels = np.arange(968, 1056, 4)
-mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
-mslp_levels = np.arange(952, 1056, 4)
-mslp_levels_lines = np.arange(932, 1060, 4)
+# Grab original terrain colormap
+orig_terrain = plt.get_cmap('terrain')
 
-# Update configs with specific 'norm' and 'levels'
+# Slice from 0.25 to 1.0 (removes the bottom blue ~25%)
+land_terrain = mcolors.LinearSegmentedColormap.from_list(
+    'land_terrain', orig_terrain(np.linspace(0.30, 1.0, 256))
+)
+
+# Update configs
 plot_configs = [
-	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFS MSLP (hPa) and 10-m wind (kt) \nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'title': f'GFSv16 Orography (ft)\nSurface Analysis'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -163,9 +135,11 @@ for i, loc in enumerate(grid_locs):
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
 	# Geographic features
-    ax.add_feature(cfeature.COASTLINE, linewidth=2.0)
-    ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2.0)
-    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=3.5)
+    ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2.0, zorder=3)
+    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=2.0, zorder=3)
+    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=4)
+    ax.add_feature(cfeature.OCEAN, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+    ax.add_feature(cfeature.COASTLINE, edgecolor='0.3', linewidth=2.0, zorder=3)
 
 	# Define domain
     if grid == 'northeast':   
@@ -202,47 +176,24 @@ for i, loc in enumerate(grid_locs):
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
 
-	# Check if we are on the third panel and apply special cmap
-    #current_cmap = config['cmap']
-    current_cmap = copy.copy(plt.get_cmap(config['cmap']))
-    current_cmap.set_under('firebrick')
-    current_cmap.set_over('deeppink')
-
 	# Plot the shading
-    im = ax.contourf(lons, lats, config['data'], 
-		     levels=config['levels'],
-		     norm=config['norm'], 
-		     cmap=current_cmap,
+	# Note: CONUS = levels=np.arange(0, 13500, 500),
+    im = ax.contourf(lons, lats, orog_ft, 
+		     levels=np.arange(0, 7250, 250),
+		     cmap=land_terrain,
+		     extend='max',
 		     transform=ccrs.PlateCarree(),
-		     extend='both')
-
-	# Plot the contour lines
-	# Only add lines if it's one of the MSLP panels (0 or 1)
-    contours = ax.contour(lons, lats, config['data'], 
-			      levels=mslp_levels_lines, 
-			      colors='black', 
-			      linewidths=2.0, 
-			      transform=ccrs.PlateCarree())
-	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-    ax.clabel(contours, contours.levels[::2], inline=True, fontsize=22, fmt='%i', inline_spacing=8)
-
-    ax.barbs(
-        lons_sub, lats_sub, u10_sub, v10_sub,
-        length=7.8,
-        linewidth=1.5,
-        color='black',
-        barbcolor='black',
-        flagcolor='black',
-        transform=ccrs.PlateCarree()
+		     zorder=1
     )
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
     #cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
     if grid == 'alaska':
         cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.045)
+    elif grid == 'conus':
+        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055, ticks=np.arange(0, 15000, 2000))
     else:
-        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
+        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055, ticks=np.arange(0, 8000, 1000))
 
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 

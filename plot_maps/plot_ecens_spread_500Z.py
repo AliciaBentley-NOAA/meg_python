@@ -73,7 +73,7 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 # Open ECMWF file and extract parameters
 filename_ecmwf = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/E2E{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 grib2_filename = filename_ecmwf + ".grib2"
-subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
 
 with grib2io.open(grib2_filename) as f_ecmwf:
 
@@ -154,7 +154,7 @@ print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': hgt500_data, 'cmap': 'YlOrRd', 'norm': hgt500s_norm, 'levels': hgt500s_levels, 'title': f'ECENS mean/spread | 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': hgt500_data, 'cmap': 'YlOrRd', 'norm': hgt500s_norm, 'levels': hgt500s_levels, 'title': f'EC-EPS mean/spread | 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]

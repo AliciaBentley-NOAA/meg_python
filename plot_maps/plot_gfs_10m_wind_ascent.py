@@ -20,9 +20,11 @@ import pyproj
 import cartopy
 import cartopy.io.shapereader as shpreader
 from pathlib import Path
+import metpy.calc as mpcalc
+from metpy.units import units
 
 #####################################################
-var = "10m_wind_mslp"
+var = "10m_wind_ascent"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -70,11 +72,13 @@ with grib2io.open(filename_gfs) as f_gfs:
 	mslp_msg = f_gfs.select(shortName='PRMSL', level='mean sea level')[0]
 	u10_msg = f_gfs.select(shortName='UGRD', level='10 m above ground')[0]
 	v10_msg = f_gfs.select(shortName='VGRD', level='10 m above ground')[0]
+	vvel_msg = f_gfs.select(shortName='VVEL', level='500 mb')[0]
 
 	# Extract values
-	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa/mb
+	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa
 	u10_kts = u10_msg.data * 1.94384  # Convert m/s into kts
 	v10_kts = v10_msg.data * 1.94384  # Convert m/s into kts
+	omega = vvel_msg.data * 0.01  # Convert
 
 	# Extract data and coordinates
 	lats, lons = mslp_msg.latlons()
@@ -102,6 +106,33 @@ else:
 mslp_data = mslp_data[:, i_sort]
 u10_kts = u10_kts[:, i_sort]
 v10_kts = v10_kts[:, i_sort]
+omega = omega[:, i_sort]
+
+# --- 1. Fast Grid Deltas ---
+# Extract 1D lat/lon coordinate vectors (fastest approach for MetPy)
+if lats.ndim == 2:
+    lats_1d = lats[:, 0]
+    lons_1d = lons[0, :]
+else:
+    lats_1d = lats
+    lons_1d = lons
+
+# Apply a light Gaussian filter for smoother contour lines.
+#convergence_smoothed = mpcalc.smooth_gaussian(convergence, n=6)
+#print(f"Successfully smoothed convergence!")
+
+# --- 3. Crop to Plotting Domain BEFORE Contouring ---
+# Example: Crop to US Domain (Lat: 20 to 55 N, Lon: -130 to -60 W / 230 to 300 E)
+# Adjust these index slices or masks to match your map extent!
+lat_mask = (lats_1d >= 20) & (lats_1d <= 55)
+lon_mask = (lons_1d >= -130) & (lons_1d <= -60) if (lons_1d < 0).any() else (lons_1d >= 230) & (lons_1d <= 300)
+
+# Slice 2D arrays down to regional domain
+lats_trim = lats[np.outer(lat_mask, lon_mask)].reshape(np.sum(lat_mask), np.sum(lon_mask))
+lons_trim = lons[np.outer(lat_mask, lon_mask)].reshape(np.sum(lat_mask), np.sum(lon_mask))
+omega_trim = omega[lat_mask][:, lon_mask]
+
+#----------------------------------------------------------
 
 # Thin the grid for wind barbs (0.25-degree GFS is dense!) ---
 # Adjust skip based on your map domain:
@@ -141,15 +172,22 @@ elif grid == 'florida':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-#mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-#mslp_levels = np.arange(968, 1056, 4)
 mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
 mslp_levels = np.arange(952, 1056, 4)
 mslp_levels_lines = np.arange(932, 1060, 4)
 
+# NCL parameters
+max_val = -0.005  # cnMaxLevelValF
+spacing = 0.005  # cnLevelSpacingF
+min_val = -0.1  # Define your minimum contour level (cnMinLevelValF)
+
+# Generate contour levels
+# Note: np.arange excludes the upper bound, so add 'spacing / 2' to include max_val
+omega_levels = np.arange(min_val, max_val + (spacing / 2), spacing)
+
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFS MSLP (hPa) and 10-m wind (kt) \nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'MSLP (hPa); 10-m wind (kt); 500-hPa ascent (5x10^-3 hPa/s) \nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -165,7 +203,7 @@ for i, loc in enumerate(grid_locs):
 	# Geographic features
     ax.add_feature(cfeature.COASTLINE, linewidth=2.0)
     ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2.0)
-    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=3.5)
+    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=2.0)
 
 	# Define domain
     if grid == 'northeast':   
@@ -217,7 +255,6 @@ for i, loc in enumerate(grid_locs):
 		     extend='both')
 
 	# Plot the contour lines
-	# Only add lines if it's one of the MSLP panels (0 or 1)
     contours = ax.contour(lons, lats, config['data'], 
 			      levels=mslp_levels_lines, 
 			      colors='black', 
@@ -225,12 +262,26 @@ for i, loc in enumerate(grid_locs):
 			      transform=ccrs.PlateCarree())
 	# Add labels to the lines (e.g., '1012')
 	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-    ax.clabel(contours, contours.levels[::2], inline=True, fontsize=22, fmt='%i', inline_spacing=8)
+    ax.clabel(contours, contours.levels[::2], inline=True, fontsize=18, fmt='%i', inline_spacing=8)
+
+    # Plot ascent as solid red line contours
+    print(f"About to plot convergence contours!")
+    cs = ax.contour(
+        lons_trim, lats_trim, omega_trim, 
+        levels=omega_levels, 
+        colors='red', 
+        linewidths=2.5,
+        linestyles='solid',  # Forces all lines (including negative values) to be solid
+        transform=ccrs.PlateCarree()
+    )
+    # Add inline numerical labels on the contour lines
+    #ax.clabel(cs, inline=True, fmt='%d', fontsize=9, inline_spacing=10)
+    print(f"Successfully plotted ascent contours!")
 
     ax.barbs(
         lons_sub, lats_sub, u10_sub, v10_sub,
-        length=7.8,
-        linewidth=1.5,
+        length=7.5,
+        linewidth=1.0,
         color='black',
         barbcolor='black',
         flagcolor='black',
@@ -238,7 +289,6 @@ for i, loc in enumerate(grid_locs):
     )
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-    #cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
     if grid == 'alaska':
         cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.045)
     else:
@@ -249,9 +299,9 @@ for i, loc in enumerate(grid_locs):
 	# Set the label size for the ticks
     cbar.ax.tick_params(labelsize=24)
 
+    print(f"All that is left is tight_layout() and savefig")
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFSv16 | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv16_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

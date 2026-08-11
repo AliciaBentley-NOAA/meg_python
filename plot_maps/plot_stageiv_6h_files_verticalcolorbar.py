@@ -277,4 +277,4 @@ for i, loc in enumerate(grid_locs):
 
 # Add a title and adjust layout to prevent overlapping
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/{var}_valid{pdy}_{cyc}Z_{duration}h_accum.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/{var}_vertical_valid{pdy}_{cyc}Z_{duration}h_accum.png", bbox_inches='tight', pad_inches=0.1)
