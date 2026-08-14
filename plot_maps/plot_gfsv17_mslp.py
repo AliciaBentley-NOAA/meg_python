@@ -146,10 +146,20 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
-	# Geographic features
-    ax.add_feature(cfeature.COASTLINE, linewidth=2.0)
-    ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2.0)
-    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=2.0) #edgecolor='gray',
+        # Determine the appropriate scale based on the domain
+        state_scale = '10m' if grid != "conus" else '50m'
+
+        # Fetch STATES with the lakes strictly cut out
+        states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
+
+        # Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+        countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
+
+        # Geographic features
+        ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+        ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+        ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+        ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 
 	# Define domain
     if grid == 'northeast':   
@@ -202,18 +212,20 @@ for i, loc in enumerate(grid_locs):
 		     norm=config['norm'], 
 		     cmap=current_cmap,
 		     transform=ccrs.PlateCarree(),
-		     extend='both')
+		     extend='both',
+		     zorder=3)
 
 	# Plot the contour lines
 	# Only add lines if it's one of the MSLP panels (0 or 1)
     contours = ax.contour(lons, lats, config['data'], 
 			      levels=mslp_levels_lines, 
 			      colors='black', 
-			      linewidths=2.0, 
-			      transform=ccrs.PlateCarree())
+			      linewidths=2.5, 
+			      transform=ccrs.PlateCarree(),
+			      zorder=5)
+
 	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-    ax.clabel(contours, contours.levels[::2], inline=True, fontsize=18, fmt='%i', inline_spacing=8)
+    ax.clabel(contours, contours.levels[::2], inline=True, fontsize=20, fmt='%i', inline_spacing=8)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
     if grid == 'alaska':
@@ -228,6 +240,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFSv17 | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv17_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

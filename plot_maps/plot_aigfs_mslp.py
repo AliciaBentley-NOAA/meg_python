@@ -128,10 +128,20 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
+	# Determine the appropriate scale based on the domain
+	state_scale = '10m' if grid != "conus" else '50m'
+
+	# Fetch STATES with the lakes strictly cut out
+	states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
+
+	# Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+	countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
+
 	# Geographic features
-	ax.add_feature(cfeature.COASTLINE, linewidth=1.5)
-	ax.add_feature(cfeature.BORDERS, linewidth=1.5)
-	ax.add_feature(cfeature.STATES, edgecolor='gray', linewidth=2.0, alpha=0.5)
+	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+	ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -159,16 +169,19 @@ for i, loc in enumerate(grid_locs):
 		     norm=config['norm'], 
 		     cmap=current_cmap,
 		     transform=ccrs.PlateCarree(),
-		     extend='both')
+		     extend='both',
+		     zorder=3)
 
 	# Plot the contour lines
 	contours = ax.contour(lons, lats, config['data'], 
 			      levels=config['levels'], 
 			      colors='black', 
-			      linewidths=2.0, 
-			      transform=ccrs.PlateCarree())
+			      linewidths=2.5, 
+			      transform=ccrs.PlateCarree(),
+			      zorder=5)
+
 	# Add labels to the lines (e.g., '1012')
-	ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)

@@ -25,6 +25,8 @@ from metpy.plots import USCOUNTIES
 #####################################################
 var = "precip"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
 fhr = str(sys.argv[3])             # 024 (3 digits) 
@@ -43,7 +45,6 @@ print("grid:", grid)
 init_str = str(pdy)
 init_hour = int(cyc)
  
-#Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
  
@@ -68,7 +69,7 @@ forecast_delta = timedelta(hours=fcst_hour)
 duration_delta = timedelta(hours=duration_hour)
 nohrsc_delta = timedelta(hours=6)
 valid_dt = init_dt + forecast_delta
-start_dt = valid_dt - duration_delta    # Remember: Valid time in NOHRSC filenames is at the *end* of the 6-h period
+start_dt = valid_dt - duration_delta 
 
 start_MM = start_dt.strftime("%m")  # Result: '02'
 start_DD = start_dt.strftime("%d")  # Result: '26'
@@ -88,6 +89,7 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 filename_ecmwf_start = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{start_MM}{start_DD}{start_HH}001"
 print(filename_ecmwf_start)
 grib2_filename_start = filename_ecmwf_start + ".grib2"
+print(f"Remember to uncomment subprocess.run if using a new ECMWF file!")
 #subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
 
 # Open ECMWF file and extract parameters from valid date
@@ -180,11 +182,10 @@ elif grid == 'easternUS':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-#snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
-snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
+#precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
+precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
 
-#snod_colors = ['#749DDE', '#588ADC', '#2F74C8', '#2364B9', '#1E559D', '#FFF68F', '#F4C430', '#ED781E', '#E23916', '#C92828', '#D986D9', '#D95DD9']
-snod_colors = [
+precip_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
     '#00cd00', # 0.1 - 0.25  (Medium Green)
     '#008b00', # 0.25 - 0.5  (Dark Green)
@@ -204,15 +205,14 @@ snod_colors = [
     '#ffff00', # 15.0 - 20.0 (Yellow)
 ]
 
-cmap = mcolors.ListedColormap(snod_colors)
-#cmap.set_under('white')
+cmap = mcolors.ListedColormap(precip_colors)
 cmap.set_over('tan')
 
-norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
+norm = mcolors.BoundaryNorm(precip_levels, ncolors=len(precip_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'ECMWF | {duration}-h Accumulated Precipitation (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': precip_levels, 'title': f'ECMWF | {duration}-h Accumulated Precipitation (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -284,14 +284,14 @@ for i, loc in enumerate(grid_locs):
 		     zorder=3)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-    cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
+    cbar = plt.colorbar(im, ax=ax, ticks=precip_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
     cbar.ax.tick_params(labelsize=20)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
-    cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
+    cbar.ax.set_xticklabels([f'{l:g}' for l in precip_levels])
 
 #################################################
 

@@ -24,6 +24,8 @@ import subprocess
 #####################################################
 var = "mslp"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
 fhr = str(sys.argv[3])             # 024 (3 digits) 
@@ -40,7 +42,6 @@ print("grid:", grid)
 init_str = str(pdy)
 init_hour = int(cyc)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
@@ -73,7 +74,9 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 # Open ECMWF file and extract parameters
 filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 grib2_filename = filename_ecmwf + ".grib2"
-subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+print(f"Remember to uncomment subprocess.run if using a new ECMWF file!")
+#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+
 with grib2io.open(grib2_filename) as f_ecmwf:
 
 	# Select the specific messages we want
@@ -109,9 +112,6 @@ mslp_data = mslp_data[:, i_sort]
 
 #########################################################
 
-
-#########################################################
-
 # Create the Plot
 if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
@@ -129,11 +129,10 @@ mslp_levels = np.arange(968, 1056, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'ECMWF Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'ECMWF | Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
-# gs[0, 0] = Top Left, gs[0, 1] = Top Right, gs[1, :] = Bottom Center
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
@@ -142,10 +141,30 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
+	# Determine the appropriate scale based on the domain
+	state_scale = '10m' if grid != "conus" else '50m'
+
+	# Fetch STATES with the lakes strictly cut out
+	states_clipped = cfeature.NaturalEarthFeature(
+		category='cultural',
+		name='admin_1_states_provinces_lakes', # <--- The crucial _lakes suffix
+		scale=state_scale,
+		facecolor='none'
+	)
+
+	# Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+	countries_clipped = cfeature.NaturalEarthFeature(
+	category='cultural',
+		name='admin_0_countries_lakes', # <--- The crucial _lakes suffix
+		scale=state_scale,
+		facecolor='none'
+	)
+
 	# Geographic features
-	ax.add_feature(cfeature.COASTLINE, linewidth=1.5)
-	ax.add_feature(cfeature.BORDERS, linewidth=1.5)
-	ax.add_feature(cfeature.STATES, edgecolor='gray', linewidth=2.0, alpha=0.5)
+	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+	ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -173,18 +192,19 @@ for i, loc in enumerate(grid_locs):
 		     norm=config['norm'], 
 		     cmap=current_cmap,
 		     transform=ccrs.PlateCarree(),
-		     extend='both')
+		     extend='both',
+		     zorder=3)
 
 	# Plot the contour lines
-	# Only add lines if it's one of the MSLP panels (0 or 1)
 	contours = ax.contour(lons, lats, config['data'], 
 			      levels=config['levels'], 
 			      colors='black', 
-			      linewidths=2.0, 
-			      transform=ccrs.PlateCarree())
+			      linewidths=2.5, 
+			      transform=ccrs.PlateCarree(),
+			      zorder=5)
+
 	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
@@ -196,6 +216,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"ECMWF | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecmwf_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

@@ -124,10 +124,10 @@ elif grid == 'florida':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-#mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-#mslp_levels = np.arange(968, 1056, 4)
-mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
-mslp_levels = np.arange(952, 1056, 4)
+mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
+mslp_levels = np.arange(968, 1056, 4)
+#mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
+#mslp_levels = np.arange(952, 1056, 4)
 mslp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
@@ -145,10 +145,20 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
-	# Geographic features
-    ax.add_feature(cfeature.COASTLINE, linewidth=2.0)
-    ax.add_feature(cfeature.BORDERS, edgecolor='0.3', linewidth=2.0)
-    ax.add_feature(cfeature.STATES, edgecolor='0.3', linewidth=2.0)
+    # Determine the appropriate scale based on the domain
+    state_scale = '10m' if grid != "conus" else '50m'
+
+    # Fetch STATES with the lakes strictly cut out
+    states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
+
+    # Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+    countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
+
+    # Geographic features
+    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+    ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+    ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+    ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 
 	# Define domain
     if grid == 'northeast':   
@@ -197,18 +207,20 @@ for i, loc in enumerate(grid_locs):
 		     norm=config['norm'], 
 		     cmap=current_cmap,
 		     transform=ccrs.PlateCarree(),
-		     extend='both')
+		     extend='both',
+		     zorder=3)
 
 	# Plot the contour lines
 	# Only add lines if it's one of the MSLP panels (0 or 1)
     contours = ax.contour(lons, lats, config['data'], 
 			      levels=mslp_levels_lines, 
 			      colors='black', 
-			      linewidths=2.0, 
-			      transform=ccrs.PlateCarree())
+			      linewidths=2.5, 
+			      transform=ccrs.PlateCarree(),
+			      zorder=5)
+
 	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-    ax.clabel(contours, contours.levels[::2], inline=True, fontsize=18, fmt='%i', inline_spacing=8)
+    ax.clabel(contours, contours.levels[::2], inline=True, fontsize=20, fmt='%i', inline_spacing=8)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
     #cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
