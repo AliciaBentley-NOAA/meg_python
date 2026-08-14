@@ -76,7 +76,7 @@ print(f"Remember to uncomment subprocess.run line when using new files!")
 # Open ECMWF file and extract parameters
 filename_ecmwf = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/E2E{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 grib2_filename = filename_ecmwf + ".grib2"
-subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
 
 with grib2io.open(grib2_filename) as f_ecmwf:
 
@@ -165,14 +165,31 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
-	# Geographic features
-	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
-	ax.add_feature(cfeature.COASTLINE, linewidth=2, zorder=4)
-	ax.add_feature(cfeature.BORDERS, linewidth=2, zorder=4)
-	ax.add_feature(cfeature.STATES, edgecolor='0.2', linewidth=2.5, alpha=0.5, zorder=4)
+	# Determine the appropriate scale based on the domain
+	state_scale = '10m' if grid != "conus" else '50m'
 
-	# Add the land feature and shade it gray
+	# Fetch STATES with the lakes strictly cut out
+	states_clipped = cfeature.NaturalEarthFeature(
+		category='cultural',
+		name='admin_1_states_provinces_lakes', # <--- The crucial _lakes suffix
+		scale=state_scale,
+		facecolor='none'
+	)
+
+	# Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+	countries_clipped = cfeature.NaturalEarthFeature(
+		category='cultural',
+		name='admin_0_countries_lakes', # <--- The crucial _lakes suffix
+		scale=state_scale,
+		facecolor='none'
+	)
+
+	# Geographic features
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
+	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+	ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -199,13 +216,13 @@ for i, loc in enumerate(grid_locs):
 			      colors='black', 
 			      linewidths=3.0, 
 			      transform=ccrs.PlateCarree(),
-			      zorder=3)
+			      zorder=5)
 
 	# Add labels to the lines (e.g., '1012')
-	ax.clabel(contours, inline=True, fontsize=8, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
+	cbar = plt.colorbar(im, ax=ax, ticks=hgt500s_levels, orientation='horizontal', pad=0.06, fraction=0.055)
 	ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks

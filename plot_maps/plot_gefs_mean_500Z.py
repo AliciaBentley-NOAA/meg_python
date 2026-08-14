@@ -164,9 +164,9 @@ for i, loc in enumerate(grid_locs):
 			      colors='black', 
 			      linewidths=0.5, 
 			      transform=ccrs.PlateCarree())
+
 	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	ax.clabel(contours, inline=True, fontsize=8, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
