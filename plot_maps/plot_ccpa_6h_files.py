@@ -20,9 +20,12 @@ import cartopy
 import cartopy.io.shapereader as shpreader
 from pathlib import Path
 import subprocess
+from metpy.plots import USCOUNTIES
 
 #####################################################
 var = "ccpa"
+
+print(f"#############################################")
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
@@ -40,7 +43,6 @@ print("grid:", grid)
 valid_str = str(pdy)
 valid_hour = int(cyc)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 valid_dt = datetime.strptime(valid_str, "%Y%m%d").replace(hour=valid_hour)
 
@@ -51,7 +53,6 @@ Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 
 # Use f-string to format with leading zeros (e.g., 000, 006)
 duration_hour = int(duration)
-#start_fhr_str = f"{start_fhr:03}"
     
 # Add the forecast lead time
 duration_delta = timedelta(hours=duration_hour)
@@ -87,35 +88,19 @@ for j in range(int(segments)):
         # Extract the message and data
         precip_msg = f_ccpa[0]
         precip_data = precip_msg.data
-
-        #print(np.nanmax(precip_data))
-        #print(f"Extracted: {precip_msg.shortName} for {precip_msg.leadTime} hours")
-        #print(f"Max Precip: {precip_data.max():.2f} inches")
     
     ccpa_array[j, :, :] = precip_data
 
-    print(f"Success! Loaded {date_string} for {j} into CCPA array.")
+    print(f"Success! Loaded {date_string} into index {j} into CCPA array.")
 
     lats, lons = precip_msg.latlons()
 
 # Sum across the time segments (axis 0) 
-# This gives you a 2D map of the total accumulation
 ccpa_total = np.sum(ccpa_array, axis=0) * 0.0393701   # convert mm to inches
 
-# Finding the values
-minimum = np.min(ccpa_total)
-maximum = np.max(ccpa_total)
-
-# Printing the results
-print(f"The minimum precip is: {minimum}")
-print(f"The maximum precip is: {maximum}")
-
 # This tells us the exact lat/lon bounds wgrib2 sees in the file
-result = subprocess.run(f"wgrib2 {filename_ccpa} -grid", shell=True, capture_output=True, text=True)
-print(result.stdout)
-
-#########################################################
-
+#result = subprocess.run(f"wgrib2 {filename_ccpa} -grid", shell=True, capture_output=True, text=True)
+#print(result.stdout)
 
 #########################################################
 
@@ -135,9 +120,10 @@ elif grid == 'easternUS':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
+#precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
+precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
 
-snod_colors = [
+precip_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
     '#00cd00', # 0.1 - 0.25  (Medium Green)
     '#008b00', # 0.25 - 0.5  (Dark Green)
@@ -157,19 +143,17 @@ snod_colors = [
     '#ffff00', # 15.0 - 20.0 (Yellow)
 ]
 
-cmap = mcolors.ListedColormap(snod_colors)
-#cmap.set_under('white')
+cmap = mcolors.ListedColormap(precip_colors)
 cmap.set_over('tan')
 
-norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
+norm = mcolors.BoundaryNorm(precip_levels, ncolors=len(precip_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-    {'data': ccpa_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'CCPA | {duration}-h Accumulated Precipitation (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+    {'data': ccpa_total, 'cmap': cmap, 'norm': norm, 'levels': precip_levels, 'title': f'CCPA | {duration}-h Accumulated Precipitation (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
-# gs[0, 0] = Top Left, gs[0, 1] = Top Right, gs[1, :] = Bottom Center
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
@@ -179,15 +163,14 @@ for i, loc in enumerate(grid_locs):
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
     # Geographic features
-    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
-    ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
-    ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
-    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
+    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.5)
+    ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=2.0)
+    ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=2.0)
+    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.5)
+    ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6)
 
     # Add the land feature and shade it gray
     ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
-    # Add oceans for contrast (optional)
-    #ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
 
     # Define domain
     if grid == 'northeast':
@@ -220,18 +203,17 @@ for i, loc in enumerate(grid_locs):
              extend='max')
 
     # Capture the colorbar in a variable (e.g., 'cbar')
-    cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
+    cbar = plt.colorbar(im, ax=ax, ticks=precip_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
     # Set the label size for the ticks
-    cbar.ax.tick_params(labelsize=24)
+    cbar.ax.tick_params(labelsize=20)
 
     # Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
-    cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
+    cbar.ax.set_xticklabels([f'{l:g}' for l in precip_levels])
 
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFS | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/{var}_valid{pdy}_{cyc}Z_{duration}h_accum.png", bbox_inches='tight', pad_inches=0.1)

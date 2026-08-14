@@ -25,6 +25,8 @@ from metpy.plots import USCOUNTIES
 #####################################################
 var = "stageiv"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
 grid = str(sys.argv[3])            # conus
@@ -41,7 +43,6 @@ print("grid:", grid)
 valid_str = str(pdy)
 valid_hour = int(cyc)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 valid_dt = datetime.strptime(valid_str, "%Y%m%d").replace(hour=valid_hour)
 
@@ -69,15 +70,15 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Determine how many 6-hour periods are in the full duration (e.g., 24h/6h)
 segments = int(duration) / int(6) 
-print(f"Number of StageIV files needed: {segments}")
+print(f"Number of Stage IV files needed: {segments}")
 
 st4_array = np.zeros((int(segments), 881, 1121), dtype=np.float32)
 
 for j in range(int(segments)):
 
-	# Remember: Valid time in StageIV filenames is at the *end* of the 6-h period (add st4_delta)
+	# Remember: Valid time in Stage IV filenames is at the *end* of the 6-h period (add st4_delta)
 	current_dt = current_dt + st4_delta
-	print(f"Current StageIV File Time: {current_dt.strftime('%Y-%m-%d %HZ')}")
+	print(f"Current Stage IV File Time: {current_dt.strftime('%Y-%m-%d %HZ')}")
 	date_string = current_dt.strftime('%Y%m%d%H')
 
 	# Open 6-h stageiv file 
@@ -96,23 +97,17 @@ for j in range(int(segments)):
             
             		st4_array[j, :, :] = data
 
-        	print(f"Success! Loaded {date_string} using grib2io.")
-
 	except Exception as e:
     		print(f"wgrib2 failed for {date_string}: {e}")
 
-	print(f"Added StageIV for {j}!")
+	print(f"Added Stage IV into index {j} in st4_array!")
 
 # Sum across the 6 time segments (axis 0) --> resulting shape (881,1121) 
-# This gives you a 2D map of the total accumulation
 st4_total = np.sum(st4_array, axis=0) * .0393701   # convert mm to inches
 
 # This tells us the exact lat/lon bounds wgrib2 sees in the file
-result = subprocess.run(f"wgrib2 {filename_st4} -grid", shell=True, capture_output=True, text=True)
-print(result.stdout)
-
-#########################################################
-
+#result = subprocess.run(f"wgrib2 {filename_st4} -grid", shell=True, capture_output=True, text=True)
+#print(result.stdout)
 
 #########################################################
 
@@ -130,9 +125,9 @@ elif grid == 'easternUS':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
+precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
 
-snod_colors = [
+precip_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
     '#00cd00', # 0.1 - 0.25  (Medium Green)
     '#008b00', # 0.25 - 0.5  (Dark Green)
@@ -152,19 +147,18 @@ snod_colors = [
     '#ffff00', # 15.0 - 20.0 (Yellow)
 ]
 
-cmap = mcolors.ListedColormap(snod_colors)
+cmap = mcolors.ListedColormap(precip_colors)
 cmap.set_under(color='none')
 cmap.set_over('tan')
 
-norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
+norm = mcolors.BoundaryNorm(precip_levels, ncolors=len(precip_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': st4_total, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'Stage IV | {duration}-h Precipitation Analysis (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': st4_total, 'cmap': cmap, 'norm': norm, 'levels': precip_levels, 'title': f'Stage IV | {duration}-h Precipitation Analysis (in.)\nValid: {start_dt.strftime("%Y-%m-%d %HZ")} - {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
-# gs[0, 0] = Top Left, gs[0, 1] = Top Right, gs[1, :] = Bottom Center
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
@@ -182,8 +176,6 @@ for i, loc in enumerate(grid_locs):
 	
 	# Add the land feature and shade it gray
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
-	# Add oceans for contrast (optional)
-	#ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
 
 	# Define domain
 	if grid == 'northeast':   
@@ -231,9 +223,9 @@ for i, loc in enumerate(grid_locs):
 	lon_ll, lat_ll = ccrs.PlateCarree().transform_point(X[0, 0], Y[0, 0], st4_proj)
 	lon_ur, lat_ur = ccrs.PlateCarree().transform_point(X[-1, -1], Y[-1, -1], st4_proj)
 
-	print("--- GRID LOCATION CHECK ---")
-	print(f"Calculated Lower-Left Corner:  Lat {lat_ll:.2f}°, Lon {lon_ll:.2f}°")
-	print(f"Calculated Upper-Right Corner: Lat {lat_ur:.2f}°, Lon {lon_ur:.2f}°")
+	#print("--- GRID LOCATION CHECK ---")
+	#print(f"Calculated Lower-Left Corner:  Lat {lat_ll:.2f}°, Lon {lon_ll:.2f}°")
+	#print(f"Calculated Upper-Right Corner: Lat {lat_ur:.2f}°, Lon {lon_ur:.2f}°")
 
 	# Mask NOAA undef / fill values (anything > 1000)
 	config['data'] = np.ma.masked_greater(config['data'], 1000.0)
@@ -248,23 +240,23 @@ for i, loc in enumerate(grid_locs):
 	data = config['data']
 
 	print("--- DATA DIAGNOSTICS ---")
-	print("Data type:", data.dtype)
-	print("Data shape:", data.shape)
-	print("Min value:", np.nanmin(data))
-	print("Max value:", np.nanmax(data))
-	print("Mean value:", np.nanmean(data))
-	print("Number of NaNs:", np.isnan(data).sum())
-	print("Number of non-zero values:", np.count_nonzero(data))
+	#print("Data type:", data.dtype)
+	#print("Data shape:", data.shape)
+	print("Min Stage IV value:", np.nanmin(data))
+	print("Max Stage IV value:", np.nanmax(data))
+	#print("Mean value:", np.nanmean(data))
+	#print("Number of NaNs:", np.isnan(data).sum())
+	#print("Number of non-zero values:", np.count_nonzero(data))
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, extend='max', ticks=snod_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
+	cbar = plt.colorbar(im, ax=ax, extend='max', ticks=precip_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
 	ax.set_title(config['title'], fontweight='bold', fontsize=18)
 
 	# Set the label size for the ticks
 	cbar.ax.tick_params(labelsize=16)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
-	cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
+	cbar.ax.set_xticklabels([f'{l:g}' for l in precip_levels])
 
 #################################################
 

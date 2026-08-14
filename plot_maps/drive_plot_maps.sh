@@ -34,7 +34,7 @@ export DOMAIN='northeast'
 #If plotting precip or snowfall, choose a duration (typically 24 or 36)
 export duration='24'   #72, 48, 36, 24, 12, 6
 
-#If plotting StageIV, CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
+#If plotting Stage IV, CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
 export vdate="20260730" #This is the last time in the period covered
 export vhour="00"  #00, 06, 12, 18
 
@@ -51,13 +51,13 @@ export PLOT_HGEFS_FCSTS=NO
 export PLOT_ECENS_FCSTS=NO
 
 export PLOT_GFS_FCSTS=NO
-export PLOT_AIGFS_FCSTS=YES
+export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 export PLOT_ECAIFS_FCSTS=NO
 
 export PLOT_GFSv17_FCSTS=NO
 
-export PLOT_ST4_ANALYSIS=NO
+export PLOT_ST4_ANALYSIS=YES
 export PLOT_CCPA_ANALYSIS=NO
 export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
@@ -202,8 +202,8 @@ fi
 if [ $PLOT_ST4_ANALYSIS = YES ]; then
         echo "======================================="
         export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/alb_flood'
-        echo "Kickoff ${CASE} scripts to plot StageIV analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
-#        python ${SCRIPTS_PATH}/plot_stageiv_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
+        echo "Kickoff ${CASE} scripts to plot Stage IV analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_stageiv_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
         python ${SCRIPTS_PATH}/plot_stageiv_6h_files_verticalcolorbar.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1 
 fi 
