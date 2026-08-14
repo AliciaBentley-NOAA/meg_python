@@ -188,23 +188,19 @@ for i, loc in enumerate(grid_locs):
 		     zorder=1
     )
 
-	# Capture the colorbar in a variable (e.g., 'cbar')
-    #cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
-    if grid == 'alaska':
-        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.045)
-    elif grid == 'conus':
-        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055, ticks=np.arange(0, 15000, 2000))
-    else:
-        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055, ticks=np.arange(0, 8000, 1000))
-
+        # Capture the colorbar in a variable (e.g., 'cbar')
+    cbar = plt.colorbar(im, ax=ax, orientation='vertical', pad=0.06, fraction=0.061, shrink=0.95, ticks=np.arange(0, 8000, 1000)) # fraction is height, shrink is width
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
-	# Set the label size for the ticks
+        # Set the label size for the ticks
     cbar.ax.tick_params(labelsize=24)
+
+        # Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
+    #cbar.ax.set_yticks(snod_levels)
+    #cbar.ax.set_yticklabels([f'{l:g}' for l in snod_levels])   
 
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFSv16 | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv16_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv16_vertical_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

@@ -93,7 +93,8 @@ mkdir -p ${MAP_PATH}
 if [ $PLOT_GFS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot GFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_gfs_orography.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfs_orography.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gfs_orography_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_10m_wind_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
