@@ -1,9 +1,10 @@
 #!/bin/bash
 ###################################################
-# Script to plot GFS forecast map comparisons
+# Script to drive MEG plotting scripts
 #
 # Contributors: Alicia.Bentley@noaa.gov
-# NOAA/NWS/NCEP/Environmental Modeling Center
+# NOAA/NWS/Office of Modeling and Development
+# Last update: 14 August 2026
 ###################################################
 module reset
 module load prod_envir/2.0.6
@@ -22,9 +23,9 @@ module load grib_util/1.2.4
 
 #===============================================================================================================
 export CASE='alb_flood'
-export cyc="00"
-export initdate="20260806"
-export fhr="000"  #240,216,192,168,144,120,096,072,048,024
+export cyc="12"
+export initdate="20260728"
+export fhr="036"  #240,216,192,168,144,120,096,072,048,024
                   #228,204,180,156,132,108,084,060,036,012
 
 # Current domain options: conus, wpc, eastcoast, northeast, easternUS, southeastUS, westcoast, florida
@@ -45,11 +46,11 @@ export longname="IanAL092022"
 # *************************************************************
 # Select which models to plot (YES/NO)
 export PLOT_GEFS_FCSTS=NO
-export PLOT_AIGEFS_FCSTS=NO
+export PLOT_AIGEFS_FCSTS=YES
 export PLOT_HGEFS_FCSTS=NO
 export PLOT_ECENS_FCSTS=NO
 
-export PLOT_GFS_FCSTS=YES
+export PLOT_GFS_FCSTS=NO
 export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 export PLOT_ECAIFS_FCSTS=NO
@@ -152,9 +153,9 @@ if [ $PLOT_AIGEFS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot AIGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_aigefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_aigefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
-#        python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#        python ${SCRIPTS_PATH}/plot_aigefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_aigefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
+        python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_aigefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 

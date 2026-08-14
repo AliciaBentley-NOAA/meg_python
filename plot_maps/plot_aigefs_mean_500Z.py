@@ -23,6 +23,8 @@ from pathlib import Path
 #####################################################
 var = "500Z"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
 fhr = str(sys.argv[3])             # 024 (3 digits) 
@@ -39,7 +41,6 @@ print("grid:", grid)
 init_str = str(pdy)
 init_hour = int(cyc)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
@@ -98,9 +99,6 @@ hgt500_data = hgt500_data[:, i_sort]
 
 #########################################################
 
-
-#########################################################
-
 # Create the Plot
 if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
@@ -116,11 +114,10 @@ hgt500_levels = np.arange(474, 606, 6)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': hgt500_data, 'cmap': 'gist_rainbow_r', 'norm': hgt500_norm, 'levels': hgt500_levels, 'title': f'AIGEFS mean 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': hgt500_data, 'cmap': 'gist_rainbow_r', 'norm': hgt500_norm, 'levels': hgt500_levels, 'title': f'AIGEFS mean | 500-hPa Geopotential Height (dam)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
-# gs[0, 0] = Top Left, gs[0, 1] = Top Right, gs[1, :] = Bottom Center
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
@@ -137,12 +134,10 @@ for i, loc in enumerate(grid_locs):
 	# Define domain
 	if grid == 'northeast':   
 		ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
-		# Add manual aspect ratio here. 
 		# Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.25, adjustable='datalim')
 	elif grid == 'conus':                
 		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
 
@@ -158,14 +153,12 @@ for i, loc in enumerate(grid_locs):
 		     extend='both')
 
 	# Plot the contour lines
-	# Only add lines if it's one of the MSLP panels (0 or 1)
 	contours = ax.contour(lons, lats, config['data'], 
 			      levels=config['levels'], 
 			      colors='black', 
 			      linewidths=0.5, 
 			      transform=ccrs.PlateCarree())
 	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
 	ax.clabel(contours, inline=True, fontsize=8, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
@@ -178,6 +171,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"AIGEFS mean | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/aigefs_mean_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

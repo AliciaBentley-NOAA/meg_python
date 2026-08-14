@@ -23,6 +23,8 @@ from pathlib import Path
 #####################################################
 var = "500Z"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
 fhr = str(sys.argv[3])             # 024 (3 digits) 
@@ -39,7 +41,6 @@ print("grid:", grid)
 init_str = str(pdy)
 init_hour = int(cyc)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
@@ -88,8 +89,8 @@ with grib2io.open(filename_aigefss) as f_aigefss:
         data_min = np.min(hgt500s_data)
         data_max = np.max(hgt500s_data)
 
-        print(f"Minimum Spread Value: {data_min:.2f}")
-        print(f"Maximum Spread Value: {data_max:.2f}")
+        print(f"Minimum 500Z Spread Value: {data_min:.2f}")
+        print(f"Maximum 500Z Spread Value: {data_max:.2f}")
 
 
 # Shift longitudes from [0, 360] to [-180, 180]
@@ -141,12 +142,10 @@ base_cmap = plt.get_cmap('YlOrRd', 14)
 new_colors = base_cmap(np.arange(base_cmap.N))
 
 # Force the first color (index 0) to be transparent
-# Format is [Red, Green, Blue, Alpha]
 new_colors[0,3] = 0.0  # First color is transparent
 
 # Create the new colormap
 white_first_cmap = mcolors.ListedColormap(new_colors)
-print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
@@ -154,7 +153,6 @@ plot_configs = [
 ]
 
 # Define the grid locations: [row, col] or [row, span]
-# gs[0, 0] = Top Left, gs[0, 1] = Top Right, gs[1, :] = Bottom Center
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
@@ -215,6 +213,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"AIGEFS spread | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/aigefs_spread_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
