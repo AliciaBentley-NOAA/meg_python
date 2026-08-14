@@ -24,6 +24,8 @@ import subprocess
 #####################################################
 var = "500Z"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
 fhr = str(sys.argv[3])             # 024 (3 digits) 
@@ -40,7 +42,6 @@ print("grid:", grid)
 init_str = str(pdy)
 init_hour = int(cyc)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
@@ -70,10 +71,12 @@ print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
+print(f"Remember to uncomment subprocess.run line when using new files!")
+
 # Open ECMWF file and extract parameters
 filename_ecmwf = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/E2E{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 grib2_filename = filename_ecmwf + ".grib2"
-#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
 
 with grib2io.open(grib2_filename) as f_ecmwf:
 
@@ -121,9 +124,6 @@ hgt500s_data = hgt500_spread[:, i_sort]
 
 #########################################################
 
-
-#########################################################
-
 # Create the Plot
 if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
@@ -150,7 +150,6 @@ new_colors[0,3] = 0.0  # First color is transparent
 
 # Create the new colormap
 white_first_cmap = mcolors.ListedColormap(new_colors)
-print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
@@ -158,7 +157,6 @@ plot_configs = [
 ]
 
 # Define the grid locations: [row, col] or [row, span]
-# gs[0, 0] = Top Left, gs[0, 1] = Top Right, gs[1, :] = Bottom Center
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
@@ -179,12 +177,10 @@ for i, loc in enumerate(grid_locs):
 	# Define domain
 	if grid == 'northeast':   
 		ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
-		# Add manual aspect ratio here. 
 		# Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.25, adjustable='datalim')
 	elif grid == 'conus':                
 		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
 
@@ -206,7 +202,6 @@ for i, loc in enumerate(grid_locs):
 			      zorder=3)
 
 	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
 	ax.clabel(contours, inline=True, fontsize=8, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
@@ -219,6 +214,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GEFS spread | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecens_spread_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
