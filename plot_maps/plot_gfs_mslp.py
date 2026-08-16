@@ -24,6 +24,8 @@ from pathlib import Path
 #####################################################
 var = "mslp"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
 fhr = str(sys.argv[3])             # 024 (3 digits) 
@@ -40,7 +42,6 @@ print("grid:", grid)
 init_str = str(pdy)
 init_hour = int(cyc)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
@@ -99,9 +100,6 @@ mslp_data = mslp_data[:, i_sort]
 
 #########################################################
 
-
-#########################################################
-
 # Create the Plot
 if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
@@ -124,19 +122,18 @@ elif grid == 'florida':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-mslp_levels = np.arange(968, 1056, 4)
-#mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
-#mslp_levels = np.arange(952, 1056, 4)
+#mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
+#mslp_levels = np.arange(968, 1056, 4)
+mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
+mslp_levels = np.arange(952, 1056, 4)
 mslp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFSv16 Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFSv16 | Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
-# gs[0, 0] = Top Left, gs[0, 1] = Top Right, gs[1, :] = Bottom Center
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
@@ -237,6 +234,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"GFSv16 | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv16_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

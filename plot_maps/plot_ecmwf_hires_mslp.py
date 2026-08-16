@@ -1,5 +1,6 @@
 import time, os, sys
 import numpy as np
+import copy
 from datetime import datetime, timedelta
 import grib2io
 import matplotlib
@@ -74,8 +75,11 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 # Open ECMWF file and extract parameters
 filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 grib2_filename = filename_ecmwf + ".grib2"
-print(f"Remember to uncomment subprocess.run if using a new ECMWF file!")
-#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+if not os.path.exists(grib2_filename):
+        print(f"Converting ECMWF file from grib1 to grib2.")
+        subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+else:
+        print(f"'{grib2_filename}' exists. Skipping grib1 to grib2 conversion.")
 
 with grib2io.open(grib2_filename) as f_ecmwf:
 
@@ -124,8 +128,11 @@ elif grid == 'eastcoast':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-mslp_levels = np.arange(968, 1056, 4)
+#mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
+#mslp_levels = np.arange(968, 1056, 4)
+mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
+mslp_levels = np.arange(952, 1056, 4)
+mslp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
@@ -183,8 +190,11 @@ for i, loc in enumerate(grid_locs):
                 # Increase this number (e.g., 1.4) to stretch it more vertically
                 ax.set_aspect(1.25, adjustable='datalim')
 
-	# Check if we are on the third panel and apply special cmap
-	current_cmap = config['cmap']
+	# Apply special cmap
+	#current_cmap = config['cmap']
+	current_cmap = copy.copy(plt.get_cmap(config['cmap']))
+	current_cmap.set_under('firebrick')
+	current_cmap.set_over('deeppink')
 
 	# Plot the shading
 	im = ax.contourf(lons, lats, config['data'], 

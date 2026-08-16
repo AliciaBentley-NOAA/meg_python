@@ -118,7 +118,7 @@ for j in range(int(segments)):
         precip_data = precip_msg.data * 0.0393701 # Convert mm to inches
 
         print(f"Extracted: {precip_msg.shortName} for {precip_msg.leadTime} hours")
-        print(f"Max Precip: {precip_data.max():.2f} inches")
+        #print(f"Max Precip: {precip_data.max():.2f} inches")
 
       except (IndexError, ValueError):
         # APCP doesn't exist (Hour 0) -> Load MSLP and set values to 0.0

@@ -25,6 +25,8 @@ from metpy.plots import USCOUNTIES
 #####################################################
 var = "precip"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])             # 12
 fhr = str(sys.argv[3])             # 024 (3 digits)
@@ -49,7 +51,6 @@ init_hour = int(cyc)
 valid_str = str(vpdy)
 valid_hour = int(vhr)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 valid_dt = datetime.strptime(valid_str, "%Y%m%d").replace(hour=valid_hour)
@@ -81,7 +82,7 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Determine how many 6-hour periods are in the full duration (e.g., 24h/6h)
 segments = int(duration) / int(6)
-print(f"Number of CCPA files needed: {segments}")
+print(f"Number of GEFS files needed: {segments}")
 
 gefs_array = np.zeros((int(segments), 721, 1440), dtype=np.float32)
 
@@ -105,7 +106,6 @@ for j in range(int(segments)):
 
     # Format as a string (e.g., "006", "024", or "120" with 3-digit zero-padding)
     fhr_str = f"{fhr_int:03d}"
-    print(fhr_str)
 
     # Open GEFS GRIB2 file at the start of the snowfall period and extract parameters
     filename_gefs = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/geavg.t{cyc}z.pgrb2s.0p25.f{fhr_str}"
@@ -120,7 +120,7 @@ for j in range(int(segments)):
         precip_data = precip_msg.data * 0.0393701 # Convert mm to inches
 
         print(f"Extracted: {precip_msg.shortName} for {precip_msg.leadTime} hours")
-        print(f"Max Precip: {precip_data.max():.2f} inches")
+        #print(f"Max Precip: {precip_data.max():.2f} inches")
 
       except (IndexError, ValueError):
         # APCP doesn't exist (Hour 0) -> Load MSLP and set values to 0.0
@@ -129,12 +129,9 @@ for j in range(int(segments)):
             
       gefs_array[j, :, :] = precip_data
 
-      print(f"Success! Loaded {current_dt} for {j} into CCPA array.")
-
       lats, lons = precip_msg.latlons()
 
 # Sum across the time segments (axis 0)
-# This gives you a 2D map of the total accumulation
 diff_data = np.sum(gefs_array, axis=0)
 
 # Finding the values
@@ -144,9 +141,6 @@ maximum = np.max(diff_data)
 # Printing the results
 print(f"The minimum precip is: {minimum}")
 print(f"The maximum precip is: {maximum}")
-
-#########################################################
-
 
 #########################################################
 
@@ -166,9 +160,9 @@ elif grid == 'easternUS':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
+precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
 
-snod_colors = [
+precip_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
     '#00cd00', # 0.1 - 0.25  (Medium Green)
     '#008b00', # 0.25 - 0.5  (Dark Green)
@@ -188,15 +182,15 @@ snod_colors = [
     '#ffff00', # 15.0 - 20.0 (Yellow)
 ]
 
-cmap = mcolors.ListedColormap(snod_colors)
+cmap = mcolors.ListedColormap(precip_colors)
 cmap.set_under(color='none')
 cmap.set_over('tan')
 
-norm = mcolors.BoundaryNorm(snod_levels, ncolors=len(snod_colors))
+norm = mcolors.BoundaryNorm(precip_levels, ncolors=len(precip_colors))
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': snod_levels, 'title': f'GEFS mean | {duration}-h Accumulated Precipitation (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': diff_data, 'cmap': cmap, 'norm': norm, 'levels': precip_levels, 'title': f'GEFS mean | {duration}-h Accumulated Precipitation (in.)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -268,14 +262,14 @@ for i, loc in enumerate(grid_locs):
 		     zorder=3)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-    cbar = plt.colorbar(im, ax=ax, ticks=snod_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
+    cbar = plt.colorbar(im, ax=ax, ticks=precip_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
     cbar.ax.tick_params(labelsize=20)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
-    cbar.ax.set_xticklabels([f'{l:g}' for l in snod_levels])
+    cbar.ax.set_xticklabels([f'{l:g}' for l in precip_levels])
 
 #################################################
 

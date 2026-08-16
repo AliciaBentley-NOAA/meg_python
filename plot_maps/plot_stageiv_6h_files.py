@@ -115,7 +115,7 @@ st4_total = np.sum(st4_array, axis=0) * .0393701   # convert mm to inches
 if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 10))
 elif grid == 'conus':
-	fig = plt.figure(figsize=(15, 12))
+	fig = plt.figure(figsize=(18, 12))
 elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
 elif grid == 'easternUS':
@@ -167,15 +167,22 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
+	# Determine the appropriate scale based on the domain
+	state_scale = '10m' if grid != "conus" else '50m'
+
+	# Fetch STATES with the lakes strictly cut out
+	states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
+
+	# Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+	countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
+
 	# Geographic features
-	ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.0)
-	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5)
-	ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=1.5)
-	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0)
-	ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6)
-	
-	# Add the land feature and shade it gray
-	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
+	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
+	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+	ax.add_feature(states_clipped, edgecolor='0.25', linewidth=2.5, zorder=4)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6, zorder=5)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -183,7 +190,7 @@ for i, loc in enumerate(grid_locs):
 		# Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.25, adjustable='datalim')
 	elif grid == 'conus':                
-		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
+		ax.set_extent([-125, -64, 23, 56], crs=ccrs.PlateCarree())
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
 	elif grid == 'eastcoast':
@@ -235,7 +242,8 @@ for i, loc in enumerate(grid_locs):
 		     norm=config['norm'], 
 		     cmap= config['cmap'],
 		     transform=st4_proj,
-		     shading='nearest')
+		     shading='nearest',
+		     zorder=3)
 
 	data = config['data']
 
@@ -249,11 +257,11 @@ for i, loc in enumerate(grid_locs):
 	#print("Number of non-zero values:", np.count_nonzero(data))
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, extend='max', ticks=precip_levels, orientation='horizontal', pad=0.05, fraction=0.055, shrink=0.95) # fraction is height, shrink is width
-	ax.set_title(config['title'], fontweight='bold', fontsize=18)
+	cbar = plt.colorbar(im, ax=ax, extend='max', ticks=precip_levels, orientation='horizontal', pad=0.05, fraction=0.060, shrink=1.00) # fraction is height, shrink is width
+	ax.set_title(config['title'], fontweight='bold', fontsize=23)
 
 	# Set the label size for the ticks
-	cbar.ax.tick_params(labelsize=16)
+	cbar.ax.tick_params(labelsize=20)
 
 	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
 	cbar.ax.set_xticklabels([f'{l:g}' for l in precip_levels])

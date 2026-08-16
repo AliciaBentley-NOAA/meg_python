@@ -84,19 +84,25 @@ print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Start Time:          {start_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-print(f"Remember to uncomment subprocess.run lines when using new files!")
-
 # Open ECMWF file and extract parameters from valid date
 filename_ecmwf_start = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/ESE{init_MM}{init_DD}{init_HH}00{start_MM}{start_DD}{start_HH}001"
 print(filename_ecmwf_start)
 grib2_filename_start = filename_ecmwf_start + ".grib2"
-#subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
+if not os.path.exists(grib2_filename_start):
+        print(f"Converting ECMWF start file from grib1 to grib2.")
+        subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+else:
+        print(f"'{grib2_filename_start}' exists. Skipping grib1 to grib2 conversion.")
 
 # Open ECMWF file and extract parameters from valid date
 filename_ecmwf = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/ESE{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 print(filename_ecmwf)
 grib2_filename = filename_ecmwf + ".grib2"
-#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+if not os.path.exists(grib2_filename):
+        print(f"Converting ECMWF end file from grib1 to grib2.")
+        subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+else:
+        print(f"'{grib2_filename}' exists. Skipping grib1 to grib2 conversion.")
 
 #-----------------------------------------------------------
 

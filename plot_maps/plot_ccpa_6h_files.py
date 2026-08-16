@@ -91,7 +91,7 @@ for j in range(int(segments)):
     
     ccpa_array[j, :, :] = precip_data
 
-    print(f"Success! Loaded {date_string} into index {j} into CCPA array.")
+    print(f"Success! Loaded {date_string} into index {j} in CCPA array.")
 
     lats, lons = precip_msg.latlons()
 
@@ -162,15 +162,22 @@ for i, loc in enumerate(grid_locs):
     # Add subplot with projection
     ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
-    # Geographic features
-    ax.add_feature(cfeature.STATES, edgecolor='0.25', linewidth=2.5)
-    ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=2.0)
-    ax.add_feature(cfeature.BORDERS, edgecolor='0.25', linewidth=2.0)
-    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.5)
-    ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6)
+    # Determine the appropriate scale based on the domain
+    state_scale = '10m' if grid != "conus" else '50m'
 
-    # Add the land feature and shade it gray
-    ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none')
+    # Fetch STATES with the lakes strictly cut out
+    states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
+
+    # Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+    countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
+
+    # Geographic features
+    ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
+    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+    ax.add_feature(states_clipped, edgecolor='0.25', linewidth=2.5, zorder=4)
+    ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+    ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+    ax.add_feature(USCOUNTIES, edgecolor='black', linewidth=0.3, alpha=0.6, zorder=5)
 
     # Define domain
     if grid == 'northeast':
@@ -178,7 +185,7 @@ for i, loc in enumerate(grid_locs):
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
     elif grid == 'conus':
-        ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
+        ax.set_extent([-128, -61, 19, 60], crs=ccrs.PlateCarree())
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.2, adjustable='datalim')
     elif grid == 'eastcoast':
@@ -200,7 +207,8 @@ for i, loc in enumerate(grid_locs):
              norm=config['norm'],
              cmap= config['cmap'],
              transform=ccrs.PlateCarree(),
-             extend='max')
+             extend='max',
+	     zorder=3)
 
     # Capture the colorbar in a variable (e.g., 'cbar')
     cbar = plt.colorbar(im, ax=ax, ticks=precip_levels, orientation='horizontal', pad=0.06, fraction=0.061, shrink=0.95) # fraction is height, shrink is width

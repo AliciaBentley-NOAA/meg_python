@@ -1,5 +1,6 @@
 import time, os, sys
 import numpy as np
+import copy
 from datetime import datetime, timedelta
 import grib2io
 import matplotlib
@@ -111,8 +112,11 @@ elif grid == 'eastcoast':
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
-mslp_levels = np.arange(968, 1056, 4)
+#mslp_norm = mcolors.Normalize(vmin=968, vmax=1052)
+#mslp_levels = np.arange(968, 1056, 4)
+mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
+mslp_levels = np.arange(952, 1056, 4)
+mslp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
@@ -161,7 +165,10 @@ for i, loc in enumerate(grid_locs):
                 ax.set_aspect(1.25, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
-	current_cmap = config['cmap']
+	#current_cmap = config['cmap']
+	current_cmap = copy.copy(plt.get_cmap(config['cmap']))
+	current_cmap.set_under('firebrick')
+	current_cmap.set_over('deeppink')
 
 	# Plot the shading
 	im = ax.contourf(lons, lats, config['data'], 
