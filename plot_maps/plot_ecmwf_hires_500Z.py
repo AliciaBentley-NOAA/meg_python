@@ -143,20 +143,10 @@ for i, loc in enumerate(grid_locs):
 	state_scale = '10m' if grid != "conus" else '50m'
 
 	# Fetch STATES with the lakes strictly cut out
-	states_clipped = cfeature.NaturalEarthFeature(
-		category='cultural',
-		name='admin_1_states_provinces_lakes', # <--- The crucial _lakes suffix
-		scale=state_scale,
-		facecolor='none'
-	)
+	states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
 
 	# Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
-	countries_clipped = cfeature.NaturalEarthFeature(
-		category='cultural',
-		name='admin_0_countries_lakes', # <--- The crucial _lakes suffix
-		scale=state_scale,
-		facecolor='none'
-	)
+	countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
 
 	# Geographic features
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
