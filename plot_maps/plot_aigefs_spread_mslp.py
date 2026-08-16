@@ -118,9 +118,6 @@ mslps_data = mslps_data[:, i_sort]
 
 #########################################################
 
-
-#########################################################
-
 # Create the Plot
 if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
@@ -163,14 +160,21 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
-	# Geographic features
-	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
-	ax.add_feature(cfeature.COASTLINE, linewidth=2, zorder=4)
-	ax.add_feature(cfeature.BORDERS, linewidth=2, zorder=4)
-	ax.add_feature(cfeature.STATES, edgecolor='0.2', linewidth=2.5, alpha=0.5, zorder=4)
+	# Determine the appropriate scale based on the domain
+	state_scale = '10m' if grid != "conus" else '50m'
 
-	# Add the land feature and shade it gray
+	# Fetch STATES with the lakes strictly cut out
+	states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
+
+	# Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+	countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
+
+	# Geographic features
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
+	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+	ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -204,11 +208,10 @@ for i, loc in enumerate(grid_locs):
 			      colors='black', 
 			      linewidths=3.0, 
 			      transform=ccrs.PlateCarree(),
-			      zorder=3)
+			      zorder=5)
 
 	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=5)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)

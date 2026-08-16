@@ -23,6 +23,8 @@ from pathlib import Path
 #####################################################
 var = "mslp"
 
+print(f"#############################################")
+
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 
 fhr = str(sys.argv[3])             # 024 (3 digits) 
@@ -39,7 +41,6 @@ print("grid:", grid)
 init_str = str(pdy)
 init_hour = int(cyc)
 
-#Create the datetime object
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
@@ -117,9 +118,6 @@ mslps_data = mslps_data[:, i_sort]
 
 #########################################################
 
-
-#########################################################
-
 # Create the Plot
 if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
@@ -143,12 +141,10 @@ base_cmap = plt.get_cmap('YlOrRd', 14)
 new_colors = base_cmap(np.arange(base_cmap.N))
 
 # Force the first color (index 0) to be transparent
-# Format is [Red, Green, Blue, Alpha]
 new_colors[0,3] = 0.0  # First color is transparent
 
 # Create the new colormap
 white_first_cmap = mcolors.ListedColormap(new_colors)
-print('Created new colormap!')
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
@@ -156,7 +152,6 @@ plot_configs = [
 ]
 
 # Define the grid locations: [row, col] or [row, span]
-# gs[0, 0] = Top Left, gs[0, 1] = Top Right, gs[1, :] = Bottom Center
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
@@ -165,14 +160,21 @@ for i, loc in enumerate(grid_locs):
 	# Add subplot with projection
 	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
 
-	# Geographic features
-	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
-	ax.add_feature(cfeature.COASTLINE, linewidth=2, zorder=4)
-	ax.add_feature(cfeature.BORDERS, linewidth=2, zorder=4)
-	ax.add_feature(cfeature.STATES, edgecolor='0.2', linewidth=2.5, alpha=0.5, zorder=4)
+	# Determine the appropriate scale based on the domain
+	state_scale = '10m' if grid != "conus" else '50m'
 
-	# Add the land feature and shade it gray
+	# Fetch STATES with the lakes strictly cut out
+	states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
+
+	# Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+	countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
+
+	# Geographic features
 	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
+	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+	ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+	ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 
 	# Define domain
 	if grid == 'northeast':   
@@ -206,11 +208,10 @@ for i, loc in enumerate(grid_locs):
 			      colors='black', 
 			      linewidths=3.0, 
 			      transform=ccrs.PlateCarree(),
-			      zorder=3)
+			      zorder=5)
 
 	# Add labels to the lines (e.g., '1012')
-	# Reduce padding (default is 4) to allow more labels to fit in tight spaces
-	ax.clabel(contours, inline=True, fontsize=18, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=5)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
@@ -222,6 +223,5 @@ for i, loc in enumerate(grid_locs):
 #################################################
 
 # Add a title and adjust layout to prevent overlapping
-#plt.suptitle(f"HGEFS spread | 500-hPa Geopotential Height (dam) | Initialized: {init_dt.strftime('%Y-%m-%d %HZ')} (Fhr: {fhr_str}) | Valid: {valid_dt.strftime('%Y-%m-%d %HZ')}", fontsize=20)
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/hgefs_spread_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
