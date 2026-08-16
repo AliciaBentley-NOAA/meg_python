@@ -74,11 +74,13 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 # Open ECMWF file and extract parameters
 filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HPD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 grib2_filename = filename_ecmwf + ".grib2"
-print(f"Remember to uncomment subprocess.run if using a new ECMWF file!")
-#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+if not os.path.exists(grib2_filename):
+        print(f"Converting ECMWF file from grib1 to grib2.")
+        subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+else:
+        print(f"'{grib2_filename}' exists. Skipping grib1 to grib2 conversion.")
 
 with grib2io.open(grib2_filename) as f_ecmwf:
-
 	# Select the specific messages we want
 	hgt500_msg = f_ecmwf.select(shortName='HGT', level='500 mb')[0]
 
@@ -188,7 +190,7 @@ for i, loc in enumerate(grid_locs):
 			      zorder=5)
 
 	# Add labels to the lines (e.g., '1012')
-	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=5)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
