@@ -217,7 +217,7 @@ for i, loc in enumerate(grid_locs):
 			      zorder=5)
 
 	# Add labels to the lines (e.g., '1012')
-	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=5)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, ticks=hgt500s_levels, orientation='horizontal', pad=0.06, fraction=0.055)

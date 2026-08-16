@@ -44,17 +44,17 @@ export longname="IanAL092022"
 # ****Specify which models to plot, forecast hours, domains****
 # *************************************************************
 # Select which models to plot (YES/NO)
-export PLOT_GEFS_FCSTS=NO
-export PLOT_AIGEFS_FCSTS=NO
-export PLOT_HGEFS_FCSTS=NO
-export PLOT_ECENS_FCSTS=NO
+export PLOT_GEFS_FCSTS=YES
+export PLOT_AIGEFS_FCSTS=YES
+export PLOT_HGEFS_FCSTS=YES
+export PLOT_ECENS_FCSTS=YES
 
-export PLOT_GFS_FCSTS=YES
-export PLOT_AIGFS_FCSTS=YES
-export PLOT_ECMWF_FCSTS=YES
-export PLOT_ECAIFS_FCSTS=YES
+export PLOT_GFS_FCSTS=NO
+export PLOT_AIGFS_FCSTS=NO
+export PLOT_ECMWF_FCSTS=NO
+export PLOT_ECAIFS_FCSTS=NO
 
-export PLOT_GFSv17_FCSTS=YES
+export PLOT_GFSv17_FCSTS=NO
 
 export PLOT_ST4_ANALYSIS=NO
 export PLOT_CCPA_ANALYSIS=NO
@@ -142,9 +142,9 @@ fi
 if [ $PLOT_GEFS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
-#        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
@@ -152,9 +152,9 @@ fi
 if [ $PLOT_AIGEFS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot AIGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_aigefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_aigefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_aigefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
-#        python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_aigefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
@@ -162,9 +162,9 @@ fi
 if [ $PLOT_HGEFS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot HGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_hgefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_hgefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_hgefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_hgefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
-#        python ${SCRIPTS_PATH}/plot_hgefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_hgefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
@@ -172,8 +172,8 @@ fi
 if [ $PLOT_ECENS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot ECENS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-#        python ${SCRIPTS_PATH}/plot_ecens_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_ecens_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_ecens_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_ecens_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_ecens_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
