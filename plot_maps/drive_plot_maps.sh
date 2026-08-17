@@ -206,7 +206,7 @@ if [ $PLOT_ST4_ANALYSIS = YES ]; then
         export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/alb_flood'
         echo "Kickoff ${CASE} scripts to plot Stage IV analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
         python ${SCRIPTS_PATH}/plot_stageiv_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
-        python ${SCRIPTS_PATH}/plot_stageiv_6h_files_verticalcolorbar.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_stageiv_6h_files_verticalcolorbar.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1 
 fi 
 

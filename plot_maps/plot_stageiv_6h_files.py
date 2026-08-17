@@ -190,7 +190,7 @@ for i, loc in enumerate(grid_locs):
 		# Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.25, adjustable='datalim')
 	elif grid == 'conus':                
-		ax.set_extent([-125, -64, 23, 56], crs=ccrs.PlateCarree())
+		ax.set_extent([-125, -64, 22, 56], crs=ccrs.PlateCarree())
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
 	elif grid == 'eastcoast':
