@@ -256,14 +256,16 @@ for i, loc in enumerate(grid_locs):
 	#print("Number of NaNs:", np.isnan(data).sum())
 	#print("Number of non-zero values:", np.count_nonzero(data))
 
-	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, extend='max', ticks=precip_levels, orientation='horizontal', pad=0.05, fraction=0.060, shrink=1.00) # fraction is height, shrink is width
-	ax.set_title(config['title'], fontweight='bold', fontsize=23)
+	if grid == 'conus':
+		cbar = plt.colorbar(im, ax=ax, extend='max', ticks=precip_levels, orientation='horizontal', pad=0.05, fraction=0.060, shrink=1.00) # fraction is height, shrink is width
+		ax.set_title(config['title'], fontweight='bold', fontsize=23)
+		cbar.ax.tick_params(labelsize=20)
+	else:
+                cbar = plt.colorbar(im, ax=ax, extend='max', ticks=precip_levels, orientation='horizontal', pad=0.05, fraction=0.060, shrink=0.95) # fraction is height, shrink is width
+                ax.set_title(config['title'], fontweight='bold', fontsize=18)
+                cbar.ax.tick_params(labelsize=16)
 
-	# Set the label size for the ticks
-	cbar.ax.tick_params(labelsize=20)
-
-	# Optional: Ensure the labels are formatted nicely (e.g., no extra decimals)
+	# Ensure the labels are formatted nicely (e.g., no extra decimals)
 	cbar.ax.set_xticklabels([f'{l:g}' for l in precip_levels])
 
 #################################################

@@ -28,7 +28,7 @@ export fhr="084"  #240,216,192,168,144,120,096,072,048,024
                   #228,204,180,156,132,108,084,060,036,012
 
 # Current domain options: conus, wpc, eastcoast, northeast, easternUS, southeastUS, westcoast, florida
-export DOMAIN='conus'
+export DOMAIN='northeast'
 
 #If plotting precip or snowfall, choose a duration (typically 24 or 36)
 export duration='24'   #72, 48, 36, 24, 12, 6
@@ -49,7 +49,7 @@ export PLOT_AIGEFS_FCSTS=NO
 export PLOT_HGEFS_FCSTS=NO
 export PLOT_ECENS_FCSTS=NO
 
-export PLOT_GFS_FCSTS=NO
+export PLOT_GFS_FCSTS=YES
 export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 export PLOT_ECAIFS_FCSTS=NO
@@ -97,7 +97,7 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
 #        python ${SCRIPTS_PATH}/plot_gfs_orography_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-##         python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+         python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_10m_wind_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #	 python ${SCRIPTS_PATH}/plot_gfs_10m_wind_ascent.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_10m_convergence.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
