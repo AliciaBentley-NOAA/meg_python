@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- User Defined Variables ---
-YYYYMMDD="20260729"
+YYYYMMDD="20260817"
 
 # --- Outer Loop: Iterate through the Cycles ---
 for product in avg spr; do
@@ -11,7 +11,7 @@ for HH in 00 12; do
 # --- Define Paths ---
 # Using ${HH} in both the path and the filename pattern
 SOURCE_DIR="/lfs/h1/ops/prod/com/aigefs/v1.0/aigefs.${YYYYMMDD}/${HH}/ensstat/products/atmos/grib2"
-DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/alb_flood/aigefs.${YYYYMMDD}/${HH}/atmos"
+DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/tc_lala/aigefs.${YYYYMMDD}/${HH}/atmos"
 
 # Create the destination directory if it doesn't exist
 mkdir -p "$DEST_DIR"

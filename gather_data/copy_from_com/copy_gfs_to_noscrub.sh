@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- User Defined Variables ---
-YYYYMMDD="20260724"
+YYYYMMDD="20260807"
 
 # --- Outer Loop: Iterate through the Cycles ---
 for HH in 00 12; do
@@ -9,7 +9,7 @@ for HH in 00 12; do
 # --- Define Paths ---
 # Using ${HH} in both the path and the filename pattern
 SOURCE_DIR="/lfs/h1/ops/prod/com/gfs/v16.3/gfs.${YYYYMMDD}/${HH}/atmos"
-DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/alb_flood/gfs.${YYYYMMDD}/${HH}/atmos"
+DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/tc_lala/gfs.${YYYYMMDD}/${HH}/atmos"
 
 # Create the destination directory if it doesn't exist
 mkdir -p "$DEST_DIR"

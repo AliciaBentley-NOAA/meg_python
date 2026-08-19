@@ -2,8 +2,8 @@
 
 # --- User Defined Variables ---
 YYYY="2026"
-MM="07"
-DD="29"
+MM="08"
+DD="16"
 
 # Combine them for use in paths
 YYYYMMDD="${YYYY}${MM}${DD}"
@@ -14,7 +14,7 @@ for HH in 00 12; do
 # --- Define Paths ---
 # Using ${HH} in both the path and the filename pattern
 SOURCE_DIR="/lfs/h1/ops/prod/dcom/${YYYYMMDD}/wgrbbul/ecmwf_hres"
-DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/alb_flood/ecmwf.${YYYYMMDD}/${HH}/atmos"
+DEST_DIR="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/tc_lala/ecmwf.${YYYYMMDD}/${HH}/atmos"
 
 # Create the destination directory if it doesn't exist
 mkdir -p "$DEST_DIR"
@@ -26,7 +26,7 @@ echo "Dest:   $DEST_DIR"
 echo "----------------------------------------------------------"
 
 # Loop from 0 to 240 in increments of 6
-for h in $(seq 0 6 24); do
+for h in $(seq 0 6 246); do
     # Format the forecast hour to be 3 digits (e.g., 000, 006, 012)
     HHH=$(printf "%03d" $h)
 
