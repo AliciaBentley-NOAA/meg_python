@@ -23,8 +23,8 @@ module load grib_util/1.2.4
 #===============================================================================================================
 export CASE='tc_lala'
 export cyc="00"
-export initdate="20260816"
-export fhr="000"  #240,216,192,168,144,120,096,072,048,024
+export initdate="20260806"
+export fhr="240"  #240,216,192,168,144,120,096,072,048,024
                   #228,204,180,156,132,108,084,060,036,012
 
 # Current domain options: conus, wpc, eastcoast, northeast, easternUS, southeastUS, westcoast, florida, hawaii
@@ -44,10 +44,11 @@ export longname="IanAL092022"
 # ****Specify which models to plot, forecast hours, domains****
 # *************************************************************
 # Select which models to plot (YES/NO)
-export PLOT_GEFS_FCSTS=NO
-export PLOT_AIGEFS_FCSTS=NO
+export PLOT_GEFS_FCSTS=YES
+export PLOT_AIGEFS_FCSTS=YES
 export PLOT_HGEFS_FCSTS=NO
 export PLOT_ECENS_FCSTS=YES
+export PLOT_ECAIFS_ENS_FCSTS=NO
 
 export PLOT_GFS_FCSTS=NO
 export PLOT_AIGFS_FCSTS=NO
@@ -145,7 +146,8 @@ if [ $PLOT_GEFS_FCSTS = YES ]; then
 ##        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
+        python ${SCRIPTS_PATH}/plot_gefs_members_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
         sleep 1
 fi
 
@@ -155,7 +157,8 @@ if [ $PLOT_AIGEFS_FCSTS = YES ]; then
 ##        python ${SCRIPTS_PATH}/plot_aigefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_aigefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_aigefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
+        python ${SCRIPTS_PATH}/plot_aigefs_members_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_aigefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
         sleep 1
 fi
 
@@ -177,6 +180,13 @@ if [ $PLOT_ECENS_FCSTS = YES ]; then
 ##        python ${SCRIPTS_PATH}/plot_ecens_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         python ${SCRIPTS_PATH}/plot_ecens_members_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_ecens_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        sleep 1
+fi
+
+if [ $PLOT_ECAIFS_ENS_FCSTS = YES ]; then
+        echo "======================================="
+        echo "Kickoff ${CASE} scripts to plot ECAIFS ENS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_ecaifs_ens_members_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 

@@ -45,8 +45,9 @@ init_hour = int(cyc)
 # strptime converts the string to a datetime object
 init_dt = datetime.strptime(init_str, "%Y%m%d").replace(hour=init_hour)
 
+init_YYYY = init_dt.strftime("%Y") #Result: '2026'
 init_MM = init_dt.strftime("%m")  # Result: '02'
-init_DD = init_dt.strftime("%d")    # Result: '26'
+init_DD = init_dt.strftime("%d")    # Result: '28'
 init_HH = init_dt.strftime("%H")  # Result: '06'
 
 # Create maps directory
@@ -71,19 +72,41 @@ print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open ECMWF file and extract parameters
-#filename_ecmwf = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/ESE{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
-filename_ecmwf = f"{DATA_PATH}/ecens.{pdy}/{cyc}/atmos/E1E{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
-grib2_filename = filename_ecmwf + ".grib2"
-if not os.path.exists(grib2_filename):
-        print(f"Converting ECMWF file from grib1 to grib2.")
-        subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
-else:
-        print(f"'{grib2_filename}' exists. Skipping grib1 to grib2 conversion.")
+new_hour = int(fhr)
+print(f"new_hour: {new_hour}")
 
-with grib2io.open(grib2_filename) as f_ecmwf:
+#-----------------------------------------------------------
+
+def get_uncompressed_grib(input_path):
+    """Converts AEC compressed GRIB2 (Template 5.42) to simple uncompressed GRIB2."""
+    output_path = input_path.replace(".grib2", "_uncompressed.grib2")
+
+    # Only run wgrib2 conversion if uncompressed file doesn't exist yet
+    if not os.path.exists(output_path):
+        cmd = f"wgrib2 {input_path} -set_grib_type simple -grib_out {output_path}"
+        subprocess.run(cmd, shell=True, check=True)
+
+    return output_path
+
+#-----------------------------------------------------------
+
+# Open EC AIFS ENS file and extract parameters from valid date
+filename_ecmwf = f"{DATA_PATH}/ecmwf_aifs_ens.{pdy}/{cyc}/atmos/{init_YYYY}{init_MM}{init_DD}{init_HH}0000-{new_hour}h-enfo-pf.grib2"
+print(filename_ecmwf)
+filename_uncompressed = f"{DATA_PATH}/ecmwf_aifs_ens.{pdy}/{cyc}/atmos/{init_YYYY}{init_MM}{init_DD}{init_HH}0000-{new_hour}h-enfo-pf_uncompressed.grib2"
+print(filename_uncompressed)
+
+if not os.path.exists(filename_uncompressed):
+	print(f"Uncompressing ECAIFS ENS grib2 file.")
+	filename_ecmwf_clean = get_uncompressed_grib(filename_ecmwf)
+else:
+	print(f"'{filename_uncompressed}' exists.")
+	filename_ecmwf_clean = filename_uncompressed
+
+with grib2io.open(filename_ecmwf_clean) as f_ecmwf:
+
         # Select ALL ensemble members for MSLP (returns a list of messages)
-        mslp_msgs = f_ecmwf.select(shortName='PRMSL', level='surface')
+        mslp_msgs = f_ecmwf.select(shortName='PRES', level='mean sea level')
         print(f"Found {len(mslp_msgs)} ensemble members.")
 
         # Stack into a 3D NumPy array of shape (num_members, ny, nx)
@@ -161,7 +184,7 @@ mslps_norm = mcolors.BoundaryNorm(mslps_levels, ncolors=cmap_spread.N, clip=Fals
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-        {'data': mslp_data, 'cmap': 'YlOrRd', 'norm': mslps_norm, 'levels': mslps_levels, 'title': f'EC-EPS members/spread | Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+        {'data': mslp_data, 'cmap': 'YlOrRd', 'norm': mslps_norm, 'levels': mslps_levels, 'title': f'EC-AIFS ENS members/spread | Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -255,4 +278,4 @@ for i, loc in enumerate(grid_locs):
 
 # Add a title and adjust layout to prevent overlapping
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecens_members_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecaifs_ens_members_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

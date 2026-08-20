@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- User Defined Variables ---
-YYYYMMDD="20260807"
+YYYYMMDD="20260806"
 
 # --- Outer Loop: Iterate through the Cycles ---
 for product in avg spr; do
@@ -23,7 +23,7 @@ echo "Dest:   $DEST_DIR"
 echo "----------------------------------------------------------"
 
 # Loop from 0 to 240 in increments of 6
-for h in $(seq 0 6 240); do
+for h in $(seq 240 6 240); do
     # Format the forecast hour to be 3 digits (e.g., 000, 006, 012)
     HHH=$(printf "%03d" $h)
     
