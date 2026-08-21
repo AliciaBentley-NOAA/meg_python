@@ -62,7 +62,8 @@ print(TC_name, TC_number, TC_basin, TC_num, YYYY)
 # Set path and create data directory (if not already created)
 DIR = os.getcwd()
 
-ADECK_DIR = '/lfs/h2/emc/gfstemp/emc.global/archive/retrov17_01_stream1a'    #stream1a, stream2, stream4
+#ADECK_DIR = '/lfs/h2/emc/gfstemp/emc.global/archive/retrov17_01_stream1a'    #stream1a, stream2, stream4
+ADECK_DIR = '/lfs/h2/emc/gfstemp/emc.global/archive/retrov17_01_realtime'
 
 # Define start and end points
 # Format: Year, Month, Day, Hour (Cycle)

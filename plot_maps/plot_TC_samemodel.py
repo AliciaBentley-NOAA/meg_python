@@ -114,7 +114,7 @@ if not os.path.exists(OUT_DIR):
 # Set Landfall Date based on NHC 
 # Needed to only look for RI periods prior to this time
 landfall_date = datetime.datetime(2022,9,28,19,0,0)
-landfall_date2 = datetime.datetime(2024,9,30,18,0,0)
+landfall_date2 = datetime.datetime(2026,12,30,18,0,0)
 
 try:
    valid_time
@@ -141,9 +141,9 @@ cycles = [str(x) for x in cycles_int]
 preLF_cycles = [str(x) for x in cycles if x < landfall_date.strftime('%Y%m%d%H')]
 
 # From Dorian (2019) when the center reformed
-RF_preLF_cycles = [str(x) for x in cycles if x >= '2019082718' and x < landfall_date.strftime('%Y%m%d%H')]
-print(RF_preLF_cycles[0])
-RF_ind = cycles.index(RF_preLF_cycles[0])
+#RF_preLF_cycles = [str(x) for x in cycles if x >= '2019082718' and x < landfall_date.strftime('%Y%m%d%H')]
+#print(RF_preLF_cycles[0])
+#RF_ind = cycles.index(RF_preLF_cycles[0])
 
 #print(str(x), landfall_date.strftime('%Y%m%d%H'))
 #print cycles
@@ -456,6 +456,7 @@ def plot_tracks(domain):
        urcrnrlon = -110.
        urcrnrlat = 40.
        proj = 'merc'
+       lon0 = -155.
        lat_ts = 20.
        draw_counties = False
    elif str.upper(domain) == 'HAWAII':
@@ -788,14 +789,14 @@ def check_max_vmax():
          major_cycles += 1
          major_list.append(this_list[i])
 
-   cycle_ind = np.argmax(max_vmax_list)
-   print(max_vmax_list)
+   #cycle_ind = np.argmax(max_vmax_list)
+   #print(max_vmax_list)
 
    print('number of '+model_str+' cycles is:', len(mvmax))
    print('number of '+model_str+' pre-landfall cycles is:', len(this_list))
    print('number of '+model_str+' hurricane cycles is:', hurr_cycles)
    print('number of '+model_str+' major cycles is:', major_cycles)
-   print('max of '+model_str+' wind speed is:', np.nanmax(max_vmax_list), 'from', this_list[cycle_ind], 'cycle')
+   #print('max of '+model_str+' wind speed is:', np.nanmax(max_vmax_list), 'from', this_list[cycle_ind], 'cycle')
 
    obs_vmax = np.amax(ovmax)
    obs_vmax_ind = np.argmax(ovmax)
@@ -859,7 +860,9 @@ def main():
  #  domains = ['NW_ATL','NATL','SE_COAST','CARIB','GR_ANT','BAHAMAS']
  #  domains = ['MICHAEL','BARRY']
  #  domains = ['GOA','IDA','BARRY','LOUISIANA']
-    domains = ['IAN','SE_COAST','GOA']
+ #  domains = ['IAN','SE_COAST','GOA']
+    domains = ['CPAC','HAWAII']
+
     pool = multiprocessing.Pool(len(domains))
     pool.map(plot_tracks,domains)
 

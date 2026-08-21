@@ -38,16 +38,16 @@ export vdate="20260730" #This is the last time in the period covered
 export vhour="00"  #00, 06, 12, 18
 
 #If plotting TC track/intensity
-export longname="IanAL092022"
+export longname="LalaCP012026"
 
 # *************************************************************
 # ****Specify which models to plot, forecast hours, domains****
 # *************************************************************
 # Select which models to plot (YES/NO)
-export PLOT_GEFS_FCSTS=YES
-export PLOT_AIGEFS_FCSTS=YES
+export PLOT_GEFS_FCSTS=NO
+export PLOT_AIGEFS_FCSTS=NO
 export PLOT_HGEFS_FCSTS=NO
-export PLOT_ECENS_FCSTS=YES
+export PLOT_ECENS_FCSTS=NO
 export PLOT_ECAIFS_ENS_FCSTS=NO
 
 export PLOT_GFS_FCSTS=NO
@@ -63,7 +63,7 @@ export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
 export PLOT_RAP_ANALYSIS=NO
 
-export PLOT_GFS_TC_FCSTS=NO
+export PLOT_GFS_TC_FCSTS=YES
 export PLOT_GFSv17_TC_FCSTS=NO
 
 #===============================================================================================================

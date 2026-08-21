@@ -1,16 +1,14 @@
 # Author: L Dawson
+# Modified by A Bentley
 #
-# Script to pull fcst files from HPSS, rename, and save in desired data directory
-# Desired cycle and model string can be passed in from command line
+# Script to create .csv file from NHC a-deck (TC forecast) files
+# Desired model and storm name info. can be passed in from command line
 # If no arguments are passed in, script will prompt user for these inputs
 #
 # Run as:
-# python parse_adeck.py $MODEL $TC_name/ID
-# python parse_adeck.py GFS FlorenceAL06
+# python parse_adeck.py $MODEL $TCname_basin_IDnumber (no underscores)
+# python parse_adeck.py GFS FlorenceAL062018
 #
-# Script History Log:
-# 2018-10-03 L Dawson initial version to pull HWRF/HMON ATCF files from tape
-# 2022-10-03 L Dawson WCOSS2 update 
 
 
 import numpy as np
