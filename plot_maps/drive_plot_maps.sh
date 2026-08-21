@@ -63,8 +63,8 @@ export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
 export PLOT_RAP_ANALYSIS=NO
 
-export PLOT_GFS_TC_FCSTS=YES
-export PLOT_GFSv17_TC_FCSTS=NO
+export PLOT_GFS_TC_FCSTS=NO
+export PLOT_GFSv17_TC_FCSTS=YES
 
 #===============================================================================================================
 #===============================================================================================================
@@ -264,7 +264,7 @@ fi
 
 if [ $PLOT_GFSv17_TC_FCSTS = YES ]; then
         echo "======================================="
-        echo "Kickoff ${CASE} scripts to plot GFS TC forecasts for ${longname}"
+        echo "Kickoff ${CASE} scripts to plot GFSv17 TC forecasts for ${longname}"
         python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
         sleep 1
 fi

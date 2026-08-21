@@ -67,8 +67,8 @@ ADECK_DIR = '/lfs/h2/emc/gfstemp/emc.global/archive/retrov17_01_realtime'
 
 # Define start and end points
 # Format: Year, Month, Day, Hour (Cycle)
-start_date = datetime(2022, 9, 1, 0)
-end_date = datetime(2022, 10, 15, 18)
+start_date = datetime(2026, 8, 9, 12)
+end_date = datetime(2026, 8, 21, 0)
 current_date = start_date
 
 DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'adecks_gfsv17')

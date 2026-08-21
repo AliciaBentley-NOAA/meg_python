@@ -292,8 +292,8 @@ for cycle in cycles:
             else:
                clat.append(float(row[2]))
                if float(row[3]) > 0:
-                # clon.append(float(row[3])-360)
-                  clon.append(float(row[3]))
+                  clon.append(float(row[3])-360)
+                  #clon.append(float(row[3]))
                else:
                   clon.append(float(row[3]))
                if float(row[4]) != 0:
@@ -468,6 +468,15 @@ def plot_tracks(domain):
        lon0 = -155.
        lat_ts = 20.
        draw_counties = False
+   elif str.upper(domain) == 'LALA':
+       llcrnrlon = 160.
+       llcrnrlat = 5.
+       urcrnrlon = -120.
+       urcrnrlat = 50.
+       proj = 'merc'
+       lon0 = -170.
+       lat_ts = 20.
+       draw_counties = False
 
 
    extent = [llcrnrlon-1,urcrnrlon+1,llcrnrlat-1,urcrnrlat+1]
@@ -563,7 +572,11 @@ def plot_tracks(domain):
 
 #  plt.legend(loc="upper right")
 
-   titlestr1 = 'Hurricane '+TC_name+' - '+model+' Tracks'
+   model_name = model
+   if model == "RETR":
+      model_name = "GFSv17"
+
+   titlestr1 = 'Hurricane '+TC_name+' - '+model_name+' Tracks'
    titlestr2 = mtimes[0][0].strftime('%HZ %d %b')+' to '+mtimes[-1][0].strftime('%HZ %d %b %Y Initializations')
    plt.text(0.5, 1.05, titlestr1, fontweight='bold', horizontalalignment='center', transform=ax.transAxes)
    plt.text(0.5, 1.01, titlestr2, fontweight='bold', horizontalalignment='center', transform=ax.transAxes)
@@ -861,7 +874,7 @@ def main():
  #  domains = ['MICHAEL','BARRY']
  #  domains = ['GOA','IDA','BARRY','LOUISIANA']
  #  domains = ['IAN','SE_COAST','GOA']
-    domains = ['CPAC','HAWAII']
+    domains = ['CPAC','LALA']
 
     pool = multiprocessing.Pool(len(domains))
     pool.map(plot_tracks,domains)
