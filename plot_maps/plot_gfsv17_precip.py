@@ -196,13 +196,15 @@ elif grid == 'westcoast':
         fig = plt.figure(figsize=(12, 12))
 elif grid == 'easternUS':
         fig = plt.figure(figsize=(13, 12))
+elif grid == 'hawaii':
+        fig = plt.figure(figsize=(14, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-#snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
-snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
+snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
+#snod_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
 
 snod_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
@@ -293,6 +295,10 @@ for i, loc in enumerate(grid_locs):
         ax.set_extent([-97, -72, 25.0, 48.0], crs=ccrs.PlateCarree())
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'hawaii':
+        ax.set_extent([-164, -148, 14, 25], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.2, adjustable='datalim')
 
 	# Plot the shading
     im = ax.contourf(lons, lats, config['data'], 
@@ -317,4 +323,4 @@ for i, loc in enumerate(grid_locs):
 
 # Add a title and adjust layout to prevent overlapping
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv17_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv17_{duration}h{var}_init{pdy}_{cyc}Z_f{fhr}_valid{valid_dt.strftime('%Y%m%d')}_{valid_dt.strftime('%H')}Z.png", bbox_inches='tight', pad_inches=0.1)

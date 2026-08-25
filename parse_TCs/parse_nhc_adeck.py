@@ -6,8 +6,8 @@
 # If no arguments are passed in, script will prompt user for these inputs
 #
 # Run as:
-# python parse_adeck.py $MODEL $TCname_basin_IDnumber (no underscores)
-# python parse_adeck.py GFS FlorenceAL062018
+# python parse_nhc_adeck.py $MODEL $TCname_basin_IDnumber (no underscores)
+# python parse_nhc_adeck.py GFS FlorenceAL062018
 #
 
 

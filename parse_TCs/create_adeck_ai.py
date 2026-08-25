@@ -1,10 +1,10 @@
-# Author: L Dawson
+# Author: A Bentley
 #
-# Create adeck files from GFSv17 atcfunix.gfs.YYYYMMDDCC (atcfunix.gfs.2022083000) files (which have multiple storms per file)
+# Create adeck files from NCO tracks.atcfunix.YY (tracks.atcfunix.26) files (which have multiple storms per file)
 #
 # Run as:
-# python create_adeck_gfsv17.py $MODEL $TC_name/ID/YYYY
-# python create_adeck_gfsv17.py RETR HeleneAL092024
+# python create_adeck_ai.py $MODEL $TC_name/ID/YYYY
+# python create_adeck_ai.py AIGFS LalaCP012026
 
 
 import numpy as np
@@ -30,6 +30,10 @@ if str.upper(model_str) == 'GFS':
    model = 'AVNO'
 elif str.upper(model_str) == 'RETR':
    model = 'RETR'
+elif str.upper(model_str) == 'AIGFS':
+   model = 'AGFS'
+elif str.upper(model_str) == 'AIGEFS':
+   model = 'AIMN'
 else:
    model = model_str
 
@@ -62,8 +66,7 @@ print(TC_name, TC_number, TC_basin, TC_num, YYYY)
 # Set path and create data directory (if not already created)
 DIR = os.getcwd()
 
-#ADECK_DIR = '/lfs/h2/emc/gfstemp/emc.global/archive/retrov17_01_stream1a'    #stream1a, stream2, stream4
-ADECK_DIR = '/lfs/h2/emc/gfstemp/emc.global/archive/retrov17_01_realtime'
+ADECK_DIR = '/lfs/h1/ops/prod/com/ens_tracker/v1.3/global'
 
 # Define start and end points
 # Format: Year, Month, Day, Hour (Cycle)
@@ -71,7 +74,7 @@ start_date = datetime(2026, 8, 9, 12)
 end_date = datetime(2026, 8, 25, 0)
 current_date = start_date
 
-DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'adecks_gfsv17')
+DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'adecks_ai')
 
 if not os.path.exists(DATA_DIR):
       os.makedirs(DATA_DIR)
@@ -94,7 +97,7 @@ with open(DATA_DIR+'/a'+str.lower(TC_number)+YYYY+'.dat', 'w', newline='') as f_
         date_str = current_date.strftime("%Y%m%d%H")
     
         # 2. Construct your filename
-        filename = f"atcfunix.gfs.{date_str}"
+        filename = f"tracks.atcfunix.26"
 
         # 3. Perform your logic (e.g., opening the file)
         print(f"Processing: {filename}")

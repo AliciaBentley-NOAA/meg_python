@@ -86,17 +86,34 @@ print(f"Start Time:          {start_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Open ECMWF file and extract parameters from valid date
-filename_ecmwf_start = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{start_MM}{start_DD}{start_HH}001"
-print(filename_ecmwf_start)
-grib2_filename_start = filename_ecmwf_start + ".grib2"
-print(f"Remember to uncomment subprocess.run if using a new ECMWF file!")
-#subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
+if start_fhr == 0:
+	filename_ecmwf_start = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{start_MM}{start_DD}{start_HH}011"
+	print(filename_ecmwf_start)
+	grib2_filename_start = filename_ecmwf_start + ".grib2"
+	if not os.path.exists(grib2_filename_start):
+		print(f"Converting ECMWF file from grib1 to grib2.")
+		subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
+	else:
+		print(f"'{grib2_filename_start}' exists. Skipping grib1 to grib2 conversion.")
+else:
+	filename_ecmwf_start = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{start_MM}{start_DD}{start_HH}001"
+	print(filename_ecmwf_start)
+	grib2_filename_start = filename_ecmwf_start + ".grib2"
+	if not os.path.exists(grib2_filename_start):
+        	print(f"Converting ECMWF file from grib1 to grib2.")
+        	subprocess.run(["cnvgrib", "-g12", filename_ecmwf_start, grib2_filename_start])
+	else:
+        	print(f"'{grib2_filename_start}' exists. Skipping grib1 to grib2 conversion.")
 
 # Open ECMWF file and extract parameters from valid date
 filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
 print(filename_ecmwf)
 grib2_filename = filename_ecmwf + ".grib2"
-#subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+if not os.path.exists(grib2_filename):
+        print(f"Converting ECMWF file from grib1 to grib2.")
+        subprocess.run(["cnvgrib", "-g12", filename_ecmwf, grib2_filename])
+else:
+        print(f"'{grib2_filename}' exists. Skipping grib1 to grib2 conversion.")
 
 #-----------------------------------------------------------
 
@@ -177,13 +194,15 @@ elif grid == 'westcoast':
         fig = plt.figure(figsize=(12, 12))
 elif grid == 'easternUS':
         fig = plt.figure(figsize=(13, 12))
+elif grid == 'hawaii':
+        fig = plt.figure(figsize=(14, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
 
 # Define the specific normalization (Panel 1)
-#precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
-precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
+precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 7, 10, 15, 20])
+#precip_levels = np.array([0.01, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 8, 10, 12])
 
 precip_colors = [
     '#33ff00', # 0.01 - 0.1  (Bright Green)
@@ -273,6 +292,10 @@ for i, loc in enumerate(grid_locs):
         ax.set_extent([-97, -72, 25.0, 48.0], crs=ccrs.PlateCarree())
         # Increase this number (e.g., 1.4) to stretch it more vertically
         ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'hawaii':
+        ax.set_extent([-164, -148, 14, 25], crs=ccrs.PlateCarree())
+        # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.2, adjustable='datalim')
 
 	# Plot the shading
     im = ax.contourf(lons, lats, config['data'], 
@@ -297,4 +320,4 @@ for i, loc in enumerate(grid_locs):
 
 # Add a title and adjust layout to prevent overlapping
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecmwf_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/ecmwf_{duration}h{var}_init{pdy}_{cyc}Z_f{fhr}_valid{valid_dt.strftime('%Y%m%d')}_{valid_dt.strftime('%H')}Z.png", bbox_inches='tight', pad_inches=0.1)

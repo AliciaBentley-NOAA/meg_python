@@ -48,6 +48,10 @@ elif str.upper(model_str) == 'UKX':
    model = 'UKM'
 elif str.upper(model_str) == 'UK':
    model = 'UKM'
+elif str.upper(model_str) == 'AIGFS':
+   model = 'AGFS'
+elif str.upper(model_str) == 'AIGEFS':
+   model = 'AIMN'
 elif str.upper(model_str[0:3]) == 'HF3':
    model = 'HAFS v0.3'+model_str[-1]
 elif str.upper(model_str[-4:]) == 'MEAN':
@@ -264,6 +268,7 @@ for cycle in cycles:
    cycle_date = datetime.datetime(YYYY,MM,DD,HH,0,0)
 
    track_file = DATA_DIR+'/'+str.lower(model_str)+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+cycle+'.csv' 
+   #print(track_file)
 
    # lat/lon lists for each model
    clat=[]
@@ -450,15 +455,6 @@ def plot_tracks(domain):
        proj = 'merc'
        lat_ts = 25.
        draw_counties = False
-   elif str.upper(domain) == 'CPAC':
-       llcrnrlon = -180.
-       llcrnrlat = 5.
-       urcrnrlon = -110.
-       urcrnrlat = 40.
-       proj = 'merc'
-       lon0 = -155.
-       lat_ts = 20.
-       draw_counties = False
    elif str.upper(domain) == 'HAWAII':
        llcrnrlon = -165.
        llcrnrlat = 10.
@@ -468,7 +464,7 @@ def plot_tracks(domain):
        lon0 = -155.
        lat_ts = 20.
        draw_counties = False
-   elif str.upper(domain) == 'LALA':
+   elif str.upper(domain) == 'CPAC':
        llcrnrlon = 160.
        llcrnrlat = 5.
        urcrnrlon = -120.
@@ -575,6 +571,12 @@ def plot_tracks(domain):
    model_name = model
    if model == "RETR":
       model_name = "GFSv17"
+   if model == "GFS": 
+      model_name = "GFSv16"
+   if model == "AGFS": 
+      model_name = "AIGFS"
+   if model == "AIMN":
+      model_name = "AIGEFS"
 
    titlestr1 = 'Hurricane '+TC_name+' - '+model_name+' Tracks'
    titlestr2 = mtimes[0][0].strftime('%HZ %d %b')+' to '+mtimes[-1][0].strftime('%HZ %d %b %Y Initializations')
@@ -602,6 +604,12 @@ def ptrace():
    for i in range(len(plot_mpres)):
 #     label_str = mtimes[i][0].strftime('%HZ %m/%d')
 #     plt.plot(plot_mpres[i], '-', color=cmap(float(i+1)/float(len(plot_mpres)+1)), label=label_str, linewidth=2.)
+
+      #print(f"DEBUG: len(plot_mpres) = {len(plot_mpres)}, len(mtimes) = {len(mtimes)}")
+      for idx, mt in enumerate(mtimes):
+         if len(mt) == 0:
+             print(f"DEBUG: Cycle index {idx} has 0 valid datetime entries!")
+
       plt.plot(plot_mpres[i], '-', color=color_dict[mtimes[i][0].strftime("%Y%m%d%H")], linewidth=2.)
 
 #  plt.plot(plot_opres, '-', color='black', label='BEST', linewidth=2.)
@@ -871,10 +879,10 @@ def main():
 
     # Creates composite track maps over these domains
  #  domains = ['NW_ATL','NATL','SE_COAST','CARIB','GR_ANT','BAHAMAS']
- #  domains = ['MICHAEL','BARRY']
+ #  domains = ['MICHAEL','BARRY','HAWAII']
  #  domains = ['GOA','IDA','BARRY','LOUISIANA']
  #  domains = ['IAN','SE_COAST','GOA']
-    domains = ['CPAC','LALA']
+    domains = ['CPAC']
 
     pool = multiprocessing.Pool(len(domains))
     pool.map(plot_tracks,domains)

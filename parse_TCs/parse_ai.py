@@ -2,7 +2,7 @@
 #
 # Run as:
 # python parse_ai.py $MODEL $TC_name/ID
-# python parse_ai.py RETR LalaCP012026
+# python parse_ai.py AGFS LalaCP012026
 
 
 import numpy as np
@@ -72,7 +72,7 @@ print(TC_name, TC_number, YYYY)
 
 # Set path and create data directory (if not already created)
 DIR = os.getcwd()
-ADECK_DIR = '/lfs/h2/emc/vpppg/noscrub/alicia.bentley/adecks_gfsv17'
+ADECK_DIR = '/lfs/h2/emc/vpppg/noscrub/alicia.bentley/adecks_ai'
 DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'MEG', TC_name, 'data', str.lower(model_str))
 
 if not os.path.exists(DATA_DIR):
