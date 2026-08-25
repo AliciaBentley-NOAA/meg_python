@@ -258,7 +258,7 @@ if [ $PLOT_TC_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFS TC forecasts for ${longname}"
         python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
         python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AGFS $longname
+        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGFS $longname
 	sleep 1
 fi
 

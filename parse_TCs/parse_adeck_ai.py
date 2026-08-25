@@ -1,8 +1,8 @@
 # Author: A Bentley
 #
 # Run as:
-# python parse_ai.py $MODEL $TC_name/ID
-# python parse_ai.py AGFS LalaCP012026
+# python parse_adeck_ai.py $MODEL $TC_name/ID
+# python parse_adeck_ai.py AIGFS LalaCP012026
 
 
 import numpy as np
@@ -36,7 +36,7 @@ elif str.upper(model_str) == 'GEFSMEAN':
    model = 'AEMN'
 elif str.upper(model_str) == 'ECENSMEAN' or str.upper(model_str) == 'ECMEAN':
    model = 'EEMN'
-elif str.upper(model_str) == 'AGFS':
+elif str.upper(model_str) == 'AIGFS':
    model = 'AGFS'
 elif str.upper(model_str) == 'AIGEFS':
    model = 'AIMN'
@@ -122,13 +122,12 @@ for cycle in cycles_in_file:
       model_str = 'ECMEAN'
    elif str.upper(model_str) == 'AEMN':
       model_str = 'GEFSMEAN'
-   elif str.upper(model_str) == 'AGFS':
-      model_str = 'AGFS'
+   elif str.upper(model_str) == 'AIGFS':
+      model_str = 'AIGFS'
    elif str.upper(model_str) == 'AIGEFS':
       model_str = 'AIMN'
 
    f = open(DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+cycle+'.csv','wt')
-   #print(f"{DATA_DIR}/{TC_name.lower()}_{model_str.lower()}_{cycle}.csv")
 
    cycle_time = datetime.datetime(int(cycle[0:4]),int(cycle[4:6]),int(cycle[6:8]),int(cycle[8:10]))
    #print(f"len(cycles): {len(cycles)}")
@@ -153,8 +152,5 @@ for cycle in cycles_in_file:
 
    finally:
       f.close()
-
-
-
 
 

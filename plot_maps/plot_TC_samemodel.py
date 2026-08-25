@@ -574,7 +574,7 @@ def plot_tracks(domain):
    if model == "GFS": 
       model_name = "GFSv16"
    if model == "AGFS": 
-      model_name = "AIGFS"
+      model_name = "AIGFSv1.1"
    if model == "AIMN":
       model_name = "AIGEFS"
 
@@ -583,7 +583,7 @@ def plot_tracks(domain):
    plt.text(0.5, 1.05, titlestr1, fontweight='bold', horizontalalignment='center', transform=ax.transAxes)
    plt.text(0.5, 1.01, titlestr2, fontweight='bold', horizontalalignment='center', transform=ax.transAxes)
 
-   fname = str.lower(TC_name)+'_'+str.lower(model_str)+'_tracks_'+str.lower(domain)
+   fname = str.lower(TC_name)+'_'+str.lower(model_name)+'_tracks_'+str.lower(domain)
 
    plt.savefig(OUT_DIR+'/'+fname+'.png',bbox_inches='tight')
    plt.close()
@@ -600,6 +600,16 @@ def ptrace():
 
    fig = plt.figure(figsize=(9,8))
    cmap=matplotlib.cm.get_cmap('YlGnBu')
+
+   model_name = model
+   if model == "RETR":
+      model_name = "GFSv17"
+   if model == "GFS": 
+      model_name = "GFSv16"
+   if model == "AGFS":
+      model_name = "AIGFSv1.1"
+   if model == "AIMN":
+      model_name = "AIGEFS"
 
    for i in range(len(plot_mpres)):
 #     label_str = mtimes[i][0].strftime('%HZ %m/%d')
@@ -638,11 +648,11 @@ def ptrace():
 
    plt.grid(True)
 
-   titlestr = 'Hurricane '+TC_name+' - '+model+' Minimum Pressure Traces \n'+ \
+   titlestr = 'Hurricane '+TC_name+' - '+model_name+' Minimum Pressure Traces \n'+ \
               mtimes[0][0].strftime('%HZ %d %b')+' to '+mtimes[-1][0].strftime('%HZ %d %b %Y Initializations')
    plt.title(titlestr, fontweight='bold')
 
-   fname = str.lower(TC_name)+'_'+str.lower(model_str)+'_ptrace'
+   fname = str.lower(TC_name)+'_'+str.lower(model_name)+'_ptrace'
 
    plt.savefig(OUT_DIR+'/'+fname+'.png',bbox_inches='tight')
    plt.close()
@@ -657,6 +667,16 @@ def vtrace():
 
    fig = plt.figure(figsize=(9,8))
    cmap=matplotlib.cm.get_cmap('YlGnBu')
+
+   model_name = model
+   if model == "RETR":
+      model_name = "GFSv17"
+   if model == "GFS": 
+      model_name = "GFSv16"
+   if model == "AGFS":
+      model_name = "AIGFSv1.1"
+   if model == "AIMN":
+      model_name = "AIGEFS"
 
    for i in range(len(plot_mvmax)):
     # label_str = mtimes[i][0].strftime('%HZ %m/%d')
@@ -696,11 +716,11 @@ def vtrace():
 
    plt.grid(True)
 
-   titlestr = 'Hurricane '+TC_name+' - '+model+' Max 10-m Wind Traces \n'+ \
+   titlestr = 'Hurricane '+TC_name+' - '+model_name+' Max 10-m Wind Traces \n'+ \
               mtimes[0][0].strftime('%HZ %d %b')+' to '+mtimes[-1][0].strftime('%HZ %d %b %Y Initializations')
    plt.title(titlestr, fontweight='bold')
 
-   fname = str.lower(TC_name)+'_'+str.lower(model_str)+'_vmaxtrace'
+   fname = str.lower(TC_name)+'_'+str.lower(model_name)+'_vmaxtrace'
 
    plt.savefig(OUT_DIR+'/'+fname+'.png',bbox_inches='tight')
    plt.close()
