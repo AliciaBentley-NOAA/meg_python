@@ -20,30 +20,41 @@ module load wgrib2/2.0.8_wmo
 module load libjpeg/9c
 module load grib_util/1.2.4
 
-#===============================================================================================================
+#=================================================================================
+#=================================================================================
+# Users should modify the MEG plotting options in the four sections below
+# Section 1 = initialization times, forecast hours, valid times, domains, etc.
+# Section 2 = which models or validation datasets to plot (e.g., GFS, StageIV, etc.)
+# Section 3 = location of your plotting scripts and your forecast/validation data
+# Section 4 = which variables to plot (uncomment specific scripts to run them) 
+#=================================================================================
+#=================================================================================
 export CASE='tc_lala'
-export cyc="00"
 export initdate="20260815"
-export fhr="036"  #240,216,192,168,144,120,096,072,048,024
-                  #228,204,180,156,132,108,084,060,036,012
+export cyc="00"
+export fhr="036"  
 
-# Current domain options: conus, wpc, eastcoast, northeast, easternUS, southeastUS, westcoast, florida, hawaii
+# Easy reference list of possible fhrs
+#240,216,192,168,144,120,096,072,048,024
+#228,204,180,156,132,108,084,060,036,012
+
+# Domain options: conus, wpc, eastcoast, northeast, easternUS, southeastUS, westcoast, florida, hawaii
 export DOMAIN='hawaii'
 
-#If plotting precip or snowfall, choose a duration (typically 24 or 36)
-export duration='24'   #72, 48, 36, 24, 12, 6
+#If plotting precip/snowfall, choose a duration (e.g., 72, 48, 36, 24, 12, 6)
+export duration='24'   
 
 #If plotting Stage IV, CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
-export vdate="20260816" #This is the last time in the period covered
-export vhour="12"  #00, 06, 12, 18
+export vdate="20260816" #For precip/snowfall, this is the last time in the period covered
+export vhour="12"     	#00, 06, 12, 18
 
-#If plotting TC track/intensity
+#If plotting TC track/intensity, define TCnameIDYear (e.g., LalaCP012026)
 export longname="LalaCP012026"
 
-# *************************************************************
-# ****Specify which models to plot, forecast hours, domains****
-# *************************************************************
-# Select which models to plot (YES/NO)
+#=================================================================================
+#=================================================================================
+# Select which models or validation datasets to plot (YES or NO)
+
 export PLOT_GEFS_FCSTS=NO
 export PLOT_AIGEFS_FCSTS=NO
 export PLOT_HGEFS_FCSTS=NO
@@ -64,14 +75,10 @@ export PLOT_RAP_ANALYSIS=NO
 
 export PLOT_TC_FCSTS=YES
 
-#===============================================================================================================
-#===============================================================================================================
-#===============================================================================================================
+#=================================================================================
+#=================================================================================
+# Location of your MEG plotting scripts and where to save your finished plots
 
-# ********************************************
-# *****Specify paths to scripts and maps******
-# ********************************************
-# Location of your saved GFS/GEFS evaluation /plot_maps directory
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/plot_maps'
 
 # Location of downloaded forecast/analysis files
@@ -85,9 +92,9 @@ export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/'${CASE}
 export MAP_PATH='/lfs/h2/emc/vpppg/noscrub/'${USER}'/'${CASE}'/maps'
 mkdir -p ${MAP_PATH}
 
-#===============================================================================================================        
-#===============================================  END CHANGES  =================================================
-#===============================================================================================================
+
+#=================================================================================
+#=================================================================================
 
 if [ $PLOT_GFS_FCSTS = YES ]; then
         echo "======================================="
@@ -255,10 +262,12 @@ fi
 
 if [ $PLOT_TC_FCSTS = YES ]; then
         echo "======================================="
-        echo "Kickoff ${CASE} scripts to plot GFS TC forecasts for ${longname}"
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGFS $longname
+        echo "Kickoff ${CASE} scripts to plot TC track/intensity for ${longname}"
+#        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
+#        python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
+#        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGFS $longname
+        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGEFS $longname
+        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GEFS $longname
 	sleep 1
 fi
 

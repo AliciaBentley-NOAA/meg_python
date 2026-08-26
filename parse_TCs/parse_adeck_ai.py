@@ -125,7 +125,7 @@ for cycle in cycles_in_file:
    elif str.upper(model_str) == 'AIGFS':
       model_str = 'AIGFS'
    elif str.upper(model_str) == 'AIGEFS':
-      model_str = 'AIMN'
+      model_str = 'AIGEFS'
 
    f = open(DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+cycle+'.csv','wt')
 

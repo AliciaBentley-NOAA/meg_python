@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+#===================================================/
 # Run as:
 # python plot_TC_samemodel.py $MODEL $TC_name/ID/Year
 # python plot_TC_samemodel.py GFS FlorenceAL062018
-#
+#====================================================
 
 import numpy as np
 import os, sys, datetime, time, subprocess
@@ -28,7 +29,7 @@ matplotlib.use('Agg')
 
 import cartopy
 
-
+#===================================================
 
 # Determine desired model
 try:
@@ -52,6 +53,8 @@ elif str.upper(model_str) == 'AIGFS':
    model = 'AGFS'
 elif str.upper(model_str) == 'AIGEFS':
    model = 'AIMN'
+elif str.upper(model_str) == 'GEFS':
+   model = 'GEFS'
 elif str.upper(model_str[0:3]) == 'HF3':
    model = 'HAFS v0.3'+model_str[-1]
 elif str.upper(model_str[-4:]) == 'MEAN':
@@ -473,7 +476,15 @@ def plot_tracks(domain):
        lon0 = -170.
        lat_ts = 20.
        draw_counties = False
-
+   elif str.upper(domain) == 'CPAC_ZOOM':
+       llcrnrlon = 170.
+       llcrnrlat = 5.
+       urcrnrlon = -135.
+       urcrnrlat = 43.
+       proj = 'merc'
+       lon0 = -170. 
+       lat_ts = 20.
+       draw_counties = False
 
    extent = [llcrnrlon-1,urcrnrlon+1,llcrnrlat-1,urcrnrlat+1]
 
@@ -571,17 +582,24 @@ def plot_tracks(domain):
    model_name = model
    if model == "RETR":
       model_name = "GFSv17"
+      model_name_title = model_name
    if model == "GFS": 
       model_name = "GFSv16"
+      model_name_title = model_name
    if model == "AGFS": 
       model_name = "AIGFSv1.1"
+      model_name_title = model_name
    if model == "AIMN":
-      model_name = "AIGEFS"
+      model_name = "AIGEFSv1.0"
+      model_name_title = "AIGEFSv1.0 Mean"
+   if model == "GEFS":
+      model_name = "GEFSv12"
+      model_name_title = "GEFSv12 Mean"
 
-   titlestr1 = 'Hurricane '+TC_name+' - '+model_name+' Tracks'
+   titlestr1 = 'Hurricane '+TC_name+' - '+model_name_title+' Tracks'
    titlestr2 = mtimes[0][0].strftime('%HZ %d %b')+' to '+mtimes[-1][0].strftime('%HZ %d %b %Y Initializations')
-   plt.text(0.5, 1.05, titlestr1, fontweight='bold', horizontalalignment='center', transform=ax.transAxes)
-   plt.text(0.5, 1.01, titlestr2, fontweight='bold', horizontalalignment='center', transform=ax.transAxes)
+   plt.text(0.5, 1.06, titlestr1, fontsize=16, fontweight='bold', horizontalalignment='center', transform=ax.transAxes)
+   plt.text(0.5, 1.01, titlestr2, fontsize=16, fontweight='bold', horizontalalignment='center', transform=ax.transAxes)
 
    fname = str.lower(TC_name)+'_'+str.lower(model_name)+'_tracks_'+str.lower(domain)
 
@@ -604,12 +622,19 @@ def ptrace():
    model_name = model
    if model == "RETR":
       model_name = "GFSv17"
+      model_name_title = model_name
    if model == "GFS": 
       model_name = "GFSv16"
+      model_name_title = model_name
    if model == "AGFS":
       model_name = "AIGFSv1.1"
+      model_name_title = model_name
    if model == "AIMN":
-      model_name = "AIGEFS"
+      model_name = "AIGEFSv1.0"
+      model_name_title = "AIGEFSv1.0 Mean"
+   if model == "GEFS":
+      model_name = "GEFSv12"
+      model_name_title = "GEFSv12 Mean" 
 
    for i in range(len(plot_mpres)):
 #     label_str = mtimes[i][0].strftime('%HZ %m/%d')
@@ -648,7 +673,7 @@ def ptrace():
 
    plt.grid(True)
 
-   titlestr = 'Hurricane '+TC_name+' - '+model_name+' Minimum Pressure Traces \n'+ \
+   titlestr = 'Hurricane '+TC_name+' - '+model_name_title+' Minimum Pressure Traces \n'+ \
               mtimes[0][0].strftime('%HZ %d %b')+' to '+mtimes[-1][0].strftime('%HZ %d %b %Y Initializations')
    plt.title(titlestr, fontweight='bold')
 
@@ -671,12 +696,19 @@ def vtrace():
    model_name = model
    if model == "RETR":
       model_name = "GFSv17"
-   if model == "GFS": 
+      model_name_title = model_name
+   if model == "GFS":
       model_name = "GFSv16"
+      model_name_title = model_name
    if model == "AGFS":
       model_name = "AIGFSv1.1"
+      model_name_title = model_name
    if model == "AIMN":
-      model_name = "AIGEFS"
+      model_name = "AIGEFSv1.0"
+      model_name_title = "AIGEFSv1.0 Mean"
+   if model == "GEFS":
+      model_name = "GEFSv12"
+      model_name_title = "GEFSv12 Mean"
 
    for i in range(len(plot_mvmax)):
     # label_str = mtimes[i][0].strftime('%HZ %m/%d')
@@ -716,7 +748,7 @@ def vtrace():
 
    plt.grid(True)
 
-   titlestr = 'Hurricane '+TC_name+' - '+model_name+' Max 10-m Wind Traces \n'+ \
+   titlestr = 'Hurricane '+TC_name+' - '+model_name_title+' Max 10-m Wind Traces \n'+ \
               mtimes[0][0].strftime('%HZ %d %b')+' to '+mtimes[-1][0].strftime('%HZ %d %b %Y Initializations')
    plt.title(titlestr, fontweight='bold')
 
@@ -902,7 +934,7 @@ def main():
  #  domains = ['MICHAEL','BARRY','HAWAII']
  #  domains = ['GOA','IDA','BARRY','LOUISIANA']
  #  domains = ['IAN','SE_COAST','GOA']
-    domains = ['CPAC']
+    domains = ['CPAC_ZOOM']
 
     pool = multiprocessing.Pool(len(domains))
     pool.map(plot_tracks,domains)

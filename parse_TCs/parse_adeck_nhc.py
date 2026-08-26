@@ -6,10 +6,9 @@
 # If no arguments are passed in, script will prompt user for these inputs
 #
 # Run as:
-# python parse_nhc_adeck.py $MODEL $TCname_basin_IDnumber (no underscores)
-# python parse_nhc_adeck.py GFS FlorenceAL062018
-#
-
+# python parse_adeck_nhc.py $MODEL $TCname_basin_IDnumber (no underscores)
+# python parse_adeck_nhc.py GFS FlorenceAL062018
+#=========================================================================
 
 import numpy as np
 import datetime, os, sys, subprocess
@@ -25,7 +24,7 @@ except IndexError:
 if model_str is None:
    print('Model string options: GFS (AVNO or GFS), EC (EC, ECMWF, or EMX), UK (UK, UKMet, EGRR, or UKX), CMC, HWRF, HMON, NAM')
    print('Model string options (early): AVNI, CMCI, HWFI, HMNI')
-   print('Model string options (ensemble mean): GEFSMean, ECENSmean')
+   print('Model string options (ensemble mean): GEFS, ECENSmean')
    model_str = input('Enter desired model: ')
 
 
@@ -36,7 +35,7 @@ elif str.upper(model_str) == 'EC' or str.upper(model_str) == 'ECMWF':
    model = 'EMX'   # NCEP tracker - data used by NHC
 elif str.upper(model_str) == 'UK' or str.upper(model_str) == 'UKMET':
    model = 'EGRR'
-elif str.upper(model_str) == 'GEFSMEAN':
+elif str.upper(model_str) == 'GEFS':
    model = 'AEMN'
 elif str.upper(model_str) == 'ECENSMEAN' or str.upper(model_str) == 'ECMEAN':
    model = 'EEMN'
@@ -125,7 +124,7 @@ for cycle in cycles_in_file:
    elif str.upper(model_str) == 'ECENSMEAN' or str.upper(model_str) == 'ECMEAN' or str.upper(model_str) == 'EEMN':
       model_str = 'ECMEAN'
    elif str.upper(model_str) == 'AEMN':
-      model_str = 'GEFSMEAN'
+      model_str = 'GEFS'
 
    f = open(DATA_DIR+'/'+str.lower(TC_name)+'_'+str.lower(model_str)+'_'+cycle+'.csv','wt')
 
