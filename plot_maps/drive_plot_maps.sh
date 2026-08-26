@@ -263,9 +263,9 @@ fi
 if [ $PLOT_TC_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot TC track/intensity for ${longname}"
-#        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
-#        python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
-#        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGFS $longname
+        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
+        python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
+        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGFS $longname
         python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGEFS $longname
         python ${SCRIPTS_PATH}/plot_TC_samemodel.py GEFS $longname
 	sleep 1
