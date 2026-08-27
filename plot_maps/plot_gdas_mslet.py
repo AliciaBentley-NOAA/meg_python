@@ -22,7 +22,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "mslp"
+var = "mslet"
 
 print(f"#############################################")
 
@@ -64,11 +64,11 @@ print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Open GFS GRIB2 file and extract parameters
-filename_gfs = f"{DATA_PATH}/gfs.{pdy}/{cyc}/atmos/gfs.t{cyc}z.pgrb2.0p25.f{fhr_str}"
+filename_gfs = f"{DATA_PATH}/gdas.{pdy}/{cyc}/atmos/gdas.t{cyc}z.pgrb2.0p25.f{fhr_str}"
 with grib2io.open(filename_gfs) as f_gfs:
 
 	# Select the specific messages we want
-	mslp_msg = f_gfs.select(shortName='PRMSL', level='mean sea level')[0]
+	mslp_msg = f_gfs.select(shortName='MSLET', level='mean sea level')[0]
 
 	# Extract values
 	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa/mb
@@ -132,7 +132,7 @@ mslp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GFSv16 | PRMSL - Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GDAS | MSLET - Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -242,4 +242,4 @@ for i, loc in enumerate(grid_locs):
 
 # Add a title and adjust layout to prevent overlapping
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/gfsv16_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/gdas_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)

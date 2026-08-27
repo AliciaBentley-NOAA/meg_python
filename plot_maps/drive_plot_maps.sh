@@ -32,7 +32,7 @@ module load grib_util/1.2.4
 export CASE='tc_lala'
 export initdate="20260819"
 export cyc="12"
-export fhr="006"  
+export fhr="012"  
 
 # Reference list of possible fhrs
 # 240,216,192,168,144,120,096,072,048,024
@@ -61,8 +61,8 @@ export PLOT_HGEFS_FCSTS=NO
 export PLOT_ECENS_FCSTS=NO
 export PLOT_ECAIFS_ENS_FCSTS=NO
 
-export PLOT_GFS_FCSTS=NO
-export PLOT_AIGFS_FCSTS=NO
+export PLOT_GFS_FCSTS=YES
+export PLOT_AIGFS_FCSTS=YES
 export PLOT_ECMWF_FCSTS=NO
 export PLOT_ECAIFS_FCSTS=NO
 export PLOT_GFSv17_FCSTS=NO
@@ -72,6 +72,7 @@ export PLOT_CCPA_ANALYSIS=NO
 export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
 export PLOT_RAP_ANALYSIS=NO
+export PLOT_GDAS_ANALYSIS=NO
 
 export PLOT_TC_FCSTS=NO
 
@@ -102,8 +103,9 @@ if [ $PLOT_GFS_FCSTS = YES ]; then
 #        python ${SCRIPTS_PATH}/plot_gfs_orography.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_orography_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-##        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-         python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gfs_mslet.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##         python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_10m_wind_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #	 python ${SCRIPTS_PATH}/plot_gfs_10m_wind_ascent.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_10m_convergence.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
@@ -148,9 +150,12 @@ fi
 if [ $PLOT_GEFS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_gefs_mean_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gefs_mean_mslet.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gefs_spread_mslet.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_members_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
         sleep 1
@@ -159,9 +164,10 @@ fi
 if [ $PLOT_AIGEFS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot AIGEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+	python ${SCRIPTS_PATH}/plot_aigefs_mean_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_aigefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_aigefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_aigefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_aigefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_aigefs_members_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_aigefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
         sleep 1
@@ -257,6 +263,14 @@ if [ $PLOT_RAP_ANALYSIS = YES ]; then
         export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/rap_data'
         echo "Kickoff ${CASE} scripts to plot RAP analysis (Valid: ${vdate}${vhour} for ${DOMAIN})"
         python ${SCRIPTS_PATH}/plot_rap_cape_sfc_based.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+if [ $PLOT_GDAS_ANALYSIS = YES ]; then
+        echo "======================================="
+        echo "Kickoff ${CASE} scripts to plot GDAS analysis (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_gdas_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gdas_mslet.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 

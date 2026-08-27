@@ -23,7 +23,7 @@ echo "Dest:   $DEST_DIR"
 echo "----------------------------------------------------------"
 
 # Loop from 0 to 198 in increments of 6
-for h in $(seq 0 6 12); do
+for h in $(seq 0 6 48); do
     # Format the forecast hour to be 3 digits (e.g., 000, 006, 012)
     HHH=$(printf "%03d" $h)
     
