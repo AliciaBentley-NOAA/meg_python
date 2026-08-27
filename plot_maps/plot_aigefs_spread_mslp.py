@@ -125,6 +125,10 @@ elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
 elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
+elif grid == 'hawaii':
+	fig = plt.figure(figsize=(14, 12))
+elif grid == 'cpac':
+	fig = plt.figure(figsize=(14, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -158,7 +162,8 @@ for i, loc in enumerate(grid_locs):
 	config = plot_configs[i]
 
 	# Add subplot with projection
-	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
+        #ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
+	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree(central_longitude=190))
 
 	# Determine the appropriate scale based on the domain
 	state_scale = '10m' if grid != "conus" else '50m'
@@ -192,6 +197,14 @@ for i, loc in enumerate(grid_locs):
 		# Add manual aspect ratio here. 
 		# Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.25, adjustable='datalim')
+	elif grid == 'hawaii':
+		ax.set_extent([-164, -148, 14, 25], crs=ccrs.PlateCarree())
+		# Increase this number (e.g., 1.4) to stretch it more vertically
+		ax.set_aspect(1.2, adjustable='datalim')
+	elif grid == 'cpac':
+		ax.set_extent([178, 205, 15, 30], crs=ccrs.PlateCarree())
+		# Increase this number (e.g., 1.4) to stretch it more vertically
+		ax.set_aspect(1.2, adjustable='datalim')
 
 	# Plot the shading
 	im = ax.contourf(lons, lats, mslps_data,
