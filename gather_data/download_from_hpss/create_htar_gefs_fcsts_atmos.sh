@@ -88,13 +88,13 @@ while IFS= read -r line ; do
         #echo "Reading the next line of "${file}
         export FHHH=${FHHH_temp}
 
-	if [[ -s ${DATA_PATH}/gefs.${YYYYMMDD}/${HH}/atmos/gefs.t${HH}z.pgrb2s.0p25.f${FHHH_same} ]] ; then
-		echo ${CYCLE} "F"${FHHH_same}" GEFS hires forecast already exists"
+	if [[ -s ${DATA_PATH}/gefs.${YYYYMMDD}/${HH}/atmos/geavg.t${HH}z.pgrb2s.0p25.f${FHHH_same} ]] ; then
+		echo ${CYCLE} "F"${FHHH_same}" GEFS hires forecast (geavg) already exists"
 	else
-        	echo "Extracting "${CYCLE}" ops GEFS hires forecast file "${FHHH_same}
+        	echo "Extracting "${CYCLE}" ops GEFS hires forecast (geavg) file "${FHHH_same}
         	htar -xvf $GEFS_ARCHIVE $GEFS_FILENAME
         	sleep 3
-        	mv $GEFS_FILENAME ${DATA_PATH}/gefs.${YYYYMMDD}/${HH}/atmos/gefs.t${HH}z.pgrb2s.0p25.f${FHHH_same}
+        	mv $GEFS_FILENAME ${DATA_PATH}/gefs.${YYYYMMDD}/${HH}/atmos/geavg.t${HH}z.pgrb2s.0p25.f${FHHH_same}
 	fi
 
 done < ${file}
