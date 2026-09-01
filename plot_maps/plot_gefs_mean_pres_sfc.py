@@ -1,6 +1,5 @@
 import time, os, sys
 import numpy as np
-import copy
 from datetime import datetime, timedelta
 import grib2io
 import matplotlib
@@ -22,7 +21,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "mslp"
+var = "pres_sfc"
 
 print(f"#############################################")
 
@@ -63,12 +62,12 @@ print(f"Initialization Time: {init_dt.strftime('%Y-%m-%d %HZ')}")
 print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
-# Open AIGFS GRIB2 file and extract parameters
-filename_aigfs = f"{DATA_PATH}/aigfs.{pdy}/{cyc}/atmos/aigfs.t{cyc}z.sfc.f{fhr_str}.grib2"
-with grib2io.open(filename_aigfs) as f_aigfs:
+# Open GEFS GRIB2 file and extract parameters
+filename_gefs = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/geavg.t{cyc}z.pgrb2s.0p25.f{fhr_str}"
+with grib2io.open(filename_gefs) as f_gefs:
 
 	# Select the specific messages we want
-	mslp_msg = f_aigfs.select(shortName='PRMSL', level='mean sea level')[0]
+	mslp_msg = f_gefs.select(shortName='PRES', level='surface')[0]
 
 	# Extract values
 	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa/mb
@@ -105,8 +104,6 @@ if grid == 'northeast':
 	fig = plt.figure(figsize=(12, 12))
 elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
-elif grid == 'eastcoast':
-        fig = plt.figure(figsize=(13, 12))
 elif grid == 'cpac':
         fig = plt.figure(figsize=(14, 12))
 
@@ -122,7 +119,7 @@ mslp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-	{'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'AIGFS | Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+        {'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GEFS Mean | PRES - Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]
@@ -145,6 +142,7 @@ for i, loc in enumerate(grid_locs):
 	countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
 
 	# Geographic features
+	ax.add_feature(cfeature.LAND, facecolor='lightgray', edgecolor='none', zorder=1)
 	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
 	ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
@@ -161,21 +159,13 @@ for i, loc in enumerate(grid_locs):
                 # Add manual aspect ratio here. 
                 # Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
-	elif grid == 'eastcoast':
-                ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
-                # Increase this number (e.g., 1.4) to stretch it more vertically
-                ax.set_aspect(1.25, adjustable='datalim')
 	elif grid == 'cpac':
 		ax.set_extent([178, 205, 15, 30], crs=ccrs.PlateCarree())
 		# Increase this number (e.g., 1.4) to stretch it more vertically
 		ax.set_aspect(1.2, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
-	#current_cmap = config['cmap']
-	current_cmap = copy.copy(plt.get_cmap(config['cmap']))
-	current_cmap.set_under('firebrick')
-	current_cmap.set_over('deeppink')
+	current_cmap = config['cmap']
 
 	# Plot the shading
 	im = ax.contourf(lons, lats, config['data'], 
@@ -186,16 +176,16 @@ for i, loc in enumerate(grid_locs):
 		     extend='both',
 		     zorder=3)
 
-	# Plot the contour lines
-	contours = ax.contour(lons, lats, config['data'], 
-			      levels=config['levels'], 
-			      colors='black', 
-			      linewidths=2.5, 
-			      transform=ccrs.PlateCarree(),
-			      zorder=5)
+        # Plot the contour lines
+	contours = ax.contour(lons, lats, config['data'],
+		levels=mslp_levels_lines,
+		colors='black',
+		linewidths=2.5,
+		transform=ccrs.PlateCarree(),
+		zorder=5)
 
 	# Add labels to the lines (e.g., '1012')
-	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
+	ax.clabel(contours, contours.levels[::2], inline=True, fontsize=20, fmt='%i', inline_spacing=8)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
 	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
@@ -208,4 +198,4 @@ for i, loc in enumerate(grid_locs):
 
 # Add a title and adjust layout to prevent overlapping
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/aigfs_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig(f"{MAP_PATH}/{grid}/{var}/gefs_mean_{var}_init{pdy}_{cyc}Z_f{fhr}.png", bbox_inches='tight', pad_inches=0.1)
