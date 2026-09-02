@@ -29,10 +29,10 @@ module load grib_util/1.2.4
 # Section 4 = which variables to plot (uncomment specific scripts to run them) 
 #=================================================================================
 #=================================================================================
-export CASE='tc_lala'
+export CASE='tc_melissa'
 export initdate="20260819"
 export cyc="12"
-export fhr="000"  
+export fhr="048"  
 
 # Reference list of possible fhrs
 # 240,216,192,168,144,120,096,072,048,024
@@ -49,18 +49,19 @@ export vdate="20260816" #For precip/snowfall, this is the last time in the perio
 export vhour="12"     	#00, 06, 12, 18
 
 #If plotting TC track/intensity, define TCnameIDYear (e.g., LalaCP012026)
-export longname="LalaCP012026"
+export longname="MelissaAL132025"
 
 #=================================================================================
 #=================================================================================
 # Select which models or validation datasets to plot (YES or NO)
 
 ######## Ensembles #########
-export PLOT_GEFS_FCSTS=YES
+export PLOT_GEFS_FCSTS=NO
 export PLOT_AIGEFS_FCSTS=NO
 export PLOT_HGEFS_FCSTS=NO
 export PLOT_ECENS_FCSTS=NO
 export PLOT_ECAIFS_ENS_FCSTS=NO
+export PLOT_AIGEFSDEV_FCSTS=NO
 
 ###### Deterministic #######
 export PLOT_GFS_FCSTS=NO
@@ -78,7 +79,7 @@ export PLOT_RAP_ANALYSIS=NO
 export PLOT_GDAS_ANALYSIS=NO
 
 ###### TC Maps/Ptrace #######
-export PLOT_TC_FCSTS=NO
+export PLOT_TC_FCSTS=YES
 
 #=================================================================================
 #=================================================================================
@@ -176,6 +177,13 @@ if [ $PLOT_AIGEFS_FCSTS = YES ]; then
 ##        python ${SCRIPTS_PATH}/plot_aigefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_aigefs_members_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_aigefs_mean_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration $vdate $vhour
+        sleep 1
+fi
+
+if [ $PLOT_AIGEFSDEV_FCSTS = YES ]; then
+        echo "======================================="
+        echo "Kickoff ${CASE} scripts to plot AIGEFSDEV forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_aigefsdev_mean_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi
 
@@ -283,11 +291,11 @@ fi
 if [ $PLOT_TC_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot TC track/intensity for ${longname}"
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGFS $longname
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGEFS $longname
+##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
+##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
+##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGFS $longname
         python ${SCRIPTS_PATH}/plot_TC_samemodel.py GEFS $longname
+##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGEFS $longname
 	sleep 1
 fi
 

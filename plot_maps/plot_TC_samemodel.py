@@ -421,6 +421,7 @@ def plot_tracks(domain):
        llcrnrlat = 10.
        urcrnrlon = -60.
        urcrnrlat = 45.
+       lon0 = -50.
        proj = 'merc'
        lat_ts = 35.
        draw_counties = False
@@ -433,6 +434,15 @@ def plot_tracks(domain):
        lon0 = -76.
        lat_ts = 35.
        draw_counties = False
+   elif str.upper(domain) == 'NATL':
+       llcrnrlon = -85.
+       llcrnrlat = 8.
+       urcrnrlon = -32.
+       urcrnrlat = 48.
+       lon0 = -60. 
+       proj = 'merc'
+       lat_ts = 35.
+       draw_counties = False  
    elif str.upper(domain) == 'CARIB':
        llcrnrlon = -80.
        llcrnrlat = 10.
@@ -546,18 +556,17 @@ def plot_tracks(domain):
    print(parallels)
 
 
-   if str.upper(domain) == 'IAN':
+   if str.upper(domain) == 'NATL':
 
-    #  xgl = ax.gridlines(crs=transform,draw_labels=True,xlocs=meridians,
-    #                     linewidth=0.3,color='black',linestyle='solid')
+       #xgl = ax.gridlines(crs=transform,draw_labels=True,xlocs=meridians,linewidth=0.3,color='black',linestyle='solid')
        gl = ax.gridlines(crs=transform,draw_labels=True,
                          linewidth=0.3,color='black',linestyle='solid')
        gl.top_labels = False
        gl.right_labels = False
        gl.xlocater = mticker.FixedLocator(meridians)
        gl.ylocater = mticker.FixedLocator(parallels)
-     # gl.xformatter = LONGITUDE_FORMATTER
-     # gl.yformatter = LATITUDE_FORMATTER
+       #gl.xformatter = LONGITUDE_FORMATTER
+       #gl.yformatter = LATITUDE_FORMATTER
        gl.xformatter = LongitudeFormatter()
        gl.yformatter = LatitudeFormatter()
        gl.xlabel_style = {'size':10, 'color':'black'}
@@ -568,10 +577,10 @@ def plot_tracks(domain):
 #  cmap=matplotlib.cm.get_cmap('YlGnBu')
 
    for i in range(len(mlats)):
-   #  label_str = mtimes[i][0].strftime('%HZ %m/%d')
-   #  x, y = m(mlons[i],mlats[i])
-   #  m.plot(x, y, '-', color=cmap(float(i+1)/float(len(mlats)+1)), label=label_str, linewidth=2.)
-      plt.plot(mlons[i], mlats[i], '-', color=color_dict[mtimes[i][0].strftime("%Y%m%d%H")], linewidth=2., transform=transform)
+     label_str = mtimes[i][0].strftime('%HZ %m/%d')
+     #x, y = m(mlons[i],mlats[i])
+     #m.plot(x, y, '-', color=cmap(float(i+1)/float(len(mlats)+1)), label=label_str, linewidth=2.)
+     plt.plot(mlons[i], mlats[i], '-', color=color_dict[mtimes[i][0].strftime("%Y%m%d%H")], linewidth=2., transform=transform)
 
  # x, y = m(olon,olat)
  # m.plot(x, y, '-', color='black', label='BEST', linewidth=2.)
@@ -934,7 +943,7 @@ def main():
  #  domains = ['MICHAEL','BARRY','HAWAII']
  #  domains = ['GOA','IDA','BARRY','LOUISIANA']
  #  domains = ['IAN','SE_COAST','GOA']
-    domains = ['CPAC_ZOOM']
+    domains = ['NATL']
 
     pool = multiprocessing.Pool(len(domains))
     pool.map(plot_tracks,domains)
