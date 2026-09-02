@@ -4,7 +4,7 @@
 #
 # Run as:
 # python create_adeck_aigefsdev_members.py $MODEL $TC_name/ID/YYYY
-# python create_adeck_aigefsdev_members.py AIGEFS MelissaAL132025
+# python create_adeck_aigefsdev_members.py AIGEFSDEV MelissaAL132025
 
 
 import numpy as np
@@ -32,7 +32,7 @@ elif str.upper(model_str) == 'RETR':
    model = 'RETR'
 elif str.upper(model_str) == 'AIGFS':
    model = 'AGFS'
-elif str.upper(model_str) == 'AIGEFS':
+elif str.upper(model_str) == 'AIGEFSDEV':
    model = 'AVNO'
 else:
    model = model_str
