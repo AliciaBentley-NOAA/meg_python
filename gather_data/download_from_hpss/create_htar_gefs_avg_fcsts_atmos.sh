@@ -18,7 +18,7 @@ export YYYYMM=`echo $CYCLE | cut -c 1-6`
 export YYYYMMDD=`echo $CYCLE | cut -c 1-8`
 export HH=`echo $CYCLE | cut -c 9-10`
 
-mkdir -p ${DATA_PATH}/untar_fcsts/untar_gefs/gefs.${YYYYMMDD}/${HH}
+mkdir -p ${DATA_PATH}/untar_fcsts/untar_gefs_avg/gefs.${YYYYMMDD}/${HH}
 mkdir -p ${DATA_PATH}/gefs.${YYYYMMDD}/${HH}/atmos
 #echo ${DATA_PATH}/gefs.${YYYYMMDD}/${HH}/atmos
 
@@ -70,17 +70,17 @@ fi
 # Creating a job to download data on a particular ops GEFS forecast cycle (CYCLE)
 #-----------------------------------------------------------------------------------------
 
-cat > ${DATA_PATH}/untar_fcsts/untar_gefs/gefs.${YYYYMMDD}/${HH}/htar_gefs_fcst_atmos.sh <<EOF
+cat > ${DATA_PATH}/untar_fcsts/untar_gefs_avg/gefs.${YYYYMMDD}/${HH}/htar_gefs_avg_fcst_atmos.sh <<EOF
 #!/bin/bash
-#PBS -N gefs_htar
-#PBS -o ${OUTPUT_PATH}/out_htar_gefs_fcst_atmos_${YYYYMMDD}_${HH}.out
-#PBS -e ${OUTPUT_PATH}/out_htar_gefs_fcst_atmos_${YYYYMMDD}_${HH}.err
+#PBS -N gefs_avg_htar
+#PBS -o ${OUTPUT_PATH}/out_htar_gefs_avg_fcst_atmos_${YYYYMMDD}_${HH}.out
+#PBS -e ${OUTPUT_PATH}/out_htar_gefs_avg_fcst_atmos_${YYYYMMDD}_${HH}.err
 #PBS -l select=1:ncpus=1:mem=4GB
 #PBS -q dev_transfer
 #PBS -l walltime=02:00:00
 #PBS -A VERF-DEV
 
-cd ${DATA_PATH}/untar_fcsts/untar_gefs/gefs.${YYYYMMDD}/${HH}
+cd ${DATA_PATH}/untar_fcsts/untar_gefs_avg/gefs.${YYYYMMDD}/${HH}
 
 file="${DATA_PATH}/${CASE}_fhrs.txt"
 
@@ -89,9 +89,9 @@ while IFS= read -r line ; do
         export FHHH=${FHHH_temp}
 
 	if [[ -s ${DATA_PATH}/gefs.${YYYYMMDD}/${HH}/atmos/geavg.t${HH}z.pgrb2s.0p25.f${FHHH_same} ]] ; then
-		echo ${CYCLE} "F"${FHHH_same}" GEFS hires forecast (geavg) already exists"
+		echo ${CYCLE} "F"${FHHH_same}" GEFS hires mean forecast (geavg) already exists"
 	else
-        	echo "Extracting "${CYCLE}" ops GEFS hires forecast (geavg) file "${FHHH_same}
+        	echo "Extracting "${CYCLE}" ops GEFS hires mean forecast (geavg) file "${FHHH_same}
         	htar -xvf $GEFS_ARCHIVE $GEFS_FILENAME
         	sleep 3
         	mv $GEFS_FILENAME ${DATA_PATH}/gefs.${YYYYMMDD}/${HH}/atmos/geavg.t${HH}z.pgrb2s.0p25.f${FHHH_same}
@@ -105,7 +105,7 @@ EOF
 
 #-----------------------------------------------------------------------
 
-qsub ${DATA_PATH}/untar_fcsts/untar_gefs/gefs.${YYYYMMDD}/${HH}/htar_gefs_fcst_atmos.sh
+qsub ${DATA_PATH}/untar_fcsts/untar_gefs_avg/gefs.${YYYYMMDD}/${HH}/htar_gefs_avg_fcst_atmos.sh
 sleep 3
 
 #----------------------------------------------------------------------------------------

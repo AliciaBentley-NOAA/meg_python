@@ -61,7 +61,8 @@ export ANL_INC=6 	# Typically 6 hours timestep between requested analysis files
 # ****This is the GET_FORECASTS section*****
 # ******************************************
 # Select which model forecasts to download (YES/NO)
-export GET_GEFS_FCSTS_ATMOS=YES
+export GET_GEFS_AVG_FCSTS_ATMOS=NO
+export GET_GEFS_SPR_FCSTS_ATMOS=YES
 export GET_GFS_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_WAVE=NO
 export GET_GFSv17_FCSTS_ATMOS=NO
@@ -131,11 +132,17 @@ if [ $GET_FORECASTS = YES ]; then
 		sleep 3
 	fi	
 	echo "*********************"
-	if [ $GET_GEFS_FCSTS_ATMOS = YES ]; then
-		echo "Create/submit script to download ops GEFS forecasts (Init.: ${CYCLE})"
-		${SCRIPTS_PATH}/create_htar_gefs_fcsts_atmos.sh
+	if [ $GET_GEFS_AVG_FCSTS_ATMOS = YES ]; then
+		echo "Create/submit script to download ops GEFS avg (mean) forecasts (Init.: ${CYCLE})"
+		${SCRIPTS_PATH}/create_htar_gefs_avg_fcsts_atmos.sh
 		sleep 3
 	fi
+        echo "*********************"
+        if [ $GET_GEFS_SPR_FCSTS_ATMOS = YES ]; then
+                echo "Create/submit script to download ops GEFS spr (spread) forecasts (Init.: ${CYCLE})"
+                ${SCRIPTS_PATH}/create_htar_gefs_spr_fcsts_atmos.sh
+                sleep 3
+        fi
         echo "*********************"
         if [ $GET_GFSv17_FCSTS_ATMOS = YES ]; then
                 echo "Create/submit script to download GFSv17 atmos forecasts (Init.: ${CYCLE})"

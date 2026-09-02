@@ -21,7 +21,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "pres_sfc"
+var = "pres_mslp"
 
 print(f"#############################################")
 
@@ -63,11 +63,11 @@ print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Open GEFS GRIB2 file and extract parameters
-filename_gefs = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/geavg.t{cyc}z.pgrb2s.0p25.f{fhr_str}"
+filename_gefs = f"{DATA_PATH}/gefs.{pdy}/{cyc}/atmos/gec00.t{cyc}z.pgrb2.0p25.f{fhr_str}"
 with grib2io.open(filename_gefs) as f_gefs:
 
 	# Select the specific messages we want
-	mslp_msg = f_gefs.select(shortName='PRES', level='surface')[0]
+	mslp_msg = f_gefs.select(shortName='PRES', level='mean sea level')[0]
 
 	# Extract values
 	mslp_data = mslp_msg.data / 100.0  # Convert Pa to hPa/mb
@@ -119,7 +119,7 @@ mslp_levels_lines = np.arange(932, 1060, 4)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
-        {'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GEFS Mean | PRES - Surface Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
+        {'data': mslp_data, 'cmap': 'gist_rainbow', 'norm': mslp_norm, 'levels': mslp_levels, 'title': f'GEFS Mean | PRES - Mean Sea Level Pressure (hPa)\nInitialized: {init_dt.strftime("%Y-%m-%d %HZ")} (F{fhr_str}) | Valid: {valid_dt.strftime("%Y-%m-%d %HZ")}'},
 ]
 
 # Define the grid locations: [row, col] or [row, span]

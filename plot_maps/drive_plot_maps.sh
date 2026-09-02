@@ -32,7 +32,7 @@ module load grib_util/1.2.4
 export CASE='tc_lala'
 export initdate="20260819"
 export cyc="12"
-export fhr="006"  
+export fhr="000"  
 
 # Reference list of possible fhrs
 # 240,216,192,168,144,120,096,072,048,024
@@ -156,7 +156,8 @@ if [ $PLOT_GEFS_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GEFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 ##        python ${SCRIPTS_PATH}/plot_gefs_mean_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_mean_mslet.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gefs_mean_pres_sfc.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gefs_mean_pres_sfc.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gefs_mean_pres_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_mean_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_spread_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gefs_spread_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
