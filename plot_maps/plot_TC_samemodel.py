@@ -437,7 +437,7 @@ def plot_tracks(domain):
    elif str.upper(domain) == 'NATL':
        llcrnrlon = -85.
        llcrnrlat = 8.
-       urcrnrlon = -32.
+       urcrnrlon = -35.
        urcrnrlat = 48.
        lon0 = -60. 
        proj = 'merc'
@@ -664,8 +664,8 @@ def ptrace():
    x = np.arange(0,xlen,1)
 
 
-   plt.axis([0,xlen,920,1020])
-   plt.axhspan(900, 1020, facecolor='0.5', alpha=0.5)
+   plt.axis([0,xlen,880,1020])
+   plt.axhspan(880, 1020, facecolor='0.5', alpha=0.5)
 
    labels=[]
    for x in range(0,xlen,2):
