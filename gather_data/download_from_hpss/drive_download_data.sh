@@ -62,12 +62,13 @@ export ANL_INC=6 	# Typically 6 hours timestep between requested analysis files
 # ******************************************
 # Select which model forecasts to download (YES/NO)
 export GET_GEFS_AVG_FCSTS_ATMOS=NO
-export GET_GEFS_SPR_FCSTS_ATMOS=YES
+export GET_GEFS_SPR_FCSTS_ATMOS=NO
+export GET_GEFS_MEM_FCSTS_ATMOS=YES
 export GET_GFS_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_WAVE=NO
 export GET_GFSv17_FCSTS_ATMOS=NO
 
-# Select forecast start, end, and increment to download (applies to GFS_FCSTS and GEFS_FCSTS)
+# Select forecast start, end, and increment to download (applies to GEFS and GFS forecasts)
 export FHR_START=0			 # Typically 0 hours (beginning of forecast)
 export FHR_END=24   #192                    # Typically 384 or 240 hours (10-day forecast)
 export FHR_INC=6                         # Typically 6-hour timestep between forecast files
@@ -142,6 +143,15 @@ if [ $GET_FORECASTS = YES ]; then
                 echo "Create/submit script to download ops GEFS spr (spread) forecasts (Init.: ${CYCLE})"
                 ${SCRIPTS_PATH}/create_htar_gefs_spr_fcsts_atmos.sh
                 sleep 3
+        fi
+        if [ $GET_GEFS_MEM_FCSTS_ATMOS = YES ]; then
+                echo "Create/submit script to download ops GEFS member forecasts (Init.: ${CYCLE})"
+		for mem in c00 p01 p02 p03 p04 p05 p06 p07 p08 p09 p10 p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22 p23 p24 p25 p26 p27 p28 p29 p30
+		do
+			echo "Submitting job for member ${mem}..."
+                	${SCRIPTS_PATH}/create_htar_gefs_mem_${mem}_fcsts_atmos.sh 
+                	sleep 1
+		done
         fi
         echo "*********************"
         if [ $GET_GFSv17_FCSTS_ATMOS = YES ]; then
