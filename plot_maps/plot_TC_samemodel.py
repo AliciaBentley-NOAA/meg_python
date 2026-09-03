@@ -53,6 +53,8 @@ elif str.upper(model_str) == 'AIGFS':
    model = 'AGFS'
 elif str.upper(model_str) == 'AIGEFS':
    model = 'AIMN'
+elif str.upper(model_str) == 'AIGEFSDEV':
+   model = 'AIGEFSDEV'
 elif str.upper(model_str) == 'GEFS':
    model = 'GEFS'
 elif str.upper(model_str[0:3]) == 'HF3':
@@ -601,6 +603,9 @@ def plot_tracks(domain):
    if model == "AIMN":
       model_name = "AIGEFSv1.0"
       model_name_title = "AIGEFSv1.0 Mean"
+   if model == "AIGEFSDEV":
+      model_name = "AIGEFSp2.1" 
+      model_name_title = "AIGEFSp2.1 Mean" 
    if model == "GEFS":
       model_name = "GEFSv12"
       model_name_title = "GEFSv12 Mean"
@@ -641,6 +646,9 @@ def ptrace():
    if model == "AIMN":
       model_name = "AIGEFSv1.0"
       model_name_title = "AIGEFSv1.0 Mean"
+   if model == "AIGEFSDEV":
+      model_name = "AIGEFSp2.1" 
+      model_name_title = "AIGEFSp2.1 Mean"
    if model == "GEFS":
       model_name = "GEFSv12"
       model_name_title = "GEFSv12 Mean" 
@@ -715,6 +723,9 @@ def vtrace():
    if model == "AIMN":
       model_name = "AIGEFSv1.0"
       model_name_title = "AIGEFSv1.0 Mean"
+   if model == "AIGEFSDEV":
+      model_name = "AIGEFSp2.1" 
+      model_name_title = "AIGEFSp2.1 Mean"
    if model == "GEFS":
       model_name = "GEFSv12"
       model_name_title = "GEFSv12 Mean"

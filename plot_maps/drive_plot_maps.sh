@@ -294,8 +294,9 @@ if [ $PLOT_TC_FCSTS = YES ]; then
 ##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GFS $longname
 ##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py RETR $longname
 ##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGFS $longname
-        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GEFS $longname
+##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py GEFS $longname
 ##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGEFS $longname
+        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGEFSDEV $longname
 	sleep 1
 fi
 

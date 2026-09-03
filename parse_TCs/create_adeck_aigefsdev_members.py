@@ -5,7 +5,9 @@
 # Run as:
 # python create_adeck_aigefsdev_members.py $MODEL $TC_name/ID/YYYY
 # python create_adeck_aigefsdev_members.py AIGEFSDEV MelissaAL132025
-
+#
+# Note: May need to adjust dates and run twice (invest and named storm)
+# ======================================================================
 
 import numpy as np
 import datetime, os, sys, subprocess
@@ -132,4 +134,4 @@ for m in range(31):
 
     current_date = start_date
 
-print(f"Done! Created "+DATA_DIR+"/a"+str.lower(TC_number)+YYYY+"_"+mem_str+".dat")
+print(f"Done! Created .dat files in {DATA_DIR}")

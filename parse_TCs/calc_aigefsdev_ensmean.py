@@ -4,10 +4,11 @@
 # python calc_aigefsdev_ensmean.py $MODEL $TC_name/ID
 # python calc_aigefsdev_ensmean.py AIGEFSDEV MelissaAL132025
 #
-# ------------------------------------------------------------------
+# ==================================================================
 
 import numpy as np
 import sys, os, subprocess
+import glob, shutil
 import re, csv
 import pandas as pd
 from datetime import datetime, timedelta
@@ -94,3 +95,22 @@ while current_date <= end_date:
         print(f"Successfully generated {output_file}")
     
     current_date += timedelta(days=1)
+
+#==========================================================
+
+# Define directory path
+data_dir = f"/lfs/h2/emc/vpppg/noscrub/alicia.bentley/MEG/{TC_name}/data/{str.lower(model_str)}"
+target_dir = f"/lfs/h2/emc/vpppg/noscrub/alicia.bentley/MEG/{TC_name}/data/{str.lower(model_str)}/members"
+
+# Create directory (exist_ok=True prevents errors if it already exists)
+os.makedirs(target_dir, exist_ok=True)
+
+# Find files using correct .lower() syntax and directory path
+search_pattern = os.path.join(data_dir, f"{TC_name.lower()}_{model_str.lower()}_*_mem*.csv")
+files_to_move = glob.glob(search_pattern)
+
+# Move each file into the target directory
+for file_path in files_to_move:
+    shutil.move(file_path, os.path.join(target_dir, os.path.basename(file_path)))
+
+print(f"Moved {len(files_to_move)} ensemble member files to {target_dir}")
