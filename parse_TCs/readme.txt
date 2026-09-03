@@ -31,9 +31,9 @@ To produce ops AIGEFS prototype .csv files:
 Add some script here to create AIGEFSDEV mean file from individual member files (run on both AL13 and AL98)
 
 cd /lfs/h2/emc/vpppg/noscrub/alicia.bentley/adecks_aigefsdev
-mv aal132025.dat aal132025.dat_partial
-sed -i 's/AL, 98,/AL, 13,/g' aal982025.dat
-cat aal982025.dat aal132025.dat_partial > aal132025.dat
+mv aal132025_mem000.dat aal132025_mem000.dat_partial
+sed -i 's/AL, 98,/AL, 13,/g' aal982025_mem000.dat
+cat aal982025_mem000.dat aal132025_mem000.dat_partial > aal132025_mem000.dat
 cd /lfs/h2/emc/vpppg/save/alicia.bentley/meg_python/parse_TCs
 python parse_adeck_ai.py AIGFS LalaCP012026
 python parse_adeck_ai.py AIGEFS LalaCP012026
