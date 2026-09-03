@@ -23,12 +23,12 @@ To produce ops AIGFS or AIGEFS .csv files:
 
 #-------------------------------------------------
 ###########################################
-To produce ops AIGEFS prototype .csv files:
+To produce AIGEFS prototype .csv files:
 ###########################################
 1) cd /lfs/h2/emc/vpppg/save/alicia.bentley/meg_python/parse_TCs
 2) python create_adeck_aigefsdev_members.py AIGEFSDEV MelissaAL132025
 3) python create_adeck_aigefsdev_members.py AIGEFSDEV MelissaAL982025 (TC number before it was named)
-4) Edit top section and then: ./cat_adeck_aigefsdev_members.sh
+4) Edit top section and run: ./cat_adeck_aigefsdev_members.sh
 5) python parse_adeck_aigefsdev_members.py AIGEFSDEV MelissaAL132025
 6) python calc_aigefsdev_ensmean.py AIGEFSDEV MelissaAL132025
 
