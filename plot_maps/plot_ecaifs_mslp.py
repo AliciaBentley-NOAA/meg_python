@@ -236,7 +236,7 @@ for i, loc in enumerate(grid_locs):
     contours = ax.contour(lons, lats, config['data'],
 		levels=config['levels'],
 		colors='black',
-		linewidths=3.0,
+		linewidths=2.5,
 		transform=ccrs.PlateCarree(),
 		zorder=5)
 

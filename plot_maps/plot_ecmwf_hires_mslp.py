@@ -74,6 +74,7 @@ print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Open ECMWF file and extract parameters
 filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}001"
+#filename_ecmwf = f"{DATA_PATH}/ecmwf.{pdy}/{cyc}/atmos/HSD{init_MM}{init_DD}{init_HH}00{valid_MM}{valid_DD}{valid_HH}011"
 grib2_filename = filename_ecmwf + ".grib2"
 if not os.path.exists(grib2_filename):
         print(f"Converting ECMWF file from grib1 to grib2.")
@@ -122,6 +123,8 @@ if grid == 'northeast':
 elif grid == 'conus':
 	fig = plt.figure(figsize=(15, 12))
 elif grid == 'eastcoast':
+        fig = plt.figure(figsize=(13, 12))
+elif grid == 'easternUS':
         fig = plt.figure(figsize=(13, 12))
 
 # Define a 2x2 grid

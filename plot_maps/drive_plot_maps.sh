@@ -29,23 +29,23 @@ module load grib_util/1.2.4
 # Section 4 = which variables to plot (uncomment specific scripts to run them) 
 #=================================================================================
 #=================================================================================
-export CASE='tc_melissa'
-export initdate="20260819"
+export CASE='noreaster'
+export initdate="20260926"
 export cyc="12"
-export fhr="048"  
+export fhr="024"  
 
 # Reference list of possible fhrs
 # 240,216,192,168,144,120,096,072,048,024
 # 228,204,180,156,132,108,084,060,036,012
 
 # Domain options: conus, wpc, eastcoast, northeast, easternUS, southeastUS, westcoast, florida, hawaii
-export DOMAIN='cpac'
+export DOMAIN='northeast'
 
 #If plotting precip/snowfall, choose a duration (e.g., 72, 48, 36, 24, 12, 6)
 export duration='24'   
 
 #If plotting Stage IV, CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
-export vdate="20260816" #For precip/snowfall, this is the last time in the period covered
+export vdate="20260927" #For precip/snowfall, this is the last time in the period covered
 export vhour="12"     	#00, 06, 12, 18
 
 #If plotting TC track/intensity, define TCnameIDYear (e.g., LalaCP012026)
@@ -64,14 +64,14 @@ export PLOT_ECAIFS_ENS_FCSTS=NO
 export PLOT_AIGEFSDEV_FCSTS=NO
 
 ###### Deterministic #######
-export PLOT_GFS_FCSTS=NO
-export PLOT_AIGFS_FCSTS=NO
-export PLOT_ECMWF_FCSTS=NO
-export PLOT_ECAIFS_FCSTS=NO
-export PLOT_GFSv17_FCSTS=NO
+export PLOT_GFSv16_FCSTS=YES
+export PLOT_AIGFS_FCSTS=YES
+export PLOT_ECMWF_FCSTS=YES
+export PLOT_ECAIFS_FCSTS=YES
+export PLOT_GFSv17_FCSTS=YES
 
 ######## Analyses #########
-export PLOT_ST4_ANALYSIS=NO
+export PLOT_ST4_ANALYSIS=YES
 export PLOT_CCPA_ANALYSIS=NO
 export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
@@ -79,7 +79,7 @@ export PLOT_RAP_ANALYSIS=NO
 export PLOT_GDAS_ANALYSIS=NO
 
 ###### TC Maps/Ptrace #######
-export PLOT_TC_FCSTS=YES
+export PLOT_TC_FCSTS=NO
 
 #=================================================================================
 #=================================================================================
@@ -102,15 +102,15 @@ mkdir -p ${MAP_PATH}
 #=================================================================================
 #=================================================================================
 
-if [ $PLOT_GFS_FCSTS = YES ]; then
+if [ $PLOT_GFSv16_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot GFSv16 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 #        python ${SCRIPTS_PATH}/plot_gfs_orography.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_orography_verticalcolorbar.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfs_mslet.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-##         python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+##        python ${SCRIPTS_PATH}/plot_gfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gfs_mslet.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+         python ${SCRIPTS_PATH}/plot_gfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfs_10m_wind_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #	 python ${SCRIPTS_PATH}/plot_gfs_10m_wind_ascent.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_10m_convergence.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
@@ -128,8 +128,8 @@ if [ $PLOT_AIGFS_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot AIGFS forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 ##        python ${SCRIPTS_PATH}/plot_aigfs_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_aigfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-##        python ${SCRIPTS_PATH}/plot_aigfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+##        python ${SCRIPTS_PATH}/plot_aigfs_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_aigfs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
 
@@ -151,6 +151,32 @@ if [ $PLOT_ECAIFS_FCSTS = YES ]; then
         python ${SCRIPTS_PATH}/plot_ecaifs_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1
 fi
+
+if [ $PLOT_GFSv17_FCSTS = YES ]; then
+        echo "======================================="
+        echo "Kickoff ${CASE} scripts to plot GFSv17 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        export DATA_PATH='/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01'
+##        python ${SCRIPTS_PATH}/plot_gfsv17_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gfsv17_diff_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gfsv17_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfsv17_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfsv17_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfsv17_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_diff_2mT.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_2m_dewpoint.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_diff_2mTd.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_cape_sfc_based.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_diff_cape.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+#        python ${SCRIPTS_PATH}/plot_gfsv17_tsnowp_sden.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfsv17_freezing_rain.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_gfsv17_hybrid1_mixing_ratios.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
+fi
+
+#==============================================================================================================
+#==============================================================================================================
+#==============================================================================================================
 
 if [ $PLOT_GEFS_FCSTS = YES ]; then
         echo "======================================="
@@ -215,34 +241,12 @@ if [ $PLOT_ECAIFS_ENS_FCSTS = YES ]; then
         sleep 1
 fi
 
-if [ $PLOT_GFSv17_FCSTS = YES ]; then
-        echo "======================================="
-        echo "Kickoff ${CASE} scripts to plot GFSv17 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        export DATA_PATH='/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01'
-##        python ${SCRIPTS_PATH}/plot_gfsv17_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-##        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-##        python ${SCRIPTS_PATH}/plot_gfsv17_diff_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfsv17_precip.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-#        python ${SCRIPTS_PATH}/plot_gfsv17_snod_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-#        python ${SCRIPTS_PATH}/plot_gfsv17_weasd_contourf.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-#        python ${SCRIPTS_PATH}/plot_gfsv17_2m_temperature.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#        python ${SCRIPTS_PATH}/plot_gfsv17_diff_2mT.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#        python ${SCRIPTS_PATH}/plot_gfsv17_2m_dewpoint.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#        python ${SCRIPTS_PATH}/plot_gfsv17_diff_2mTd.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#        python ${SCRIPTS_PATH}/plot_gfsv17_cape_sfc_based.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#	 python ${SCRIPTS_PATH}/plot_gfsv17_diff_cape.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-#	 python ${SCRIPTS_PATH}/plot_gfsv17_tsnowp_sden.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-#        python ${SCRIPTS_PATH}/plot_gfsv17_freezing_rain.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-#        python ${SCRIPTS_PATH}/plot_gfsv17_hybrid1_mixing_ratios.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-	sleep 1
-fi
-
 if [ $PLOT_ST4_ANALYSIS = YES ]; then
         echo "======================================="
-        export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/alb_flood'
+        export DATA_PATH="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/${CASE}"
         echo "Kickoff ${CASE} scripts to plot Stage IV analysis (${duration}-h Period Valid: ${vdate}${vhour} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_stageiv_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
-#        python ${SCRIPTS_PATH}/plot_stageiv_6h_files_verticalcolorbar.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_stageiv_precip_6h_files.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
+#        python ${SCRIPTS_PATH}/plot_stageiv_precip_6h_files_verticalcolorbar.py $vdate $vhour $DOMAIN $DATA_PATH $MAP_PATH $duration
         sleep 1 
 fi 
 
