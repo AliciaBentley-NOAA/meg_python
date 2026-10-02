@@ -29,17 +29,17 @@ module load grib_util/1.2.4
 # Section 4 = which variables to plot (uncomment specific scripts to run them) 
 #=================================================================================
 #=================================================================================
-export CASE='noreaster'
-export initdate="20260926"
-export cyc="12"
-export fhr="024"  
+export CASE='glwu'
+export initdate="20260930"
+export cyc="07"
+export fhr="120"  
 
 # Reference list of possible fhrs
 # 240,216,192,168,144,120,096,072,048,024
 # 228,204,180,156,132,108,084,060,036,012
 
 # Domain options: conus, wpc, eastcoast, northeast, easternUS, southeastUS, westcoast, florida, hawaii
-export DOMAIN='northeast'
+export DOMAIN='greatlakes'
 
 #If plotting precip/snowfall, choose a duration (e.g., 72, 48, 36, 24, 12, 6)
 export duration='24'   
@@ -64,14 +64,15 @@ export PLOT_ECAIFS_ENS_FCSTS=NO
 export PLOT_AIGEFSDEV_FCSTS=NO
 
 ###### Deterministic #######
-export PLOT_GFSv16_FCSTS=YES
-export PLOT_AIGFS_FCSTS=YES
-export PLOT_ECMWF_FCSTS=YES
-export PLOT_ECAIFS_FCSTS=YES
-export PLOT_GFSv17_FCSTS=YES
+export PLOT_GFSv16_FCSTS=NO
+export PLOT_AIGFS_FCSTS=NO
+export PLOT_ECMWF_FCSTS=NO
+export PLOT_ECAIFS_FCSTS=NO
+export PLOT_GFSv17_FCSTS=NO
+export PLOT_GLWU_FCSTS=YES
 
 ######## Analyses #########
-export PLOT_ST4_ANALYSIS=YES
+export PLOT_ST4_ANALYSIS=NO
 export PLOT_CCPA_ANALYSIS=NO
 export PLOT_NOHRSC_ANALYSIS=NO
 export PLOT_URMA_ANALYSIS=NO
@@ -241,6 +242,10 @@ if [ $PLOT_ECAIFS_ENS_FCSTS = YES ]; then
         sleep 1
 fi
 
+#===========================================================================================================
+#===========================================================================================================
+#===========================================================================================================
+
 if [ $PLOT_ST4_ANALYSIS = YES ]; then
         echo "======================================="
         export DATA_PATH="/lfs/h2/emc/vpppg/noscrub/alicia.bentley/${CASE}"
@@ -292,6 +297,11 @@ if [ $PLOT_GDAS_ANALYSIS = YES ]; then
         sleep 1
 fi
 
+#===================================================================================================
+#===================================================================================================
+#===================================================================================================
+
+
 if [ $PLOT_TC_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot TC track/intensity for ${longname}"
@@ -302,6 +312,18 @@ if [ $PLOT_TC_FCSTS = YES ]; then
 ##        python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGEFS $longname
         python ${SCRIPTS_PATH}/plot_TC_samemodel.py AIGEFSDEV $longname
 	sleep 1
+fi
+
+#===================================================================================================
+#===================================================================================================
+#===================================================================================================
+
+if [ $PLOT_GLWU_FCSTS = YES ]; then
+	export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/evs_devonly/v2.0/prep/glwu'
+        echo "======================================="
+        echo "Kickoff ${CASE} scripts to plot GLWU forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+        python ${SCRIPTS_PATH}/plot_glwu_sig_wave_height.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        sleep 1
 fi
 
 exit
