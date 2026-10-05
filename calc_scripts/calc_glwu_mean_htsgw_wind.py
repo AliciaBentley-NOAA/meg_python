@@ -19,7 +19,7 @@ out_dir = Path(output_path_arg)
 
 # Ensure output directory exists
 out_dir.mkdir(parents=True, exist_ok=True)
-output_filepath = out_dir / f"glwu.grlc_2p5km.JJA_mean.t{cyc_arg}z.f000.grib2"
+output_filepath = out_dir / f"glwu.grlc_2p5km.JJA_2026_mean.t{cyc_arg}z.f000.grib2"
 
 # 3. Collect file paths for each day from June 1 to August 31
 file_list = []
@@ -67,16 +67,18 @@ for fp in file_list:
 
 template_file.close()
 
-# 6. Compute mean across the time axis (axis 0) while handling invalid/masked values
+# 6. Compute mean across the time axis (axis 0)
+# Convert input lists into masked arrays to respect native bitmap/missing values
 htsgw_stack = np.ma.masked_invalid(np.array(htsgw_list))
 wind_stack = np.ma.masked_invalid(np.array(wind_list))
 
-htsgw_avg = np.ma.mean(htsgw_stack, axis=0).filled(np.nan)
-wind_avg = np.ma.mean(wind_stack, axis=0).filled(np.nan)
+# Calculate mean along axis 0 (returns a np.ma.MaskedArray)
+htsgw_avg = np.ma.mean(htsgw_stack, axis=0)
+wind_avg = np.ma.mean(wind_stack, axis=0)
 
 # 7. Write the averaged data to the output GRIB2 file
 with grib2io.open(str(output_filepath), mode="w") as out_gfile:
-    # Update data arrays in template messages
+    # Assign masked array directly so grib2io encodes the bitmap correctly
     template_htsgw.data = htsgw_avg
     template_wind.data = wind_avg
 

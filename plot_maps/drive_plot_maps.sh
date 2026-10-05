@@ -31,8 +31,8 @@ module load grib_util/1.2.4
 #=================================================================================
 export CASE='glwu'
 export initdate="20260613"
-export cyc="07"
-export fhr="120"  
+export cyc="01"
+export fhr="000"  
 
 # Reference list of possible fhrs
 # 240,216,192,168,144,120,096,072,048,024
@@ -69,6 +69,7 @@ export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 export PLOT_ECAIFS_FCSTS=NO
 export PLOT_GFSv17_FCSTS=NO
+
 export PLOT_GLWU_FCSTS=YES
 
 ######## Analyses #########
@@ -319,11 +320,14 @@ fi
 #===================================================================================================
 
 if [ $PLOT_GLWU_FCSTS = YES ]; then
-	export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/samira.ardani/evs_devonly/v2.0/prep/glwu'
+##	export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/samira.ardani/evs_devonly/v2.0/prep/glwu'
+        export DATA_PATH='/lfs/h2/emc/vpppg/save/alicia.bentley/glwu_means'
         echo "======================================="
-        echo "Kickoff ${CASE} scripts to plot GLWU forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
+##        echo "Kickoff ${CASE} scripts to plot GLWU forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 ##        python ${SCRIPTS_PATH}/plot_glwu_sig_wave_height.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-	python ${SCRIPTS_PATH}/plot_glwu_htsgw_ndbc_buoys.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##	  python ${SCRIPTS_PATH}/plot_glwu_htsgw_ndbc_buoys.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        echo "Kickoff ${CASE} scripts to plot GLWU mean forecasts (Cycle: ${cyc}Z F${fhr} for ${DOMAIN})"
+	python ${SCRIPTS_PATH}/plot_glwu_mean_htsgw_ndbc_buoys.py $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 	sleep 1
 fi
 
