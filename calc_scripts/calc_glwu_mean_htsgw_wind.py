@@ -50,6 +50,10 @@ template_file = grib2io.open(str(file_list[0]))
 template_htsgw = template_file.select(shortName="HTSGW")[0]
 template_wind = template_file.select(shortName="WIND")[0]
 
+# Save initial template data arrays (and their masks) BEFORE closing template_file
+template_htsgw_data = template_htsgw.data
+template_wind_data = template_wind.data
+
 htsgw_list = []
 wind_list = []
 
@@ -65,20 +69,25 @@ for fp in file_list:
         except IndexError:
             print(f"Warning: Shortname HTSGW or WIND missing in {fp}")
 
+# Close template file after data arrays have been read into memory
 template_file.close()
 
 # 6. Compute mean across the time axis (axis 0)
-# Convert input lists into masked arrays to respect native bitmap/missing values
 htsgw_stack = np.ma.masked_invalid(np.array(htsgw_list))
 wind_stack = np.ma.masked_invalid(np.array(wind_list))
 
-# Calculate mean along axis 0 (returns a np.ma.MaskedArray)
 htsgw_avg = np.ma.mean(htsgw_stack, axis=0)
 wind_avg = np.ma.mean(wind_stack, axis=0)
 
+# Preserve land mask explicitly from template data if present
+if isinstance(template_htsgw_data, np.ma.MaskedArray):
+    htsgw_avg = np.ma.masked_array(htsgw_avg, mask=template_htsgw_data.mask)
+if isinstance(template_wind_data, np.ma.MaskedArray):
+    wind_avg = np.ma.masked_array(wind_avg, mask=template_wind_data.mask)
+
 # 7. Write the averaged data to the output GRIB2 file
 with grib2io.open(str(output_filepath), mode="w") as out_gfile:
-    # Assign masked array directly so grib2io encodes the bitmap correctly
+    # Assign masked arrays directly
     template_htsgw.data = htsgw_avg
     template_wind.data = wind_avg
 

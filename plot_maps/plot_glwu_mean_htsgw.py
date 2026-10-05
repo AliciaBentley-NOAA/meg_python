@@ -11,7 +11,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 #====================================
-var = "htsgw_mean_ndbc_buoys"
+var = "htsgw_mean"
     
 cyc = str(sys.argv[1])             # 12 
 fhr = str(sys.argv[2])             # 024 (3 digits) 
@@ -86,77 +86,6 @@ mesh = ax.pcolormesh(
     vmin=0.001,  
     vmax=6,    # Adjusted vmax for wave height in feet (e.g., 12 ft ~ 3.6 m)
 )
-
-# 5. Read and Plot NDBC Buoy Locations & IDs
-xml_file = "/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/EVS_fix/ndbc_stations/ndbc_stations.xml"
-buoy_dir = Path(f"/lfs/h2/emc/vpppg/noscrub/samira.ardani/evs_devonly/v2.0/prep/glwu/wave.20260601/ndbc")
-print(f"buoy_dir: {buoy_dir}")
-
-# Build a set of allowed station IDs from the filenames (e.g., '45005.txt' -> '45005')
-valid_stations = {p.stem for p in buoy_dir.glob("*.txt")}
-
-# Station IDs to explicitly exclude
-excluded_stations = {"45151", "45152"}
-
-station_lons = []
-station_lats = []
-station_ids = []
-
-with open(xml_file, "r") as f:
-    for line in f:
-        line = line.strip()
-        if not line.startswith("<station"):
-            continue
-        try:
-            station = ET.fromstring(line)
-            st_id = station.get("id")
-
-            # Skip station if excluded OR if it's not in the valid directory list
-            if st_id in excluded_stations or st_id not in valid_stations:
-                continue
-
-            lat = float(station.get("lat"))
-            lon = float(station.get("lon"))
-
-            if lon > 180:
-                lon -= 360
-
-            # Filter to domain bounds
-            if lon_min <= lon <= lon_max and lat_min <= lat <= lat_max:
-                station_ids.append(st_id)
-                station_lons.append(lon)
-                station_lats.append(lat)
-        except ET.ParseError:
-            continue
-
-# Plot filtered buoy markers
-ax.scatter(
-    station_lons,
-    station_lats,
-    color="black",
-    marker="o",
-    s=25,
-    edgecolor="white",
-    linewidth=0.8,
-    transform=ccrs.PlateCarree(),
-    zorder=5,
-)
-
-# Plot buoy station IDs underneath markers
-for st_id, lon, lat in zip(station_ids, station_lons, station_lats):
-    ax.text(
-        lon,
-        lat - 0.12,
-        st_id,
-        fontsize=7,
-        fontweight="bold",
-        color="black",
-        ha="center",
-        va="top",
-        transform=ccrs.PlateCarree(),
-        zorder=5,
-        bbox=dict(boxstyle="round,pad=0.15", facecolor="white", alpha=0.6, edgecolor="none")
-    )
 
 # 6. Colorbar and Gridlines
 # Pass 1: Draw 1-degree gridlines with NO labels

@@ -24,7 +24,7 @@ module load grib_util/1.2.4
 #=================================================================================
 # CASE name for data
 export CASE='glwu_means'
-export cyc='01'
+export cyc='19'
 
 # Location of your MEG calc scripts and where to save your finished plots
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/calc_scripts'
