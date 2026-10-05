@@ -30,7 +30,7 @@ module load grib_util/1.2.4
 #=================================================================================
 #=================================================================================
 export CASE='glwu'
-export initdate="20260930"
+export initdate="20260613"
 export cyc="07"
 export fhr="120"  
 
@@ -319,11 +319,12 @@ fi
 #===================================================================================================
 
 if [ $PLOT_GLWU_FCSTS = YES ]; then
-	export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/emc.vpppg/evs_devonly/v2.0/prep/glwu'
+	export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/samira.ardani/evs_devonly/v2.0/prep/glwu'
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot GLWU forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
-        python ${SCRIPTS_PATH}/plot_glwu_sig_wave_height.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        sleep 1
+##        python ${SCRIPTS_PATH}/plot_glwu_sig_wave_height.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+	python ${SCRIPTS_PATH}/plot_glwu_htsgw_ndbc_buoys.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+	sleep 1
 fi
 
 exit

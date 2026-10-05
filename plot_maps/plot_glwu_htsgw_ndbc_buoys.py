@@ -8,9 +8,10 @@ import matplotlib.ticker as mticker
 import numpy as np
 from datetime import datetime
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 #====================================
-var = "htsgw"
+var = "htsgw_ndbc_buoys"
     
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])             # 12 
@@ -53,6 +54,18 @@ lats, lons = msg.latlons()
 # Adjust longitudes from [0, 360] to [-180, 180] for Cartopy if needed
 lons = np.where(lons > 180, lons - 360, lons)
 
+# Extract timing metadata
+ref_time = msg.refDate                             # datetime object for initialization
+lead_time_td = msg.leadTime                        # timedelta object
+fcst_time = int(lead_time_td.total_seconds() / 3600)  # forecast lead time in hours
+
+# Calculate valid time by adding the lead time duration to the reference/initialization time
+valid_time = ref_time + lead_time_td
+
+# Format times nicely for the title (e.g., 2026-06-01 12Z)
+init_str_formatted = ref_time.strftime("%Y-%m-%d %HZ")
+valid_str_formatted = valid_time.strftime("%Y-%m-%d %HZ")
+
 # 3. Set up the plot using Cartopy
 fig = plt.figure(figsize=(12, 8), dpi=150)
 ax = plt.axes(projection=ccrs.PlateCarree())
@@ -66,7 +79,10 @@ ax.add_feature(
 ax.add_feature(cfeature.BORDERS, linestyle=":", linewidth=0.8, zorder=3)
 ax.add_feature(cfeature.STATES, linestyle=":", linewidth=0.5, zorder=3)
 
-ax.set_extent([-92.5, -75.5, 40.5, 49.5], crs=ccrs.PlateCarree())
+# Define domain bounds
+lon_min, lon_max = -92.5, -75.5
+lat_min, lat_max = 40.5, 49.5
+ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
 # Force a custom aspect ratio
 ax.set_aspect(1.3)
 
@@ -85,7 +101,79 @@ mesh = ax.pcolormesh(
     vmax=4,
 )
 
-# 5. Colorbar and Gridlines
+# 5. Read and Plot NDBC Buoy Locations & IDs
+xml_file = "/lfs/h2/emc/vpppg/noscrub/emc.vpppg/verification/EVS_fix/ndbc_stations/ndbc_stations.xml"
+valid_pdy = valid_time.strftime("%Y%m%d")
+buoy_dir = Path(f"{DATA_PATH}/wave.{valid_pdy}/ndbc")
+print(f"buoy_dir: {buoy_dir}")
+
+# Build a set of allowed station IDs from the filenames (e.g., '45005.txt' -> '45005')
+valid_stations = {p.stem for p in buoy_dir.glob("*.txt")}
+
+# Station IDs to explicitly exclude
+excluded_stations = {"45151", "45152"}
+
+station_lons = []
+station_lats = []
+station_ids = []
+
+with open(xml_file, "r") as f:
+    for line in f:
+        line = line.strip()
+        if not line.startswith("<station"):
+            continue
+        try:
+            station = ET.fromstring(line)
+            st_id = station.get("id")
+
+            # Skip station if excluded OR if it's not in the valid directory list
+            if st_id in excluded_stations or st_id not in valid_stations:
+                continue
+
+            lat = float(station.get("lat"))
+            lon = float(station.get("lon"))
+
+            if lon > 180:
+                lon -= 360
+
+            # Filter to domain bounds
+            if lon_min <= lon <= lon_max and lat_min <= lat <= lat_max:
+                station_ids.append(st_id)
+                station_lons.append(lon)
+                station_lats.append(lat)
+        except ET.ParseError:
+            continue
+
+# Plot filtered buoy markers
+ax.scatter(
+    station_lons,
+    station_lats,
+    color="black",
+    marker="o",
+    s=25,
+    edgecolor="white",
+    linewidth=0.8,
+    transform=ccrs.PlateCarree(),
+    zorder=5,
+)
+
+# Plot buoy station IDs underneath markers
+for st_id, lon, lat in zip(station_ids, station_lons, station_lats):
+    ax.text(
+        lon,
+        lat - 0.12,
+        st_id,
+        fontsize=7,
+        fontweight="bold",
+        color="black",
+        ha="center",
+        va="top",
+        transform=ccrs.PlateCarree(),
+        zorder=5,
+        bbox=dict(boxstyle="round,pad=0.15", facecolor="white", alpha=0.6, edgecolor="none")
+    )
+
+# 6. Colorbar and Gridlines
 # Pass 1: Draw 1-degree gridlines with NO labels
 gl1 = ax.gridlines(
     crs=ccrs.PlateCarree(),
@@ -114,12 +202,10 @@ gl2.right_labels = False
 cbar = plt.colorbar(mesh, ax=ax, orientation="vertical", pad=0.02, shrink=0.7)
 cbar.set_label("Significant Wave Height (m)", fontsize=11)
 
-# Extract timing metadata directly from the grib2io message object
-ref_time = msg.refDate
-fcst_time = int(msg.leadTime.total_seconds() / 3600)
-
+# Title with both Initialization and Valid times
 plt.title(
-    f"GLWU Significant Wave Height (HTSGW)\nInit. Date/Time: {ref_time} | Forecast Hour: {fcst_time}",
+    f"GLWU Significant Wave Height (HTSGW)\n"
+    f"Initialized: {init_str_formatted} (F{fcst_time:03d}) | Valid: {valid_str_formatted}",
     fontsize=11,
     loc="left",
 )
