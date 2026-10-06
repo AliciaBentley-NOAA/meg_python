@@ -31,7 +31,7 @@ module load grib_util/1.2.4
 #=================================================================================
 export CASE='glwu'
 export initdate="20260613"
-export cyc="19"
+export cyc="allcyc" #01, 07, 13, 19, allcyc
 export fhr="000"  
 
 # Reference list of possible fhrs

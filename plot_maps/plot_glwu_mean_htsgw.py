@@ -25,15 +25,13 @@ print("cyc:", cyc)
 print("fhr:", fhr)
 print("grid:", grid)
 
-init_hour = int(cyc)
-
 # Create maps directory
 Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 
 #====================================
 
 # 1. Open the GLWU GRIB2 file
-filename = f"{DATA_PATH}/glwu.grlc_2p5km.JJA_2026_mean.t{cyc}z.f{fhr}.grib2"
+filename = f"{DATA_PATH}/glwu/glwu.grlc_2p5km.JJA_2026_mean.{cyc}.f{fhr}.grib2"
 gfile = grib2io.open(filename)
 
 # 2. Select the HTSGW message
@@ -117,12 +115,20 @@ cbar = plt.colorbar(mesh, ax=ax, orientation="vertical", pad=0.02, shrink=0.7)
 cbar.set_label("Significant Wave Height (ft)", fontsize=11)
 
 # Title with both Initialization and Valid times
-plt.title(
-    f"Mean GLWU Significant Wave Height (HTSGW)\n"
-    f"Initialized: {cyc}Z cycles (F{fcst_time:03d}) | Valid: June-August 2026",
-    fontsize=11,
-    loc="left",
-)
+if cyc == "allcyc":
+    plt.title(
+        f"Mean GLWU Significant Wave Height (HTSGW)\n"
+        f"Initialized: All cycles (F{fcst_time:03d}) | Valid: June-August 2026",
+        fontsize=11,
+        loc="left",
+    )
+else:
+    plt.title(
+        f"Mean GLWU Significant Wave Height (HTSGW)\n"
+        f"Initialized: {cyc}Z cycles (F{fcst_time:03d}) | Valid: June-August 2026",
+        fontsize=11,
+        loc="left",
+    )
 
 plt.tight_layout()
 plt.savefig(f"{MAP_PATH}/{grid}/{var}/glwu_{var}_JJA_2026_mean_{cyc}Z_f{fhr}.png", bbox_inches="tight")
