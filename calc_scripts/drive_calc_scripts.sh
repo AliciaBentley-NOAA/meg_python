@@ -36,6 +36,9 @@ export DATA_PATH='/lfs/h2/emc/vpppg/save/alicia.bentley/'${CASE}
 #=================================================================================
 
 echo "Kickoff ${CASE} scripts to calc mean GLWU values (Cycle: ${cyc} F000 in ${DATA_PATH})"
-python ${SCRIPTS_PATH}/calc_glwu_mean_htsgw_wind.py $DATA_PATH $cyc
+##python ${SCRIPTS_PATH}/calc_glwu_mean_by_cycle.py $DATA_PATH $cyc
+python ${SCRIPTS_PATH}/calc_glwu_mean_htsgw_wind.py $DATA_PATH
+##python ${SCRIPTS_PATH}/calc_ndbc_buoys_mean.py
+
 
 exit

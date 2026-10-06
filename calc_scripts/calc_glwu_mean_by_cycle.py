@@ -7,9 +7,9 @@ import numpy as np
 #=========================================================================
 
 output_path_arg = str(sys.argv[1])    # /lfs/h2/emc/vpppg/save/alicia.bentley/glwu_means
+cyc_arg = str(sys.argv[2]).zfill(2)   # Ensures '1' becomes '01', while '01' stays '01'
 
-# 1. Define cycles and date range (June 1 to August 31, 2026)
-cycles = ["01", "07", "13", "19"]
+# 1. Define date range (June 1 to August 31, 2026)
 start_date = datetime(2026, 6, 1)
 end_date = datetime(2026, 8, 31)
 
@@ -19,32 +19,31 @@ out_dir = Path(output_path_arg)
 
 # Ensure output directory exists
 out_dir.mkdir(parents=True, exist_ok=True)
-output_filepath = out_dir / "glwu.grlc_2p5km.JJA_2026_mean.allcyc.f000.grib2"
+output_filepath = out_dir / f"glwu.grlc_2p5km.JJA_2026_mean.t{cyc_arg}z.f000.grib2"
 
-# 3. Collect file paths for all cycles for each day from June 1 to August 31
+# 3. Collect file paths for each day from June 1 to August 31
 file_list = []
 curr_date = start_date
 while curr_date <= end_date:
     pdy = curr_date.strftime("%Y%m%d")
-    for cyc in cycles:
-        filepath = (
-            base_dir
-            / f"wave.{pdy}"
-            / "glwu"
-            / "grid2obs"
-            / f"glwu.grlc_2p5km.{pdy}.t{cyc}z.f000.grib2"
-        )
-        if filepath.exists():
-            file_list.append(filepath)
-        else:
-            print(f"Warning: File missing, skipping: {filepath}")
+    filepath = (
+        base_dir
+        / f"wave.{pdy}"
+        / "glwu"
+        / "grid2obs"
+        / f"glwu.grlc_2p5km.{pdy}.t{cyc_arg}z.f000.grib2"
+    )
+    if filepath.exists():
+        file_list.append(filepath)
+    else:
+        print(f"Warning: File missing, skipping: {filepath}")
     curr_date += timedelta(days=1)
 
 if not file_list:
     print("Error: No files found to process.")
     sys.exit(1)
 
-print(f"Found {len(file_list)} valid GRIB2 files across all 4 cycles for June–August 2026.")
+print(f"Found {len(file_list)} valid GRIB2 files at {cyc_arg}Z across June–August 2026.")
 
 # 4. Use the first file as a metadata template
 template_file = grib2io.open(str(file_list[0]))
