@@ -327,8 +327,8 @@ if [ $PLOT_GLWU_FCSTS = YES ]; then
 ##        python ${SCRIPTS_PATH}/plot_glwu_sig_wave_height.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##	  python ${SCRIPTS_PATH}/plot_glwu_htsgw_ndbc_buoys.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         echo "Kickoff ${CASE} scripts to plot GLWU mean forecasts (Cycle: ${cyc}Z F${fhr} for ${DOMAIN})"
-##	python ${SCRIPTS_PATH}/plot_glwu_mean_htsgw_ndbc_buoys.py $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_glwu_mean_htsgw.py $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+	python ${SCRIPTS_PATH}/plot_glwu_mean_htsgw_ndbc_buoys.py $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_glwu_mean_htsgw.py $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 	sleep 1
 fi
 

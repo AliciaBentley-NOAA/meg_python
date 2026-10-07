@@ -31,7 +31,10 @@ Path(f"{MAP_PATH}/{grid}/{var}").mkdir(parents=True, exist_ok=True)
 #====================================
 
 # 1. Open the GLWU GRIB2 file
-filename = f"{DATA_PATH}/glwu/glwu.grlc_2p5km.JJA_2026_mean.{cyc}.f{fhr}.grib2"
+if cyc == "allcyc":
+    filename = f"{DATA_PATH}/glwu/glwu.grlc_2p5km.JJA_2026_mean.{cyc}.f{fhr}.grib2"
+else:
+    filename = f"{DATA_PATH}/glwu/glwu.grlc_2p5km.JJA_2026_mean.t{cyc}z.f{fhr}.grib2"
 gfile = grib2io.open(filename)
 
 # 2. Select the HTSGW message
@@ -131,5 +134,10 @@ else:
     )
 
 plt.tight_layout()
-plt.savefig(f"{MAP_PATH}/{grid}/{var}/glwu_{var}_JJA_2026_mean_{cyc}Z_f{fhr}.png", bbox_inches="tight")
-print(f"Saved plot to {MAP_PATH}/{grid}/{var}/glwu_{var}_JJA_2026_mean_{cyc}Z_f{fhr}.png")
+
+if cyc == "allcyc":
+    plt.savefig(f"{MAP_PATH}/{grid}/{var}/glwu_{var}_JJA_2026_mean_{cyc}_f{fhr}.png", bbox_inches="tight")
+    print(f"Saved plot to {MAP_PATH}/{grid}/{var}/glwu_{var}_JJA_2026_mean_{cyc}_f{fhr}.png")
+else:
+    plt.savefig(f"{MAP_PATH}/{grid}/{var}/glwu_{var}_JJA_2026_mean_t{cyc}z_f{fhr}.png", bbox_inches="tight")
+    print(f"Saved plot to {MAP_PATH}/{grid}/{var}/glwu_{var}_JJA_2026_mean_t{cyc}z_f{fhr}.png")

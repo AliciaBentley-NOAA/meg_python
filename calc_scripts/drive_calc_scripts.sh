@@ -30,14 +30,14 @@ export cyc='19'
 export SCRIPTS_PATH='/lfs/h2/emc/vpppg/save/'${USER}'/meg_python/calc_scripts'
 
 # Location of downloaded forecast/analysis files
-export DATA_PATH='/lfs/h2/emc/vpppg/save/alicia.bentley/'${CASE}
+export DATA_PATH='/lfs/h2/emc/vpppg/save/alicia.bentley/'${CASE}'/glwu'
 
 #=================================================================================
 #=================================================================================
 
 echo "Kickoff ${CASE} scripts to calc mean GLWU values (Cycle: ${cyc} F000 in ${DATA_PATH})"
-##python ${SCRIPTS_PATH}/calc_glwu_mean_by_cycle.py $DATA_PATH $cyc
-python ${SCRIPTS_PATH}/calc_glwu_mean_htsgw_wind.py $DATA_PATH
+python ${SCRIPTS_PATH}/calc_glwu_mean_by_cycle.py $DATA_PATH $cyc
+##python ${SCRIPTS_PATH}/calc_glwu_mean_htsgw_wind.py $DATA_PATH
 ##python ${SCRIPTS_PATH}/calc_ndbc_buoys_mean.py
 
 
