@@ -109,6 +109,8 @@ elif grid == 'eastcoast':
         fig = plt.figure(figsize=(13, 12))
 elif grid == 'cpac':
         fig = plt.figure(figsize=(14, 12))
+elif grid == 'gulf':
+        fig = plt.figure(figsize=(12, 12))
 
 # Define a 2x2 grid
 gs = gridspec.GridSpec(1, 1, figure=fig)
@@ -129,80 +131,66 @@ plot_configs = [
 grid_locs = [gs[0, 0]]
 
 for i, loc in enumerate(grid_locs):
-	config = plot_configs[i]
+    config = plot_configs[i]
 
 	# Add subplot with projection
 	#ax = fig.add_subplot(loc, projection=ccrs.PlateCarree())
-	ax = fig.add_subplot(loc, projection=ccrs.PlateCarree(central_longitude=190))
+    ax = fig.add_subplot(loc, projection=ccrs.PlateCarree(central_longitude=190))
 
-	# Determine the appropriate scale based on the domain
-	state_scale = '10m' if grid != "conus" else '50m'
+    # Determine the appropriate scale based on the domain
+    state_scale = '10m' if grid != "conus" else '50m'
 
-	# Fetch STATES with the lakes strictly cut out
-	states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
+    # Fetch STATES with the lakes strictly cut out
+    states_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale=state_scale, facecolor='none')
 
-	# Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
-	countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
+    # Fetch COUNTRIES with the lakes strictly cut out (Replaces cfeature.BORDERS)
+    countries_clipped = cfeature.NaturalEarthFeature(category='cultural', name='admin_0_countries_lakes', scale=state_scale, facecolor='none')
 
-	# Geographic features
-	ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
-	ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
-	ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
-	ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+    # Geographic features
+    ax.add_feature(cfeature.LAKES, facecolor='white', edgecolor='0.25', linewidth=1.0, zorder=2)
+    ax.add_feature(states_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
+    ax.add_feature(cfeature.COASTLINE, edgecolor='0.25', linewidth=1.5, zorder=4)
+    ax.add_feature(countries_clipped, edgecolor='0.25', linewidth=1.5, zorder=4)
 
-	# Define domain
-	if grid == 'northeast':   
-		ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
-		# Add manual aspect ratio here. 
-		# Increase this number (e.g., 1.4) to stretch it more vertically
-		ax.set_aspect(1.25, adjustable='datalim')
-	elif grid == 'conus':                
-		ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
-                # Increase this number (e.g., 1.4) to stretch it more vertically
-		ax.set_aspect(1.2, adjustable='datalim')
-	elif grid == 'eastcoast':
-                ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
-                # Add manual aspect ratio here. 
-                # Increase this number (e.g., 1.4) to stretch it more vertically
-                ax.set_aspect(1.25, adjustable='datalim')
-	elif grid == 'cpac':
-		ax.set_extent([178, 205, 15, 30], crs=ccrs.PlateCarree())
-		# Increase this number (e.g., 1.4) to stretch it more vertically
-		ax.set_aspect(1.2, adjustable='datalim')
+    # Define domain
+    if grid == 'northeast':   
+        ax.set_extent([-82, -67, 38.75, 45.75], crs=ccrs.PlateCarree())
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'conus':                
+        ax.set_extent([-125, -64, 22, 57], crs=ccrs.PlateCarree())
+        ax.set_aspect(1.2, adjustable='datalim')
+    elif grid == 'eastcoast':
+        ax.set_extent([-82, -57, 25.0, 48.0], crs=ccrs.PlateCarree())
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'cpac':
+        ax.set_extent([178, 205, 15, 30], crs=ccrs.PlateCarree())
+        ax.set_aspect(1.2, adjustable='datalim')
+    elif grid == 'gulf':
+        ax.set_extent([-88, -85, 24.0, 34.0], crs=ccrs.PlateCarree())
+        # ax.set_extent([-93, -85, 18.0, 33.0], crs=ccrs.PlateCarree()
+        ax.set_aspect(1.25, adjustable='datalim')
 
 	# Check if we are on the third panel and apply special cmap
 	#current_cmap = config['cmap']
-	current_cmap = copy.copy(plt.get_cmap(config['cmap']))
-	current_cmap.set_under('firebrick')
-	current_cmap.set_over('deeppink')
+    current_cmap = copy.copy(plt.get_cmap(config['cmap']))
+    current_cmap.set_under('firebrick')
+    current_cmap.set_over('deeppink')
 
 	# Plot the shading
-	im = ax.contourf(lons, lats, config['data'], 
-		     levels=config['levels'],
-		     norm=config['norm'], 
-		     cmap=current_cmap,
-		     transform=ccrs.PlateCarree(),
-		     extend='both',
-		     zorder=3)
+    im = ax.contourf(lons, lats, config['data'], levels=config['levels'], norm=config['norm'], cmap=current_cmap, transform=ccrs.PlateCarree(), extend='both', zorder=3)
 
 	# Plot the contour lines
-	contours = ax.contour(lons, lats, config['data'], 
-			      levels=config['levels'], 
-			      colors='black', 
-			      linewidths=2.5, 
-			      transform=ccrs.PlateCarree(),
-			      zorder=5)
+    contours = ax.contour(lons, lats, config['data'], levels=config['levels'], colors='black', linewidths=2.5, transform=ccrs.PlateCarree(), zorder=5)
 
 	# Add labels to the lines (e.g., '1012')
-	ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
+    ax.clabel(contours, inline=True, fontsize=20, fmt='%i', inline_spacing=1)
 
 	# Capture the colorbar in a variable (e.g., 'cbar')
-	cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
-	ax.set_title(config['title'], fontweight='bold', fontsize=24)
+    cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
+    ax.set_title(config['title'], fontweight='bold', fontsize=24)
 
 	# Set the label size for the ticks
-	cbar.ax.tick_params(labelsize=24)
+    cbar.ax.tick_params(labelsize=24)
 
 #################################################
 

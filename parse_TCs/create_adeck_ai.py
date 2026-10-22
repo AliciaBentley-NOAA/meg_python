@@ -70,8 +70,8 @@ ADECK_DIR = '/lfs/h1/ops/prod/com/ens_tracker/v1.3/global'
 
 # Define start and end points
 # Format: Year, Month, Day, Hour (Cycle)
-start_date = datetime(2026, 8, 9, 12)
-end_date = datetime(2026, 8, 26, 0)
+start_date = datetime(2026, 10, 1, 0)
+end_date = datetime(2026, 10, 13, 6)
 current_date = start_date
 
 DATA_DIR = os.path.join('/lfs/h2/emc/vpppg/noscrub',os.environ['USER'],'adecks_ai')

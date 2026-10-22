@@ -117,6 +117,8 @@ elif grid == 'easternUS':
     fig = plt.figure(figsize=(13, 12))
 elif grid == 'florida':
         fig = plt.figure(figsize=(12, 12))
+elif grid == 'gulf':
+        fig = plt.figure(figsize=(12, 12))
 elif grid == 'cpac':
         fig = plt.figure(figsize=(14, 12))
 
@@ -193,6 +195,10 @@ for i, loc in enumerate(grid_locs):
     elif grid == 'florida':
         ax.set_extent([-86, -81, 23.0, 34.0], crs=ccrs.PlateCarree())
         # Increase this number (e.g., 1.4) to stretch it more vertically
+        ax.set_aspect(1.25, adjustable='datalim')
+    elif grid == 'gulf':
+        ax.set_extent([-88, -85, 24.0, 34.0], crs=ccrs.PlateCarree())
+        # ax.set_extent([-93, -85, 18.0, 33.0], crs=ccrs.PlateCarree())
         ax.set_aspect(1.25, adjustable='datalim')
     elif grid == 'cpac':
         ax.set_extent([178, 205, 15, 30], crs=ccrs.PlateCarree())

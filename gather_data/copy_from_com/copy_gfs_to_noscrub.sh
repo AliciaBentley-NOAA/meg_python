@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # --- User Defined Variables ---
-YYYYMMDD="20260917"
-CASE="noreaster"
+YYYYMMDD="20261001"
+CASE="isaias"
 
 # --- Outer Loop: Iterate through the Cycles ---
-for HH in 00 12; do
+for HH in 00 06 12 18; do
 
 # --- Define Paths ---
 # Using ${HH} in both the path and the filename pattern
@@ -22,7 +22,7 @@ echo "Dest:   $DEST_DIR"
 echo "----------------------------------------------------------"
 
 # Loop from 0 to 240 in increments of 6
-for h in $(seq 0 6 288); do
+for h in $(seq 0 6 216); do
     # Format the forecast hour to be 3 digits (e.g., 000, 006, 012)
     HHH=$(printf "%03d" $h)
     

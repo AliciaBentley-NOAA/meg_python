@@ -427,6 +427,15 @@ def plot_tracks(domain):
        proj = 'merc'
        lat_ts = 35.
        draw_counties = False
+   elif str.upper(domain) == 'ISAIAS':
+       llcrnrlon = -100.
+       llcrnrlat = 15.
+       urcrnrlon = -72.
+       urcrnrlat = 41.
+       lon0 = -50.
+       proj = 'merc'
+       lat_ts = 35.
+       draw_counties = False
    elif str.upper(domain) == 'IAN':
        llcrnrlon = -100. 
        llcrnrlat = 5.
@@ -672,7 +681,7 @@ def ptrace():
    x = np.arange(0,xlen,1)
 
 
-   plt.axis([0,xlen,880,1020])
+   plt.axis([0,xlen,920,1020])
    plt.axhspan(880, 1020, facecolor='0.5', alpha=0.5)
 
    labels=[]
@@ -954,7 +963,7 @@ def main():
  #  domains = ['MICHAEL','BARRY','HAWAII']
  #  domains = ['GOA','IDA','BARRY','LOUISIANA']
  #  domains = ['IAN','SE_COAST','GOA']
-    domains = ['NATL']
+    domains = ['ISAIAS']
 
     pool = multiprocessing.Pool(len(domains))
     pool.map(plot_tracks,domains)
