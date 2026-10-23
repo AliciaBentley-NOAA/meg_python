@@ -30,22 +30,22 @@ module load grib_util/1.2.4
 #=================================================================================
 #=================================================================================
 export CASE='snowcrete'
-export initdate="20260125"
-export cyc="00"               #01, 07, 13, 19, allcyc
-export fhr="018"  
+export initdate="20260123"
+export cyc="12"               #01, 07, 13, 19, allcyc
+export fhr="072"  
 
 # Reference list of possible fhrs
 # 240,216,192,168,144,120,096,072,048,024
 # 228,204,180,156,132,108,084,060,036,012
 
 # Domain options: conus, wpc, eastcoast, northeast, easternUS, southeastUS, westcoast, florida, hawaii
-export DOMAIN='easternUS'
+export DOMAIN='conus'
 
 #If plotting precip/snowfall, choose a duration (e.g., 72, 48, 36, 24, 12, 6)
-export duration='24'   
+export duration='48'   
 
 #If plotting Stage IV, CCPA, NOHRSC, URMA, or RAP analysis, select a valid time
-export vdate="20260927" #For precip/snowfall, this is the last time in the period covered
+export vdate="20260126" #For precip/snowfall, this is the last time in the period covered
 export vhour="12"     	#00, 06, 12, 18
 
 #If plotting TC track/intensity, define TCnameIDYear (e.g., LalaCP012026)
@@ -64,7 +64,7 @@ export PLOT_ECAIFS_ENS_FCSTS=NO
 export PLOT_AIGEFSDEV_FCSTS=NO
 
 ###### Deterministic #######
-export PLOT_GFSv16_FCSTS=YES
+export PLOT_GFSv16_FCSTS=NO
 export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 export PLOT_ECAIFS_FCSTS=NO
@@ -159,7 +159,7 @@ if [ $PLOT_GFSv17_FCSTS = YES ]; then
         echo "======================================="
         echo "Kickoff ${CASE} scripts to plot GFSv17 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
         export DATA_PATH='/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01'
-        python ${SCRIPTS_PATH}/plot_gfsv17_ptype.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gfsv17_ptype.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfsv17_500Z.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfsv17_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfsv17_diff_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
@@ -173,7 +173,7 @@ if [ $PLOT_GFSv17_FCSTS = YES ]; then
 #        python ${SCRIPTS_PATH}/plot_gfsv17_cape_sfc_based.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_diff_cape.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_tsnowp_sden.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
-#        python ${SCRIPTS_PATH}/plot_gfsv17_freezing_rain.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
+        python ${SCRIPTS_PATH}/plot_gfsv17_freezing_rain.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH $duration
 #        python ${SCRIPTS_PATH}/plot_gfsv17_hybrid1_mixing_ratios.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
         sleep 1
 fi

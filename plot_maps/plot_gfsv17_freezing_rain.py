@@ -22,7 +22,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "frzr_cmap"
+var = "frzr"
 
 pdy = str(sys.argv[1])             # 20251120
 cyc = str(sys.argv[2])		   # 12 

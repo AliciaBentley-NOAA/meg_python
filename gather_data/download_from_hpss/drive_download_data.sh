@@ -66,7 +66,8 @@ export GET_GEFS_SPR_FCSTS_ATMOS=NO
 export GET_GEFS_MEM_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_WAVE=NO
-export GET_GFSv17_FCSTS_ATMOS=YES
+export GET_GFSv17_FCSTS_ATMOS=NO
+export GET_GFSv17_FCSTS_WAVE=YES
 
 # Select forecast start, end, and increment to download (applies to GEFS and GFS forecasts)
 export FHR_START=0			 # Typically 0 hours (beginning of forecast)
@@ -77,7 +78,7 @@ export FHR_INC=6                         # Typically 6-hour timestep between for
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20261020 20261019 20261018 20261017 20261016 20261015 20261014 20261013
+for longdate in 20261020 20261019 20261018 20261017 20261016 20261015
 do
 
 # Specify the init. hours to download on each initalization date (typically 00 12)
@@ -157,6 +158,11 @@ if [ $GET_FORECASTS = YES ]; then
         if [ $GET_GFSv17_FCSTS_ATMOS = YES ]; then
                 echo "Create/submit script to download GFSv17 atmos forecasts (Init.: ${CYCLE})"
                 ${SCRIPTS_PATH}/create_htar_gfsv17_fcsts_atmos.sh
+                sleep 3
+        fi
+        if [ $GET_GFSv17_FCSTS_WAVE = YES ]; then
+                echo "Create/submit script to download GFSv17 wave forecasts (Init.: ${CYCLE})"
+                ${SCRIPTS_PATH}/create_htar_gfsv17_fcsts_wave.sh
                 sleep 3
         fi
 	echo "*********************"
