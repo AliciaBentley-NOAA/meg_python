@@ -50,11 +50,11 @@ export GET_FORECASTS=YES
 # Select which analysis types to download (YES/NO)
 export GET_GFS_ANL=NO
 export GET_CCPA_ANL=NO
-export GET_GDAS_ANL=NO
+export GET_GDAS_ANL=YES
 
 # Select analyses start, end, and increment to download
 export ANL_START=0 	# Start downloading analysis files for the first initialization date if set to 0
-export ANL_END=12       # Stop downloading analysis files on the first init. date + 6 hours + X hours (set X to 378 if you want to go 16 days beyond last init date)
+export ANL_END=6       # Stop downloading analysis files on the first init. date + 6 hours + X hours (set X to 378 if you want to go 16 days beyond last init date)
 export ANL_INC=6 	# Typically 6 hours timestep between requested analysis files
 
 # ******************************************
@@ -66,7 +66,7 @@ export GET_GEFS_SPR_FCSTS_ATMOS=NO
 export GET_GEFS_MEM_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_ATMOS=NO
 export GET_GFS_FCSTS_WAVE=NO
-export GET_GFSv17_FCSTS_ATMOS=NO
+export GET_GFSv17_FCSTS_ATMOS=YES
 export GET_GFSv17_FCSTS_WAVE=YES
 
 # Select forecast start, end, and increment to download (applies to GEFS and GFS forecasts)
@@ -78,7 +78,7 @@ export FHR_INC=6                         # Typically 6-hour timestep between for
 # ****Select initialization dates/hours*****
 # ******************************************
 # Specify initialization dates to download
-for longdate in 20261020 20261019 20261018 20261017 20261016 20261015
+for longdate in 20261028
 do
 
 # Specify the init. hours to download on each initalization date (typically 00 12)

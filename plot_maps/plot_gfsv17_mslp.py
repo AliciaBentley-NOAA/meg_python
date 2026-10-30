@@ -64,8 +64,8 @@ print(f"Forecast Lead:       {fcst_hour} hours")
 print(f"Valid Time:          {valid_dt.strftime('%Y-%m-%d %HZ')}")
 
 # Open GFS GRIB2 file and extract parameters
-filename_gfsv17 = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
-#filename_gfsv17 = f"/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv17archive/data/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
+#filename_gfsv17 = f"/lfs/h2/emc/gfstemp/emc.global/EVS_archive/retrov17_01/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
+filename_gfsv17 = f"/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv17archive/data/gfs.{pdy}/{cyc}/products/atmos/grib2/0p25/gfs.t{cyc}z.pres_a.0p25.f{fhr_str}.grib2"
 with grib2io.open(filename_gfsv17) as f_gfsv17:
 
 	# Select the specific messages we want
