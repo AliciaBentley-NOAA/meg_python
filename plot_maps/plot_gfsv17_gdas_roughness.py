@@ -22,7 +22,7 @@ import cartopy.io.shapereader as shpreader
 from pathlib import Path
 
 #####################################################
-var = "gdas_roughness"
+var = "gdas_roughness_ocean"
 
 print(f"#############################################")
 
@@ -142,8 +142,12 @@ mslp_norm = mcolors.Normalize(vmin=952, vmax=1052)
 mslp_levels = np.arange(952, 1056, 4)
 mslp_levels_lines = np.arange(932, 1060, 4)
 
-sst_norm = mcolors.Normalize(vmin=0, vmax=3)
-sst_levels = np.arange(0, 3, 0.2)
+#sst_norm = mcolors.Normalize(vmin=0, vmax=3)
+#sst_levels = np.arange(0, 3, 0.2)
+
+sst_norm = mcolors.Normalize(vmin=0, vmax=0.01)
+sst_levels = np.arange(0, 0.0101, 0.0001)
+sst_levels_label = np.arange(0, 0.012, 0.002)
 
 # Update configs with specific 'norm' and 'levels'
 plot_configs = [
@@ -252,7 +256,7 @@ for i, loc in enumerate(grid_locs):
     if grid == 'alaska':
         cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.045)
     else:
-        cbar = plt.colorbar(im, ax=ax, orientation='horizontal', pad=0.06, fraction=0.055)
+        cbar = plt.colorbar(im, ax=ax, ticks=sst_levels_label, orientation='horizontal', pad=0.06, fraction=0.055)
 
     ax.set_title(config['title'], fontweight='bold', fontsize=24)
 

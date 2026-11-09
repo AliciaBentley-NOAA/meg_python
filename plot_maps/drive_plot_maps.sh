@@ -32,7 +32,7 @@ module load grib_util/1.2.4
 export CASE='isaias'
 export initdate="20261009"
 export cyc="18"               #01, 07, 13, 19, allcyc
-export fhr="006"  
+export fhr="003"  
 
 # Reference list of possible fhrs
 # 240,216,192,168,144,120,096,072,048,024
@@ -64,7 +64,7 @@ export PLOT_ECAIFS_ENS_FCSTS=NO
 export PLOT_AIGEFSDEV_FCSTS=NO
 
 ###### Deterministic #######
-export PLOT_GFSv16_FCSTS=NO
+export PLOT_GFSv16_FCSTS=YES
 export PLOT_AIGFS_FCSTS=NO
 export PLOT_ECMWF_FCSTS=NO
 export PLOT_ECAIFS_FCSTS=NO
@@ -109,8 +109,8 @@ if [ $PLOT_GFSv16_FCSTS = YES ]; then
         echo "Kickoff ${CASE} scripts to plot GFSv16 forecasts (Init.: ${initdate}${cyc} F${fhr} for ${DOMAIN})"
 ##        python ${SCRIPTS_PATH}/plot_gfs_gdas_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfs_gdas_sst.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfs_gdas_wind_shear.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-##	python ${SCRIPTS_PATH}/plot_gfs_gdas_roughness.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gfs_gdas_wind_shear.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+	python ${SCRIPTS_PATH}/plot_gfs_gdas_roughness.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##	python ${SCRIPTS_PATH}/plot_gfs_gdas_latent_heat_flux.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfs_gdas_sensible_heat_flux.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfs_orography.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
@@ -170,8 +170,8 @@ if [ $PLOT_GFSv17_FCSTS = YES ]; then
         export DATA_PATH='/lfs/h2/emc/vpppg/noscrub/alicia.bentley/GFSv17archive/data'
 ##        python ${SCRIPTS_PATH}/plot_gfsv17_gdas_mslp.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##        python ${SCRIPTS_PATH}/plot_gfsv17_gdas_sst.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-        python ${SCRIPTS_PATH}/plot_gfsv17_gdas_wind_shear.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
-##        python ${SCRIPTS_PATH}/plot_gfsv17_gdas_roughness.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+##        python ${SCRIPTS_PATH}/plot_gfsv17_gdas_wind_shear.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
+        python ${SCRIPTS_PATH}/plot_gfsv17_gdas_roughness.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 ##	python ${SCRIPTS_PATH}/plot_gfsv17_gdas_latent_heat_flux.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH	
 ##        python ${SCRIPTS_PATH}/plot_gfsv17_gdas_sensible_heat_flux.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
 #        python ${SCRIPTS_PATH}/plot_gfsv17_ptype.py $initdate $cyc $fhr $DOMAIN $DATA_PATH $MAP_PATH
